@@ -1,21 +1,42 @@
 <script setup>
-import {ref} from 'vue';
+import { computed, ref, watch } from 'vue';
+
+const maxLength = 4;
 const branchCode = ref('');
 const loginId = ref('');
 const password = ref('');
 
-function submitData()
-{
+const submitData = () => {
     const resultObj = {
         branchCode: branchCode.value,
         loginId: loginId.value,
-        password: password.value 
+        password: password.value
     };
-
     console.log("Data is being submitted", resultObj);
     alert("Data is being submitted");
 }
 
+
+const checkDigits = (event) => {
+    if (
+        event.key.length === 1 &&
+        (
+            isNaN(Number(event.key)) ||
+            branchCode.value.length >= maxLength
+        )
+    ) 
+    {
+        event.preventDefault();
+    }
+}
+const insertPadding = () => {
+    if(branchCode.value)
+        branchCode.value = branchCode.value.padStart(4, '0');
+}
+
+const isInvalid = computed(() => {
+    return !branchCode.value.trim() || !loginId.value.trim() || !password.value.trim();
+});
 
 </script>
 
@@ -30,7 +51,7 @@ function submitData()
                 <div class="login-form">
                     <h2 style="margin-bottom: 20px; font-weight: 500;">Login</h2>
                     <div style="display: flex; margin-bottom: 24px; gap: 24px;">
-                        <input v-model="branchCode" class="form-control" style="width: 30%;" type="text" >
+                        <input v-model="branchCode" @blur="insertPadding" @keydown="checkDigits" class="form-control" style="width: 30%;" type="text">
                         <input v-model="loginId" class="form-control" style="width: 70%;" type="password">
                     </div>
                     <div>
@@ -39,7 +60,7 @@ function submitData()
                 </div>
                 <div class="button-container">
                     <div>
-                        <button @click="submitData" class="primary-button">Sign In</button>
+                        <button :disabled="isInvalid" @click="submitData" class="primary-button">Sign In</button>
                     </div>
                     <div>
                         <button class="primary-button">Exit</button>
@@ -49,10 +70,9 @@ function submitData()
         </div>
     </div>
 </template>
-<style scoped>
 
-.form-control
-{
+<style scoped>
+.form-control {
     display: block;
     width: 100%;
     padding: .375rem .75rem;
@@ -70,8 +90,7 @@ function submitData()
     transition: border-color .15sease-in-out, box-shadow .15sease-in-out;
 }
 
-.primary-button
-{
+.primary-button {
     padding: 0px 20px;
     height: 40px;
     width: 100%;
@@ -84,8 +103,7 @@ function submitData()
 }
 
 
-.primary-button[disabled]
-{
+.primary-button[disabled] {
     padding: 0px 20px;
     height: 40px;
     width: 100%;
@@ -97,8 +115,7 @@ function submitData()
     border-radius: 0%;
 }
 
-.form-control:focus
-{
+.form-control:focus {
     color: #212529;
     background-color: #fff;
     border-color: #86b7fe;
@@ -106,49 +123,41 @@ function submitData()
     box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
 }
 
-.login-form-container
-{
+.login-form-container {}
 
-}
-
-.login-form{
+.login-form {
     border: 2px var(--border-primary) solid;
     padding: 15px;
-    margin-bottom: 20px;    
+    margin-bottom: 20px;
 }
 
-.main-container
-{
+.main-container {
     padding: 1% 10%;
 }
 
-.main-div{
+.main-div {
     display: flex;
     justify-content: center;
     align-items: flex-end;
 }
 
-.main-header-1
-{
+.main-header-1 {
     padding-bottom: 2%;
     font-weight: 500;
     font-size: 38px;
 }
 
-.bahl-logo-container
-{
+.bahl-logo-container {
     width: 42%;
 }
 
-.button-container{
+.button-container {
     display: flex;
     justify-content: space-between;
 }
 
-.bahl-logo-img
-{
+.bahl-logo-img {
     float: right;
     width: 100%;
 }
-
 </style>
