@@ -1,17 +1,26 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
+import axios from 'axios';
 
 const maxLength = 4;
 const branchCode = ref('');
 const loginId = ref('');
 const password = ref('');
 
-const submitData = () => {
+const submitData = async () => {
+    console.log(`the env variables are ${import.meta.env.VITE_FSM_URL}`)
     const resultObj = {
         branchCode: branchCode.value,
         loginId: loginId.value,
         password: password.value
     };
+
+    const response = await axios.get(`${import.meta.env.VITE_FSM_URL}/start`);
+    if(response.data)
+        alert("Response is received");
+
+    console.log(response);
+
     console.log("Data is being submitted", resultObj);
     alert("Data is being submitted");
 }
