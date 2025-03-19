@@ -1,4 +1,4 @@
-<script>
+<script setup>
 import {ref} from 'vue';
 const branchCode = ref('');
 const loginId = ref('');
@@ -6,7 +6,14 @@ const password = ref('');
 
 function submitData()
 {
-    console.log("Data is being submitted",branchCode);
+    const resultObj = {
+        branchCode: branchCode.value,
+        loginId: loginId.value,
+        password: password.value 
+    };
+
+    console.log("Data is being submitted", resultObj);
+    alert("Data is being submitted");
 }
 
 
@@ -23,16 +30,16 @@ function submitData()
                 <div class="login-form">
                     <h2 style="margin-bottom: 20px; font-weight: 500;">Login</h2>
                     <div style="display: flex; margin-bottom: 24px; gap: 24px;">
-                        <input :value="branchCode" class="form-control" style="width: 30%;" type="text" >
-                        <input :value="loginId" class="form-control" style="width: 70%;" type="password">
+                        <input v-model="branchCode" class="form-control" style="width: 30%;" type="text" >
+                        <input v-model="loginId" class="form-control" style="width: 70%;" type="password">
                     </div>
                     <div>
-                        <input :value="password" class="form-control" type="password">
+                        <input v-model="password" class="form-control" type="password">
                     </div>
                 </div>
                 <div class="button-container">
                     <div>
-                        <button @click="submitData" disabled class="primary-button">Sign In</button>
+                        <button @click="submitData" class="primary-button">Sign In</button>
                     </div>
                     <div>
                         <button class="primary-button">Exit</button>
