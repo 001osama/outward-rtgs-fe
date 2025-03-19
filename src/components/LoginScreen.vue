@@ -14,15 +14,17 @@ const submitData = async () => {
         loginId: loginId.value,
         password: password.value
     };
-
-    const response = await axios.get(`${import.meta.env.VITE_FSM_URL}/start`);
-    if(response.data)
-        alert("Response is received");
-
-    console.log(response);
-
     console.log("Data is being submitted", resultObj);
-    alert("Data is being submitted");
+
+    const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`,
+        resultObj
+    );
+
+    if(response.status == 200)
+        alert("Successful response is received");
+
+    console.log("response from server is",response.data);
+
 }
 
 
@@ -54,7 +56,7 @@ const isInvalid = computed(() => {
         <h1 class="main-header-1">ALHABIB BANKING SYSTEM</h1>
         <div class="main-div">
             <div class="bahl-logo-container">
-                <img class="bahl-logo-img" src="../../public/bahl-logo.png" alt="">
+                <img class="bahl-logo-img" src="/bahl-logo.png" alt="">
             </div>
             <div class="login-form-container">
                 <div class="login-form">
