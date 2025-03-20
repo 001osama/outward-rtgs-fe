@@ -5,7 +5,7 @@
   --bg-secondary:rgb(0, 155, 131);
   --text-primary:black;
   --border-primary:#212529;
-  
+  --bg-btn-disabled: #cccccc;
 }
 
 
@@ -20,7 +20,6 @@
 body {
   color: var(--text-primary);
   background: var(--bg-primary);
-
   font-family:
     Inter,
     -apple-system,

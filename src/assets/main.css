@@ -8,7 +8,6 @@
   width: auto;
   background: gray;
   border-radius: 0px !important;
-
 }
 
 
@@ -26,7 +25,7 @@
   --el-button-hover-link-text-color: unset;
   --el-button-active-border-color: unset;
   --el-button-disabled-text-color: unset;
-  --el-button-disabled-bg-color: unset;
+  --el-button-disabled-bg-color: var(--bg-btn-disabled) !important;
   --el-button-disabled-border-color: unset;
 }
 

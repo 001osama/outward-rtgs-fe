@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 
@@ -9,6 +9,26 @@ const loginForm = reactive({
     loginId:'',
     password:'',
 });
+
+const isInvalid = computed(() => {
+    return !loginForm.branchCode.trim() || !loginForm.loginId.trim() || !loginForm.password.trim();
+});
+
+
+
+const checkDigits = (event) => {
+    if (
+        event.key.length === 1 && isNaN(Number(event.key))) 
+    {
+        event.preventDefault();
+    }
+}
+
+const insertPadding = () => {
+    if(loginForm.branchCode)
+        loginForm.branchCode = loginForm.branchCode.padStart(4, '0');
+}
+
 
 const onSubmit = () => {
   console.log('submit!',loginForm);
@@ -36,21 +56,21 @@ const onSubmit = () => {
                         <div class="login-form-input-container"> 
                             <el-form-item>
                                 <el-col :span="8">
-                                    <el-input v-model="loginForm.branchCode" />
+                                    <el-input maxlength="4" v-model="loginForm.branchCode" @blur="insertPadding" @keydown="checkDigits"/>
                                 </el-col>
                                 <el-col :span="1"></el-col>
                                 <el-col  :span="15">
-                                    <el-input type="password" v-model="loginForm.loginId" />
+                                    <el-input maxlength="10" type="password" v-model="loginForm.loginId" />
                                 </el-col>
                             </el-form-item>
                             <el-form-item style="margin-bottom: 0px;">
-                                <el-input type="password" v-model="loginForm.password" />
+                                <el-input maxlength="10" type="password" v-model="loginForm.password" />
                             </el-form-item>
                         </div>
-                        <el-form-item>
-                                <el-button type="primary" @click="onSubmit">Sign In</el-button>
-                                <el-button disabled @click="onSubmit">Cancel</el-button>
-                        </el-form-item>
+                        <el-row justify="space-between">
+                            <el-button :disabled="isInvalid" type="primary" @click="onSubmit">Sign In</el-button>
+                            <el-button type="primary" @click="onSubmit">Cancel</el-button>
+                        </el-row>
                     </el-form>
                 </div>
             </el-col>
@@ -59,6 +79,7 @@ const onSubmit = () => {
     </div>
 </template>
 <style scoped>
+
     .login-form-container
     {
         display: flex;
