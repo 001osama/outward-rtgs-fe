@@ -1,7 +1,10 @@
 <script setup>
 import { computed, ref } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
+
+const router = useRouter();
 const maxLength = 4;
 const branchCode = ref('');
 const loginId = ref('');
@@ -15,15 +18,16 @@ const submitData = async () => {
         password: password.value
     };
     console.log("Data is being submitted", resultObj);
+    router.push('/');
 
-    const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`,
-        resultObj
-    );
+    // const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`,
+    //     resultObj
+    // );
 
-    if(response.status == 200)
-        alert("Successful response is received");
+    // if(response.status == 200)
+    //     alert("Successful response is received");
 
-    console.log("response from server is",response.data);
+    // console.log("response from server is",response.data);
 
 }
 

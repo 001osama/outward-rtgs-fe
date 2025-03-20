@@ -1,12 +1,10 @@
 <script setup>
-import LoginScreen from './components/LoginScreen.vue'
+  import LoginScreen from './screens/LoginScreen.vue'
 </script>
 
 <template>
   <main>
-    <LoginScreen/>
+    <RouterView />
+    <!-- <LoginScreen/> -->
   </main>
 </template>
-
-<style scoped>
-</style>
