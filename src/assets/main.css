@@ -38,6 +38,7 @@
   border-radius: 0;
   color: #000;
   font-weight: 700;
+  font-size: var(--normal-font-size);
 }
 
 .tile-button:hover {
@@ -48,12 +49,48 @@
 .tile-button:disabled{
   background-color: #4a8a81;
   color: #3a3a3a;
+  cursor: not-allowed;
+}
+
+
+.tile-button.thin{
+    height: 36px !important;
+    margin: 0;
+}
+
+.tile-button.bottom{
+
+  height: 45px !important;
+}
+
+
+:is(h1, h2, h3, h4)
+{
+  font-family: Arial;
+  font-weight: 700;
 }
 
 h1{
-  font-family: Arial;
   font-size: 36px;
-  font-weight: 700;
+}
+
+h2
+{
+  font-size: 32px;
+}
+
+h3{
+  font-size: 22px;
+}
+
+h4{
+  font-size: 16px;
+}
+
+
+.text-bold-1
+{
+  font-weight: 600;
 }
 
 

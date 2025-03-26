@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import axios  from 'axios';
 
 
 const router = useRouter();
@@ -12,21 +13,33 @@ const password = ref('');
 const submitData = async () => {
     console.log(`the env variables are ${import.meta.env.VITE_FSM_URL}`)
     const resultObj = {
+      data:{
         branchCode: branchCode.value,
         loginId: loginId.value,
         password: password.value
+      },
+      transition:"LOGIN"
     };
+
     console.log("Data is being submitted", resultObj);
-    router.push('/mainMenu');
 
-    // const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`,
-    //     resultObj
-    // );
+    const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`, resultObj);
 
-    // if(response.status == 200)
-    //     alert("Successful response is received");
+    if(response.status == 200)
+    {
+      const { data } = response;
+      localStorage.setItem("token", data.token);
+      alert("Successful response is received");
+      router.push('/mainMenu');
+    }
+    else
+    {
+      alert("Invalid login attempt")
+      console.log(response.status)
+    }
 
-    // console.log("response from server is",response.data);
+    console.log("response from server is",response.data);
+    console.log("response from server is",response.status);
 
 }
 
@@ -38,7 +51,7 @@ const checkDigits = (event) => {
             isNaN(Number(event.key)) ||
             branchCode.value.length >= maxLength
         )
-    ) 
+    )
     {
         event.preventDefault();
     }
@@ -58,7 +71,7 @@ const isInvalid = computed(() => {
 <template>
     <div class="main-container">
         <el-row>
-            <h1 class="main-header-1">ALHABIB BANKING SYSTEM</h1>
+            <h1 >ALHABIB BANKING SYSTEM</h1>
         </el-row>
         <el-row>
             <el-col :span="1"></el-col>
@@ -171,7 +184,7 @@ const isInvalid = computed(() => {
     content: 'Login';
     background: var(--bg-primary);
     font-size: 22px;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .main-container {

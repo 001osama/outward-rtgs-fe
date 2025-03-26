@@ -1,12 +1,11 @@
 import {createMemoryHistory, createRouter} from 'vue-router';
-// import LoginScreen2 from "../screens/LoginScreen2.vue"; 
-import LoginScreen from "../screens/LoginScreen.vue"; 
-import MainMenuScreen from "../screens/MainMenuScreen.vue"; 
+// import LoginScreen from "../screens/LoginScreen.vue";
+import MainMenuScreen from "../screens/AuthLayout.vue";
 
 
 const routes = [
-    {path: '/dummy', component: LoginScreen},
-    // { path: '/dummyLoginScreen', component: LoginScreen2 },
+    // {path: '/', component: LoginScreen},
+    // { path: '/MainMenu', component: MainMenuScreen },
     { path: '/', component: MainMenuScreen },
 ]
 

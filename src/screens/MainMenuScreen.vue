@@ -1,114 +1,119 @@
-<script></script>
+<script setup>
+import axios  from 'axios';
+import { useRouter } from 'vue-router';
+
+
+const router = useRouter();
+
+const signOff = async () => {
+    console.log(`the env variables are ${import.meta.env.VITE_FSM_URL}`)
+    const resultObj = {
+      transition:"SIGNOFF"
+    };
+
+    console.log("Data sending to FSM", resultObj);
+
+    const authToken = localStorage.getItem("token");
+    const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`, resultObj,
+      {
+        headers:
+        {
+          Authorization:`${authToken}`,
+        }
+      }
+    );
+
+    if(response.status == 200)
+    {
+      alert("Sign Off Successfully");
+      router.push('/');
+    }
+    else
+    {
+      console.log("Invalid login attempt")
+      console.log(response.status)
+    }
+
+    console.log("response data from server is",response.data);
+    console.log("response status from server is",response.status);
+
+}
+</script>
 <template>
-    <div class="common-container">
-        <el-container style="height: 100%;;">
-            <el-aside class="side-nav">
-                <div class="image-container">
-                    <img src="../../public/bahl-logo.png" width="55%;"  alt="main-logo">
-                </div>
-                <ul class="menu-item-container">
-                    <li class="menu-item is-active">Main Menu</li>
-                    <li class="menu-item is-disabled">Setup</li>
-                    <li class="menu-item is-disabled">CRM - Account Opening</li>
-                    <li class="menu-item is-disabled">CRM Operational Activities</li>
-                    <li class="menu-item is-disabled">Trade Finance</li>
-                    <li class="menu-item is-disabled">User Profile Management</li>
-                    <li class="menu-item is-disabled">Back Office</li>
-                    <li class="menu-item is-disabled">Special Reports</li>
-                </ul>
-            </el-aside>
-            <el-container style="height: 100%;">
-                <el-header>
-                    <div class="header">
-                        <div>Main Menu</div>
-                        <div>ALHABIB VERSION </div>
-                        <div>x</div>
-                    </div>
-                </el-header>
-                <el-main>
-                    <h1>ALHABIB BANKING SYSTEM</h1>
-                    <div>
-                        
-                    </div>
-                </el-main>
-                <el-footer>Footer</el-footer>
-            </el-container>
-        </el-container>
-    </div>
+  <h1>ALHABIB BANKING SYSTEM</h1>
+  <div class="main-menu-button-container">
+    <el-row gutter=50>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Setup</button>
+      </el-col>
+      <el-col :span="8">
+        <el-row>
+          <button style="margin-bottom: 20px;" class="tile-button thin" disabled>CRM - Account Opening</button>
+          <button class="tile-button thin" disabled>CRM - Operational Activities</button>
+        </el-row>
+      </el-col>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Teller</button>
+      </el-col>
+    </el-row>
+    <el-row gutter=50>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Trade Finance</button>
+      </el-col>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Credit Management</button>
+      </el-col>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Term Deposit</button>
+      </el-col>
+    </el-row>
+    <el-row gutter=50>
+      <el-col :span="8">
+        <button class="tile-button">Remittance</button>
+      </el-col>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Customer Id Management</button>
+      </el-col>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Transactional Security</button>
+      </el-col>
+    </el-row>
+    <el-row gutter=50>
+      <el-col :span="8">
+        <button class="tile-button" disabled>User Profile</button>
+      </el-col>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Back Office</button>
+      </el-col>
+      <el-col :span="8">
+        <button class="tile-button" disabled>Portals</button>
+      </el-col>
+    </el-row>
+  </div>
+  <el-row>
+    <el-col :span="2">
+      <button class="tile-button bottom">Profile</button>
+    </el-col>
+    <el-col :span="1"></el-col>
+    <el-col :span="3">
+      <button class="tile-button bottom">Change Password</button>
+    </el-col>
+    <el-col :span="13"></el-col>
+    <el-col :span="2">
+      <button class="tile-button bottom">Help</button>
+    </el-col>
+    <el-col :span="1"></el-col>
+    <el-col :span="2">
+      <button @click="signOff" class="tile-button bottom">Sign Off</button>
+    </el-col>
+  </el-row>
 </template>
 <style scoped>
-.common-container{
-    height: 100vh;
-    padding: 10px 0px;
-    background-color: var(--bg-secondary);
+.main-menu-button-container {
+  padding: 2% 8%;
 }
 
-.menu-item-container
-{
-    padding: 0;
-}
-
-.menu-item.is-active{
-    color: #000 !important;
-    background-image: linear-gradient(#a0c8a8 10%, #006363 120%);
-    border-top-right-radius: 50%;
-    border-bottom-right-radius: 50%;
-}
-
-.menu-item.is-disabled {
-    opacity: .25;
-    cursor: not-allowed;
-    background: 0 0 !important;
-}
-
-.menu-item
-{
-    display: flex;
-    align-items: center;
-    height: 25px;
-    font-size: var(--normal-font-size);
-    color: var(--text-primary);
-    padding: 0 20px;
-    list-style: none;
-    cursor: pointer;
-    position: relative;
-    transition: border-color var(--el-transition-duration), background-color var(--el-transition-duration), color var(--el-transition-duration);
-    box-sizing: border-box;
-    white-space: nowrap;
-}
-
-.el-header {
-    --el-header-padding: 0 10px;
-    --el-header-height: 20px;
-}
-
-.el-footer {
-    --el-footer-padding: 0 10px;
-    --el-footer-height: 20px;
-}
-
-.el-main {
-    --el-main-padding: 10px;
-}
-
-.header{
-    display: flex;
-    justify-content: space-between;
-}
-
-.side-nav
-{
-    width: 18%;
-}
-
-.el-main {
-    background-color: var(--bg-ternary);
-}
-
-.image-container
-{
-    display: flex;
-    padding-bottom: 8px;
-    justify-content: center;
+.main-menu-button-container>.el-row:not(:last-child) {
+  margin-bottom: 20px;
 }
 </style>
