@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import axios  from 'axios';
+// import axios  from 'axios';
 
 
 const router = useRouter();
@@ -23,23 +23,24 @@ const submitData = async () => {
 
     console.log("Data is being submitted", resultObj);
 
-    const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`, resultObj);
+    // const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`, resultObj);
 
-    if(response.status == 200)
-    {
-      const { data } = response;
-      localStorage.setItem("token", data.token);
-      alert("Successful response is received");
-      router.push('/mainMenu');
-    }
-    else
-    {
-      alert("Invalid login attempt")
-      console.log(response.status)
-    }
+    // if(response.status == 200)
+    // {
+    //   const { data } = response;
+    //   localStorage.setItem("token", data.token);
+    //   alert("Successful response is received");
+    //   router.push('/mainMenu');
+    // }
+    // else
+    // {
+      //   alert("Invalid login attempt")
+      //   console.log(response.status)
+      // }
 
-    console.log("response from server is",response.data);
-    console.log("response from server is",response.status);
+      // console.log("response from server is",response.data);
+      // console.log("response from server is",response.status);
+      router.push('/authlayout');
 
 }
 

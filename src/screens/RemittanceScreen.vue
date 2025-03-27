@@ -1,4 +1,18 @@
-<script></script>
+<script setup>
+import { useRouter } from 'vue-router';
+
+
+const router = useRouter();
+
+const signOff = ()=>{
+  router.push('/');
+}
+
+const generalPostingClicked = () => {
+  router.push('sbpoutwardcancel');
+}
+
+</script>
 <template>
 <el-row>
   <div class="heading-container">
@@ -35,7 +49,6 @@
   <el-col :span="5">
     <h4>DEMAND DRAFT</h4>
     <div class="thin-button-container">
-
       <button class="tile-button thin">Issue</button>
       <button class="tile-button thin">Print</button>
       <button class="tile-button thin">Process for Payment</button>
@@ -57,7 +70,7 @@
     padding-bottom: 40px;
     gap: 15px;"
     >
-      <button class="tile-button thin">General Posting</button>
+      <button @click="generalPostingClicked" class="tile-button thin">General Posting</button>
       <button class="tile-button thin">General Inquiry</button>
     </div>
     </el-col>
@@ -112,7 +125,7 @@
     </el-col>
     <el-col :span="1"></el-col>
     <el-col :span="2">
-      <button class="tile-button bottom">Sign Off</button>
+      <button @click="signOff" class="tile-button bottom">Sign Off</button>
     </el-col>
   </el-row>
 </div>

@@ -3,7 +3,7 @@ import MainFooter from '@/components/MainFooter.vue';
 import MainHeader from '@/components/MainHeader.vue';
 import SideNav from '@/components/SideNav.vue';
 // import MainMenuScreen from './MainMenuScreen.vue';
-import RemittanceScreen from './RemittanceScreen.vue';
+// import RemittanceScreen from './RemittanceScreen.vue';
 
 </script>
 <template>
@@ -15,8 +15,9 @@ import RemittanceScreen from './RemittanceScreen.vue';
           <MainHeader />
         </el-header>
         <el-main>
+          <RouterView />
           <!-- <MainMenuScreen/> -->
-           <RemittanceScreen />
+           <!-- <RemittanceScreen /> -->
         </el-main>
         <MainFooter />
       </el-container>
