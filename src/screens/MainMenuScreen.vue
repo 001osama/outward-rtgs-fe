@@ -5,25 +5,26 @@ import { onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter();
-let isMessageShown = false;
+let isMessageShown = localStorage.getItem('messageShow');
 onMounted(() => {
-  if(isMessageShown)
+  if(!isMessageShown)
     ElMessageBox.alert(
-      `Sign-on is Successful<br>
-      Last Sign-on date is 26/03/2025`,
-      'Message',
-      {
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: 'OK',
-        showCancelButton: false,
-        showClose: false,
-        draggable: true,
-        center: true,
-        callback: () => {
-          isMessageShown = true;
-        }
+    `Sign-on is Successful<br>
+    Last Sign-on date is 26/03/2025`,
+    'Message',
+    {
+      confirmButtonClass: 'mb-confirm-button',
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: 'OK',
+      showCancelButton: false,
+      showClose: false,
+      draggable: true,
+      center: true,
+      callback: () => {
+        localStorage.setItem('messageShow','true');
       }
-    )
+    }
+)
 })
 
 

@@ -12,6 +12,10 @@ const generalPostingClicked = () => {
   router.push('sbpoutwardcancel');
 }
 
+const mainMenuBtnClicked = () => {
+  router.push('/authlayout');
+}
+
 </script>
 <template>
 <el-row>
@@ -117,7 +121,7 @@ const generalPostingClicked = () => {
     </el-col>
     <el-col :span="3"></el-col>
     <el-col :span="3">
-      <button class="tile-button bottom">Main Menu</button>
+      <button @click="mainMenuBtnClicked" class="tile-button bottom">Main Menu</button>
     </el-col>
     <el-col :span="1"></el-col>
     <el-col :span="2">

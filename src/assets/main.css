@@ -30,78 +30,17 @@
 } */
 .el-input {
   --el-input-text-color: var(--text-primary)!important;
-  --el-input-border: var(--el-border);
-  --el-input-hover-border: var(--el-border-color-hover);
-  --el-input-focus-border: var(--el-color-primary);
-  --el-input-transparent-border: 0 0 0 1px transparent inset;
-  --el-input-border-color: var(--el-border-color);
-  --el-input-border-radius: var(--el-border-radius-base);
-  --el-input-bg-color: var(--el-fill-color-blank);
-  --el-input-icon-color: var(--el-text-color-placeholder);
-  --el-input-placeholder-color: var(--el-text-color-placeholder);
-  --el-input-hover-border-color: var(--el-border-color-hover);
-  --el-input-clear-hover-color: var(--el-text-color-secondary);
-  --el-input-focus-border-color: var(--el-color-primary);
-  --el-input-width: 100%;
-  --el-input-height: var(--el-component-size);
-  box-sizing: border-box;
-  display: inline-flex;
-  font-size: var(--el-font-size-base);
-  line-height: var(--el-input-height);
-  position: relative;
-  vertical-align: middle;
-  width: var(--el-input-width);
 }
 
 .el-input__wrapper {
-  align-items: center;
-  background-color: var(--el-input-bg-color, var(--el-fill-color-blank));
-  background-image: none;
-  border-radius: var(--el-input-border-radius, var(--el-border-radius-base));
-  box-shadow: 0 0 0 1px var(--el-input-border-color, var(--el-border-color)) inset;
-  cursor: text;
-  display: inline-flex
-;
-  flex-grow: 1;
-  justify-content: center;
-  padding: 0px 11px;
-  transform: translateZ(0);
-  transition: var(--el-transition-box-shadow);
+  border-radius: 0px !important;
 }
 
 .el-input__inner {
-  background: none;
-  border: none;
-  box-sizing: border-box;
-  color: var(--el-input-text-color, var(--el-text-color-regular));
-  flex-grow: 1;
-  font-size: inherit;
-  height: var(--el-input-inner-height);
-  line-height: var(--el-input-inner-height);
-  outline: none;
-  padding: 0;
-  width: 100%;
+  height: 22px !important;
 }
 
-.custom-elem-variables
-{
-  --el-input-text-color: var(--el-text-color-regular);
-  --el-input-border: var(--el-border);
-  --el-input-hover-border: var(--el-border-color-hover);
-  --el-input-focus-border: var(--el-color-primary);
-  --el-input-transparent-border: 0 0 0 1px transparent inset;
-  --el-input-border-color: var(--el-border-color);
-  --el-input-border-radius: var(--el-border-radius-base);
-  --el-input-bg-color: var(--el-fill-color-blank);
-  --el-input-icon-color: var(--el-text-color-placeholder);
-  --el-input-placeholder-color: var(--el-text-color-placeholder);
-  --el-input-hover-border-color: var(--el-border-color-hover);
-  --el-input-clear-hover-color: var(--el-text-color-secondary);
-  --el-input-focus-border-color: var(--el-color-primary);
-  --el-input-width: 100%;
-  --el-input-height: var(--el-component-size);
-  --el-input-inner-height: calc(var(--el-input-height, 42px) - 0px);
-}
+
 .el-button {
   --el-button-font-weight: var(--el-font-weight-primary);
   --el-button-border-color: var(--el-border-color);
@@ -140,7 +79,11 @@
   border-radius: var(--el-border-radius-base);
 }
 
-
+.el-button:disabled{
+  cursor: not-allowed !important;
+  color: grey !important;
+  background: linear-gradient(white 8%, rgb(240, 240, 240) 48%) !important;
+}
 
 .el-button--primary {
   font-family: Arial, Helvetica, sans-serif;
@@ -150,7 +93,12 @@
   border-radius: 4px !important;
   font-weight: 700 !important;
   font-size: 14px !important;
-  width: 70px !important;
+  width: 20%;
+}
+
+.generic-button
+{
+  width: 100% !important;
 }
 
 .el-button--primary:focus {
@@ -239,7 +187,13 @@
   border-radius: 20px;
 }
 
+.el-form-item{
+  margin-bottom: 10px !important;
+}
 
+.el-form-item__content {
+  line-height: unset !important;
+}
 
 .tile-button {
   width: 100%;
