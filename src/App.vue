@@ -1,5 +1,5 @@
 <template>
-  <main class="custom-elem-variables">
+  <main>
     <RouterView />
   </main>
 </template>
