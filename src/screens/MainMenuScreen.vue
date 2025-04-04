@@ -23,8 +23,7 @@ onMounted(() => {
       callback: () => {
         localStorage.setItem('messageShow','true');
       }
-    }
-)
+    })
 })
 
 

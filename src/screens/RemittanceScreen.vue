@@ -9,7 +9,10 @@ const signOff = ()=>{
 }
 
 const generalPostingClicked = () => {
-  router.push('sbpoutwardcancel');
+  // router.push('sbpoutwardcancel');
+  // router.push('sbpoutwardauth');
+  router.push('sbpoutwardtransfer');
+
 }
 
 const mainMenuBtnClicked = () => {
