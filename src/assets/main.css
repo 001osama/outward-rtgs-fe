@@ -195,6 +195,21 @@
   line-height: unset !important;
 }
 
+.el-select__wrapper {
+  padding: 1px 12px !important;
+  border-radius: 0px !important;
+  min-height: 24px !important;
+}
+
+
+.el-select-dropdown__item {
+  color: var(--el-text-color-regular) !important;
+  font-size: var(--el-font-size-base) !important;
+  height: 30px !important;
+  line-height: 30px !important;
+}
+
+
 .tile-button {
   width: 100%;
   height: 90px;
@@ -257,6 +272,60 @@ h4{
 .text-bold-1
 {
   font-weight: 600;
+}
+
+.el-radio {
+  height: 15px !important;
+  color: var(--517ff885) !important;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  border-color: var(--bg-secondary) !important;
+  background: var(--bg-secondary) !important;
+}
+
+
+.el-radio__input.is-checked+.el-radio__label {
+  color: var(--text-primary) !important;
+}
+
+.el-checkbox__input.is-checked+.el-checkbox__label {
+  color: var(--text-primary) !important;
+}
+
+
+.el-checkbox {
+  color: var(--text-primary) !important;
+}
+
+.el-checkbox__inner {
+  border: 2px solid !important;
+  background-color: white !important;
+  border-color: rgb(116, 116, 116) !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner::after {
+  left: 3px !important;
+  top: 0 !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--bg-secondary) !important;
+}
+
+.el-textarea__inner {
+  resize: none !important;
+}
+
+.optional-field {
+  color: var(--text-optional);
+}
+
+@media screen and (min-width: 1367px) and (max-width: 1600px) {
+  fieldset {
+      padding: 5px !important;
+  }
 }
 
 

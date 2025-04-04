@@ -4,6 +4,8 @@ import AuthLayout from "../screens/AuthLayout.vue";
 import RemittanceScreen from "../screens/RemittanceScreen.vue";
 import MainMenuScreen from "../screens/MainMenuScreen.vue";
 import SBPOutwardCancel from "../screens/SBPOutwardCancelScreen.vue";
+import SBPOutwardAuth from "../screens/SBPOutwardAuthScreen.vue";
+import SBPOutwardTransfer from "../screens/SBPOutwardTransferScreen.vue";
 
 
 const routes = [
@@ -22,6 +24,14 @@ const routes = [
         {
           path: '/sbpoutwardcancel',
           component: SBPOutwardCancel
+        },
+        {
+          path: '/sbpoutwardauth',
+          component: SBPOutwardAuth
+        },
+        {
+          path: '/sbpoutwardtransfer',
+          component: SBPOutwardTransfer
         },
       ]
     },
