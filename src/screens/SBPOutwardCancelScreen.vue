@@ -3,23 +3,24 @@ import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+
 const voucherInfo = reactive({
   voucherNo: '',
   voucherYear: '2025'
 })
+
+
 const CancelBtnClicked = () => {
-  console.log('Big Response');
   router.push('remittance')
 }
-const formAlign = 'left';
-
 
 </script>
 <template>
   <el-row>
     <el-col :span="2"></el-col>
     <el-col :span="20">
-      <el-form :label-position="formAlign" label-width="auto" :model="voucherInfo">
+      <el-form :label-position="left" label-width="auto" :model="voucherInfo">
         <el-row>
           <el-col :span="8">
             <el-row>
