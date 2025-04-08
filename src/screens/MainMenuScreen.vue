@@ -1,7 +1,7 @@
 <script setup>
 // import axios  from 'axios';
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue'
+import { onMounted } from 'vue';
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter();

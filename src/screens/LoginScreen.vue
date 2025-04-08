@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-// import axios  from 'axios';
+import axios from '@/axiosInstance.js';
 
 
 const router = useRouter();
@@ -9,9 +9,9 @@ const maxLength = 4;
 const branchCode = ref('');
 const loginId = ref('');
 const password = ref('');
+const errorMessage = ref('');
 
-const submitData = async () => {
-    console.log(`the env variables are ${import.meta.env.VITE_FSM_URL}`)
+const onSubmit = async () => {
     const resultObj = {
       data:{
         branchCode: branchCode.value,
@@ -23,24 +23,31 @@ const submitData = async () => {
 
     console.log("Data is being submitted", resultObj);
 
-    // const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`, resultObj);
+    try {
+      const response = await axios.post(`/start`, resultObj);
 
-    // if(response.status == 200)
-    // {
-    //   const { data } = response;
-    //   localStorage.setItem("token", data.token);
-    //   alert("Successful response is received");
-    //   router.push('/mainMenu');
-    // }
-    // else
-    // {
-      //   alert("Invalid login attempt")
-      //   console.log(response.status)
-      // }
-
-      // console.log("response from server is",response.data);
-      // console.log("response from server is",response.status);
-      router.push('/authlayout');
+      if(response.status == 200)
+      {
+        const { data } = response;
+        if(data.success)
+        {
+          localStorage.setItem("token", data.data);
+          router.push('/authlayout');
+        }
+        else
+        {
+          errorMessage.value = data.message;
+        }
+      }
+      else
+      {
+        errorMessage.value = 'Error occurred While getting response!';
+        console.log(response.data);
+      }
+    } catch (error) {
+      errorMessage.value = 'Network Error';
+      console.error(error);
+    }
 
 }
 
@@ -71,41 +78,42 @@ const isInvalid = computed(() => {
 
 <template>
     <div class="main-container">
-        <el-row>
-            <h1 >ALHABIB BANKING SYSTEM</h1>
-        </el-row>
-        <el-row>
-            <el-col :span="1"></el-col>
-            <el-col :span="10">
-                <div class="bahl-logo-container">
-                    <img class="bahl-logo-img" src="/bahl-logo.png" alt="">
-                </div>
-            </el-col>
-            <el-col :span="2"></el-col>
-            <el-col :span="10">
-                <div class="login-form-wrapper">
-                    <div class="login-form-container">
-                        <div class="login-form">
-                            <div style="display: flex; margin-bottom: 24px; gap: 24px;">
-                                <input v-model="branchCode" @blur="insertPadding" @keydown="checkDigits" class="form-control" style="width: 25%;" type="text">
-                                <input v-model="loginId" class="form-control" style="width: 75%;" type="password">
-                            </div>
-                            <div>
-                                <input v-model="password" class="form-control" type="password">
-                            </div>
-                        </div>
-                        <div class="button-container">
-                            <div>
-                                <button :disabled="isInvalid" @click="submitData" class="primary-button">Sign In</button>
-                            </div>
-                            <div>
-                                <button class="primary-button">Exit</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </el-col>
-        </el-row>
+      <el-row>
+          <h1 >ALHABIB BANKING SYSTEM</h1>
+      </el-row>
+      <el-row>
+          <el-col :span="1"></el-col>
+          <el-col :span="10">
+              <div class="bahl-logo-container">
+                  <img class="bahl-logo-img" src="/bahl-logo.png" alt="">
+              </div>
+          </el-col>
+          <el-col :span="2"></el-col>
+          <el-col :span="10">
+            <div class="login-form-wrapper">
+              <form @submit.prevent="onSubmit" class="login-form-container">
+                  <div class="login-form">
+                      <div style="display: flex; margin-bottom: 24px; gap: 24px;">
+                          <input v-model="branchCode" @blur="insertPadding" @keydown="checkDigits" class="form-control" style="width: 25%;" type="text">
+                          <input v-model="loginId" class="form-control" style="width: 75%;" type="password">
+                      </div>
+                      <div>
+                          <input v-model="password" class="form-control" type="password">
+                      </div>
+                  </div>
+                  <div class="button-container">
+                      <div>
+                          <button :disabled="isInvalid" type="submit" class="primary-button">Sign In</button>
+                      </div>
+                      <div>
+                          <button class="primary-button">Exit</button>
+                      </div>
+                  </div>
+              </form>
+              <div class="error-message" v-if="errorMessage">{{errorMessage}}</div>
+            </div>
+          </el-col>
+      </el-row>
     </div>
 </template>
 
@@ -216,5 +224,12 @@ const isInvalid = computed(() => {
 .bahl-logo-img {
     float: right;
     width: 100%;
+}
+
+.error-message{
+  color: var(--white);
+  font-weight: bolder;
+  font-size: 2vw;
+  margin-top: 8px;
 }
 </style>

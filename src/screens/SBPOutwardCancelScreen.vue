@@ -12,7 +12,7 @@ const voucherInfo = reactive({
 
 
 const CancelBtnClicked = () => {
-  router.push('remittance')
+  router.push('remittance');
 }
 
 </script>

@@ -1,16 +1,58 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import axios from '@/axiosInstance.js';
 
 const router = useRouter();
 
-const transferType = ref('');
-const branch = ref('');
+const branchList = ref([]);
+const accNoList = ref([]);
+const currencyList = ref([]);
+const sBPTranTypeList = ref([]);
 
+onMounted(async () => {
+  try {
+      const response = await axios.post(`/start`, { transition:'FETCHLOV' });
+
+      if(response.status == 200)
+      {
+        const { data } = response;
+        if(data.success)
+        {
+          console.log("Success response is received from backend", data.data);
+          branchList.value = data.data.branchList;
+          currencyList.value = data.data.currencyList;
+          sBPTranTypeList.value = data.data.sBPTranTypeList;
+
+          console.log(data);
+        }
+      }
+      else
+      {
+        console.log(response.data);
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+
+})
+
+const rtgsForm = reactive({
+  branch: '',
+  currency: '',
+  sBPTranType:'',
+  transferType:'',
+  accNo:'',
+  custNo:'',
+  accType:''
+})
 
 const ExitBtnClicked = () => {
   router.push('remittance')
 }
+
 const branchOptionList = [
   {
     value: '0038',
@@ -21,6 +63,8 @@ const branchOptionList = [
     label: 'KARACHI MAIN - 0002',
   },
 ]
+
+
 
 </script>
 
@@ -36,8 +80,8 @@ const branchOptionList = [
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="branch" placeholder="Select Branch">
-                <el-option v-for="item in branchOptionList" :key="item.value" :label="item.label" :value="item.value" />
+              <el-select v-model="rtgsForm.branch" placeholder="Select Branch">
+                <el-option v-for="item in branchList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -52,8 +96,8 @@ const branchOptionList = [
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="branch" placeholder="Select Branch">
-                <el-option v-for="item in branchOptionList" :key="item.value" :label="item.label" :value="item.value" />
+              <el-select v-model="rtgsForm.currency" placeholder="Select Currency">
+                <el-option v-for="item in currencyList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -68,8 +112,8 @@ const branchOptionList = [
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="branch" placeholder="Select Branch">
-                <el-option v-for="item in branchOptionList" :key="item.value" :label="item.label" :value="item.value" />
+              <el-select v-model="rtgsForm.sBPTranType" placeholder="Select SBP Tran Type">
+                <el-option v-for="item in sBPTranTypeList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -82,10 +126,10 @@ const branchOptionList = [
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-radio-group v-model="transferType">
-                <el-radio value="1">102(Multiple Beneficiary)</el-radio>
-                <el-radio value="2">103(Single Beneficiary)</el-radio>
-                <el-radio value="3">202(Bank)</el-radio>
+              <el-radio-group v-model="rtgsForm.transferType">
+                <el-radio value="102">102(Multiple Beneficiary)</el-radio>
+                <el-radio value="103">103(Single Beneficiary)</el-radio>
+                <el-radio value="202">202(Bank)</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -105,7 +149,7 @@ const branchOptionList = [
         </el-col>
         <el-col :span="2">
           <el-form-item>
-            <el-input />
+            <el-input v-model="rtgsForm.custNo"/>
           </el-form-item>
         </el-col>
         <el-col :span="3">
@@ -115,8 +159,8 @@ const branchOptionList = [
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-select v-model="branch" placeholder="Select Branch">
-              <el-option v-for="item in branchOptionList" :key="item.value" :label="item.label" :value="item.value" />
+            <el-select v-model="rtgsForm.accNo" placeholder="Select A/C">
+              <el-option v-for="item in accNoList" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
         </el-col>
@@ -129,7 +173,7 @@ const branchOptionList = [
         </el-col>
         <el-col :span="16">
           <el-form-item>
-            <el-input />
+            <el-input v-model="rtgsForm.accType"/>
           </el-form-item>
         </el-col>
       </el-row>
