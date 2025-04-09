@@ -10,61 +10,113 @@ const branchList = ref([]);
 const accNoList = ref([]);
 const currencyList = ref([]);
 const sBPTranTypeList = ref([]);
+const purposeOfPaymentList = ref([]);
 
 onMounted(async () => {
   try {
-      const response = await axios.post(`/start`, { transition:'FETCHLOV' });
+    const response = await axios.post(`/start`, { transition:'FETCHLOV' });
 
-      if(response.status == 200)
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
       {
-        const { data } = response;
-        if(data.success)
-        {
-          console.log("Success response is received from backend", data.data);
-          branchList.value = data.data.branchList;
-          currencyList.value = data.data.currencyList;
-          sBPTranTypeList.value = data.data.sBPTranTypeList;
+        console.log("Success response is received from backend", data.data);
+        branchList.value = data.data.branchList;
+        currencyList.value = data.data.currencyList;
+        sBPTranTypeList.value = data.data.sBPTranTypeList;
+        purposeOfPaymentList.value = data.data.purposeOfPaymentList;
 
-          console.log(data);
-        }
-      }
-      else
-      {
-        console.log(response.data);
+        console.log(data);
       }
     }
-    catch (error) {
-      console.error(error);
+    else
+    {
+      console.log(response.data);
     }
+  }
+  catch (error) {
+    console.error(error);
+  }
 
 })
+
+const checkDigits = (event) => {
+    if (event.key.length === 1 && isNaN(Number(event.key)) )
+    {
+        event.preventDefault();
+    }
+}
 
 const rtgsForm = reactive({
   branch: '',
   currency: '',
   sBPTranType:'',
   transferType:'',
-  accNo:'',
   custNo:'',
-  accType:''
+  accNo:'',
+  accType:'',
+  accName:'',
+  availableBalance:'',
+  iBAN:'',
+  purposeOfPayment:'',
+  paymentMode:'instruction',
 })
 
 const ExitBtnClicked = () => {
   router.push('remittance')
 }
 
-const branchOptionList = [
-  {
-    value: '0038',
-    label: 'KASUR BRANCH - 0038',
-  },
-  {
-    value: '0002',
-    label: 'KARACHI MAIN - 0002',
-  },
-]
+const getCustAccounts = async () => {
 
+  try {
+    const response = await axios.post(`/start`, { transition:'FETCHCUSTACCOUNTS', data:{ customerNo: rtgsForm.custNo } });
 
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("Success response is received from backend", data.data);
+        accNoList.value = data.data;
+        console.log(data);
+      }
+    }
+    else
+    {
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+const getAccountDetails = async () => {
+  try {
+    const response = await axios.post(`/start`, { transition:'FETCHACCOUNTDETAILS', data:{ accountNo: rtgsForm.accNo } });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("Success response is received from backend", data.data);
+        rtgsForm.accType = data.data.accountType;
+        rtgsForm.accName = data.data.accountName;
+        rtgsForm.availableBalance = data.data.availableBalance;
+        rtgsForm.iBAN = data.data.iban;
+      }
+    }
+    else
+    {
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
 
 </script>
 
@@ -149,7 +201,7 @@ const branchOptionList = [
         </el-col>
         <el-col :span="2">
           <el-form-item>
-            <el-input v-model="rtgsForm.custNo"/>
+            <el-input v-model="rtgsForm.custNo" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
           </el-form-item>
         </el-col>
         <el-col :span="3">
@@ -159,8 +211,8 @@ const branchOptionList = [
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-select v-model="rtgsForm.accNo" placeholder="Select A/C">
-              <el-option v-for="item in accNoList" :key="item.value" :label="item.label" :value="item.value" />
+            <el-select v-model="rtgsForm.accNo" @change="getAccountDetails" placeholder="Select A/C">
+              <el-option v-for="item in accNoList" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
         </el-col>
@@ -173,7 +225,7 @@ const branchOptionList = [
         </el-col>
         <el-col :span="16">
           <el-form-item>
-            <el-input v-model="rtgsForm.accType"/>
+            <el-input v-model="rtgsForm.accType" disabled/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -185,7 +237,7 @@ const branchOptionList = [
         </el-col>
         <el-col :span="16">
           <el-form-item>
-            <el-input />
+            <el-input v-model="rtgsForm.iBAN" disabled/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -197,7 +249,7 @@ const branchOptionList = [
         </el-col>
         <el-col :span="16">
           <el-form-item>
-            <el-input />
+            <el-input v-model="rtgsForm.accName" disabled/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -209,7 +261,7 @@ const branchOptionList = [
         </el-col>
         <el-col :span="8">
           <el-form-item>
-            <el-input />
+            <el-input v-model="rtgsForm.availableBalance" disabled/>
           </el-form-item>
         </el-col>
         <el-col :span="2">
@@ -233,16 +285,16 @@ const branchOptionList = [
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-radio-group>
-              <el-radio value="1">Instruction</el-radio>
-              <el-radio value="2">Cheque</el-radio>
+            <el-radio-group v-model="rtgsForm.paymentMode">
+              <el-radio value="instruction">Instruction</el-radio>
+              <!-- <el-radio value="2">Cheque</el-radio> -->
             </el-radio-group>
           </el-form-item>
         </el-col>
 
         <el-col :span="1"></el-col>
 
-        <el-col :span="2">
+        <!-- <el-col :span="2">
           <el-form-item>
             <span>Cheque#</span>
           </el-form-item>
@@ -262,7 +314,7 @@ const branchOptionList = [
           <el-form-item>
             <el-input />
           </el-form-item>
-        </el-col>
+        </el-col> -->
       </el-row>
     </fieldset>
     <fieldset>
@@ -377,8 +429,8 @@ const branchOptionList = [
         </el-col>
         <el-col :span="15">
           <el-form-item>
-            <el-select v-model="branch" placeholder="Select Branch">
-              <el-option v-for="item in branchOptionList" :key="item.value" :label="item.label" :value="item.value" />
+            <el-select v-model="rtgsForm.purposeOfPayment" placeholder="Select Purpose of Payment">
+              <el-option v-for="item in purposeOfPaymentList" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
         </el-col>
