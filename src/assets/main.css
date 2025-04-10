@@ -32,12 +32,31 @@
   --el-input-text-color: var(--text-primary)!important;
 }
 
+
+
+/* Temporary for the time being makes color darker of text input */
+.el-input.is-disabled .el-input__inner {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  cursor: not-allowed;
+}
+
+.el-select__placeholder {
+  color: var(--text-primary) !important;
+}
+
+
+
 .el-input__wrapper {
   border-radius: 0px !important;
 }
 
 .el-input__inner {
   height: 22px !important;
+}
+
+.el-select__placeholder {
+  color: var(--text-primary);
 }
 
 
@@ -203,7 +222,7 @@
 
 
 .el-select-dropdown__item {
-  color: var(--el-text-color-regular) !important;
+  color: var(--text-primary) !important;
   font-size: var(--el-font-size-base) !important;
   height: 30px !important;
   line-height: 30px !important;

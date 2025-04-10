@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import axios from '@/axiosInstance.js';
@@ -11,6 +11,7 @@ const accNoList = ref([]);
 const currencyList = ref([]);
 const sBPTranTypeList = ref([]);
 const purposeOfPaymentList = ref([]);
+let previousCustomerNo = '';
 
 onMounted(async () => {
   try {
@@ -38,8 +39,9 @@ onMounted(async () => {
   catch (error) {
     console.error(error);
   }
-
 })
+
+const isAccNoListEmpty = computed(() => accNoList.value.length === 0);
 
 const checkDigits = (event) => {
     if (event.key.length === 1 && isNaN(Number(event.key)) )
@@ -61,6 +63,7 @@ const rtgsForm = reactive({
   iBAN:'',
   purposeOfPayment:'',
   paymentMode:'instruction',
+  benefAmout:'',
 })
 
 const ExitBtnClicked = () => {
@@ -68,8 +71,11 @@ const ExitBtnClicked = () => {
 }
 
 const getCustAccounts = async () => {
+    if(rtgsForm.custNo.length < 6 || previousCustomerNo == rtgsForm.custNo)
+    return;
 
-  try {
+
+    try {
     const response = await axios.post(`/start`, { transition:'FETCHCUSTACCOUNTS', data:{ customerNo: rtgsForm.custNo } });
 
     if(response.status == 200)
@@ -80,7 +86,9 @@ const getCustAccounts = async () => {
         console.log("Success response is received from backend", data.data);
         accNoList.value = data.data;
         console.log(data);
+        previousCustomerNo = rtgsForm.custNo
       }
+      else accNoList.value = [];
     }
     else
     {
@@ -211,7 +219,7 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-select v-model="rtgsForm.accNo" @change="getAccountDetails" placeholder="Select A/C">
+            <el-select v-model="rtgsForm.accNo" :disabled="isAccNoListEmpty" @change="getAccountDetails" placeholder="Select A/C">
               <el-option v-for="item in accNoList" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
@@ -271,7 +279,7 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="9">
           <el-form-item>
-            <el-input />
+            <el-input v-model="rtgsForm.benefAmout"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -501,3 +509,15 @@ const getAccountDetails = async () => {
     </fieldset>
   </el-form>
 </template>
+<style scoped>
+.el-select:has(.el-select__wrapper.is-disabled) {
+  cursor: not-allowed;
+}
+
+
+
+.el-input__inner:disabled{
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+}
+</style>
