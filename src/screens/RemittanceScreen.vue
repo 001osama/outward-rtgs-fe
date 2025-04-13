@@ -1,18 +1,11 @@
 <script setup>
 import { useRouter } from 'vue-router';
-
+import showMenu from '@/menuButton';
 
 const router = useRouter();
 
 const signOff = ()=>{
   router.push('/');
-}
-
-const generalPostingClicked = () => {
-  // router.push('sbpoutwardcancel');
-  // router.push('sbpoutwardauth');
-  router.push('sbpoutwardtransfer');
-
 }
 
 const mainMenuBtnClicked = () => {
@@ -31,37 +24,37 @@ const mainMenuBtnClicked = () => {
   <el-col :span="5">
     <h4>BANKERS CHEQUE</h4>
     <div class="thin-button-container">
-      <button class="tile-button thin">Request</button>
-      <button class="tile-button thin">Issue</button>
-      <button class="tile-button thin">Print</button>
-      <button class="tile-button thin">Process For Payment</button>
-      <button class="tile-button thin">Caution Payment Request</button>
-      <button class="tile-button thin">Revalidate / Review</button>
-      <button class="tile-button thin">Inquiry</button>
+      <button class="tile-button thin" disabled>Request</button>
+      <button class="tile-button thin" disabled>Issue</button>
+      <button class="tile-button thin" disabled>Print</button>
+      <button class="tile-button thin" disabled>Process For Payment</button>
+      <button class="tile-button thin" disabled>Caution Payment Request</button>
+      <button class="tile-button thin" disabled>Revalidate / Review</button>
+      <button class="tile-button thin" disabled>Inquiry</button>
     </div>
   </el-col>
   <el-col :span="3"></el-col>
   <el-col :span="5">
     <h4>PAY ORDER</h4>
     <div class="thin-button-container">
-      <button class="tile-button thin">Issue</button>
-      <button class="tile-button thin">Print</button>
-      <button class="tile-button thin">Process for Payment</button>
-      <button class="tile-button thin">Caution Payment Request</button>
-      <button class="tile-button thin">Cancel</button>
-      <button class="tile-button thin">Revalidate</button>
+      <button class="tile-button thin" disabled>Issue</button>
+      <button class="tile-button thin" disabled>Print</button>
+      <button class="tile-button thin" disabled>Process for Payment</button>
+      <button class="tile-button thin" disabled>Caution Payment Request</button>
+      <button class="tile-button thin" disabled>Cancel</button>
+      <button class="tile-button thin" disabled>Revalidate</button>
     </div>
   </el-col>
   <el-col :span="3"></el-col>
   <el-col :span="5">
     <h4>DEMAND DRAFT</h4>
     <div class="thin-button-container">
-      <button class="tile-button thin">Issue</button>
-      <button class="tile-button thin">Print</button>
-      <button class="tile-button thin">Process for Payment</button>
-      <button class="tile-button thin">Caution Payment Request</button>
-      <button class="tile-button thin">Cancel</button>
-      <button class="tile-button thin">Renew</button>
+      <button class="tile-button thin" disabled>Issue</button>
+      <button class="tile-button thin" disabled>Print</button>
+      <button class="tile-button thin" disabled>Process for Payment</button>
+      <button class="tile-button thin" disabled>Caution Payment Request</button>
+      <button class="tile-button thin" disabled>Cancel</button>
+      <button class="tile-button thin" disabled>Renew</button>
     </div>
   </el-col>
   <el-col :span="2"></el-col>
@@ -77,30 +70,48 @@ const mainMenuBtnClicked = () => {
     padding-bottom: 40px;
     gap: 15px;"
     >
-      <button @click="generalPostingClicked" class="tile-button thin">General Posting</button>
-      <button class="tile-button thin">General Inquiry</button>
+
+    <div class="menu-wrapper">
+      <button @click="showMenu($event)" class="tile-button thin menu-button">General Posting</button>
+      <ul class="menu-list">
+        <li class="menu-item"><button>Transfer Funds</button></li>
+        <li class="menu-item"><button>Cancel Transaction</button></li>
+        <li class="menu-item has-nested-menu">
+          <button>SBP Outward</button>
+          <ul class="menu-list">
+            <li class="menu-item"><button @click="router.push('/sbpoutwardtransfer')">Transfer</button></li>
+            <li class="menu-item"><button @click="router.push('/sbpoutwardcancel')">Cancel</button></li>
+            <li class="menu-item"><button @click="router.push('/sbpoutwardauth')">Authorize</button></li>
+          </ul>
+        </li>
+        <li class="menu-item">
+          <button>SBP Inward</button>
+        </li>
+      </ul>
+    </div>
+    <button class="tile-button thin" disabled>General Inquiry</button>
     </div>
     </el-col>
   <el-col :span="5"></el-col>
   <el-col :span="5">
     <h4>CALL DEPOSIT RECEIPT</h4>
     <div class="thin-button-container">
-      <button class="tile-button thin">Issue</button>
-      <button class="tile-button thin">Print</button>
-      <button class="tile-button thin">Process for Payment</button>
-      <button class="tile-button thin">Caution Payment Request</button>
-      <button class="tile-button thin">Cancel</button>
-      <button class="tile-button thin">Revalidate</button>
+      <button class="tile-button thin" disabled>Issue</button>
+      <button class="tile-button thin" disabled>Print</button>
+      <button class="tile-button thin" disabled>Process for Payment</button>
+      <button class="tile-button thin" disabled>Caution Payment Request</button>
+      <button class="tile-button thin" disabled>Cancel</button>
+      <button class="tile-button thin" disabled>Revalidate</button>
     </div>
   </el-col>
   <el-col :span="3"></el-col>
   <el-col :span="5">
     <h4>INQUIRY</h4>
     <div class="thin-button-container">
-      <button class="tile-button thin">Inflight</button>
-      <button class="tile-button thin">Issued</button>
-      <button class="tile-button thin">Outstanding</button>
-      <button class="tile-button thin">Paid</button>
+      <button class="tile-button thin" disabled>Inflight</button>
+      <button class="tile-button thin" disabled>Issued</button>
+      <button class="tile-button thin" disabled>Outstanding</button>
+      <button class="tile-button thin" disabled>Paid</button>
     </div>
   </el-col>
   <el-col :span="2"></el-col>
@@ -108,11 +119,11 @@ const mainMenuBtnClicked = () => {
 <div style="margin-top: 15px;">
   <el-row>
     <el-col :span="2">
-      <button class="tile-button bottom">Profile</button>
+      <button class="tile-button bottom" disabled>Profile</button>
     </el-col>
     <el-col :span="1"></el-col>
     <el-col :span="3">
-      <button class="tile-button bottom">Change Password</button>
+      <button class="tile-button bottom" disabled>Change Password</button>
     </el-col>
     <el-col :span="1"></el-col>
     <el-col :span="2">
@@ -128,7 +139,7 @@ const mainMenuBtnClicked = () => {
     </el-col>
     <el-col :span="1"></el-col>
     <el-col :span="2">
-      <button class="tile-button bottom">Help</button>
+      <button class="tile-button bottom" disabled>Help</button>
     </el-col>
     <el-col :span="1"></el-col>
     <el-col :span="2">
