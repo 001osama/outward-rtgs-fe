@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from '@/axiosInstance.js';
 
@@ -10,6 +10,12 @@ const branchCode = ref('');
 const loginId = ref('');
 const password = ref('');
 const errorMessage = ref('');
+
+let isAuthenticated = localStorage.getItem('token');
+
+onMounted(()=>{
+    if(isAuthenticated) router.push('/authlayout')
+  })
 
 const onSubmit = async () => {
     const resultObj = {
