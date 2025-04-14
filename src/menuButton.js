@@ -5,10 +5,13 @@ const showMenu = ($event) => {
     const isOpen = menuList.style.display === 'block'
     menuList.style.display = isOpen ? '' : 'block'
 
+    menuButton.classList.contains('menu-opened') ? menuButton.classList.remove('menu-opened') : menuButton.classList.add('menu-opened')
+
     if (!isOpen) {
       const handleOutsideClick = (e) => {
         if (!menuList.contains(e.target) && !menuButton.contains(e.target)) {
           menuList.style.display = ''
+          menuButton.classList.remove('menu-opened')
           document.removeEventListener('pointerdown', handleOutsideClick)
         }
       }

@@ -322,23 +322,60 @@ h4 {
   color: var(--text-optional);
 }
 
+.el-textarea__inner {
+  -webkit-appearance: none;
+  color: var(--text-primary) !important;
+}
+
 @media screen and (min-width: 1367px) and (max-width: 1600px) {
   fieldset {
     padding: 5px !important;
   }
 }
 
+
+.menu-opened{
+  background-color: #006363 !important;
+  color: #fff !important;
+}
 .menu-list {
   list-style: none;
   padding: 0px;
   position: absolute;
   z-index: 2;
   display: none;
+  border: 1px solid #000;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 2px 4px 6px hsla(0, 0%, 100%, .5), -2px -2px 6px hsla(0, 0%, 100%, .5);
 }
 
 .menu-item {
   position: relative;
   min-width: 200px;
+  background: #00bc94;
+}
+
+.menu-item > button {
+  text-align: start !important;
+  outline: none;
+  border: 1px grey solid;
+  background: transparent;
+  padding-left: 10%;
+}
+
+.menu-item:hover {
+  background: #1b7732;
+}
+.menu-item:hover > button {
+  color: white;
+}
+
+
+.menu-item > button:active {
+  background-color: #1b7732 !important;
+  border: 1px grey solid!important;
+  color: white !important;
 }
 
 .menu-list .menu-item button {
@@ -354,11 +391,13 @@ h4 {
   position: relative;
 }
 .has-nested-menu > button::after {
-  content: '\2BC8';
+  content: '\25B6';
   position: absolute;
-  top: -2px;
-  right: 2px;
+  top: -1px;
+  right: 3px;
+  font-family: "Noto Sans", "Arial Unicode MS"
 }
+
 
 .has-nested-menu:hover > button::after {
   transform: rotate(180deg);

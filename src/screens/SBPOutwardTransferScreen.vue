@@ -5,13 +5,52 @@ import { onMounted } from 'vue';
 import axios from '@/axiosInstance.js';
 
 const router = useRouter();
-
 const branchList = ref([]);
 const accNoList = ref([]);
 const currencyList = ref([]);
 const sBPTranTypeList = ref([]);
 const purposeOfPaymentList = ref([]);
+
+
+const selectedTransactionLax = ref();
+
 let previousCustomerNo = '';
+
+
+// States for BenefList Modal commented and segregated because have to change it into a separate page
+const dialogTableVisible = ref(false);
+const benefBankList = ref([]);
+
+
+// const currentRow = ref();
+const benefBankListTableRef = ref(null);
+
+// const setCurrent = (row) => {
+//   if (benefBankListTableRef.value && typeof benefBankListTableRef.value.setCurrentRow === 'function') {
+//     benefBankListTableRef.value.setCurrentRow(row);
+//   }
+// };
+
+const handleCurrentChange = (val) => {
+  console.log(`Handle current change is working`,val);
+  if(val && val.value)
+  {
+    transactionLaxForm.beneficiaryBankName = val.label;
+    transactionLaxForm.beneficiaryBankCode = val.value;
+  }
+  else console.error('Handle current change is not giving values')
+};
+
+const handleTransactionLaxSelectedChange = (val) => {
+  console.log(`Handle transaction current change is working`,val);
+  if(val && val.value)
+  {
+    selectedTransactionLax.value = val.benefIbanOrAccountNo;
+  }
+  else console.error('Handle current change is not giving values');
+};
+
+
 
 onMounted(async () => {
   try {
@@ -41,7 +80,9 @@ onMounted(async () => {
   }
 })
 
-const isAccNoListEmpty = computed(() => accNoList.value.length === 0);
+// const isAccNoListEmpty = computed(() => accNoList.value.length === 0);
+const isBankTransferType = computed(() => rtgsForm.transferType === '202');
+
 
 const checkDigits = (event) => {
     if (event.key.length === 1 && isNaN(Number(event.key)) )
@@ -54,7 +95,7 @@ const rtgsForm = reactive({
   branch: '',
   currency: '',
   sBPTranType:'',
-  transferType:'',
+  transferType:'103',
   custNo:'',
   accNo:'',
   accType:'',
@@ -64,8 +105,21 @@ const rtgsForm = reactive({
   purposeOfPayment:'',
   paymentMode:'instruction',
   benefAmout:'',
+  isCustAcc:false,
+  transactionLaxList:[],
+  remarks:'',
+  senderToReceiverInformation:'',
 })
 
+
+const transactionLaxForm = reactive({
+  transactionAmount: '',
+  beneficiaryBankName:'',
+  beneficiaryBankCode:'',
+  benefAccountName:'',
+  benefIbanOrAccountNo:'',
+  beneficiaryAddress:''
+})
 const ExitBtnClicked = () => {
   router.push('remittance')
 }
@@ -124,6 +178,115 @@ const getAccountDetails = async () => {
   catch (error) {
     console.error(error);
   }
+}
+
+const getBenefBankList = async () => {
+  try {
+    const response = await axios.post(`/start`, { transition:'FETCHBENEFBANKLIST', });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("Success response is received from backend", data.data);
+        benefBankList.value = data.data;
+      }
+    }
+    else
+    {
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    benefBankList.value = [];
+    console.error(error);
+  }
+}
+
+const getBenefBankDetails = async () => {
+  try {
+    const response = await axios.post(`/start`, { transition:'FETCHBENEFACCDETAILS', data:{ accountNoOrIban: transactionLaxForm.benefIbanOrAccountNo } });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("Success response is received from backend", data.data);
+        transactionLaxForm.benefAccountName = data.data.accountTitle;
+        transactionLaxForm.benefBranchCode = data.data.beneficiaryBranchCd;
+      }
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+const submitRtgsForm = async () => {
+  try {
+    const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS', data:{ rtgsForm: rtgsForm} });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("Success response is received from backend", data.data);
+        transactionLaxForm.benefAccountName = data.data.accountTitle;
+        transactionLaxForm.benefBranchCode = data.data.beneficiaryBranchCd;
+      }
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+
+
+const insertTransactionLax = () => {
+
+  if(transactionLaxForm.transactionAmount !== '' &&
+    transactionLaxForm.beneficiaryBankName !== '' &&
+    transactionLaxForm.beneficiaryBankCode !== '' &&
+    transactionLaxForm.benefBranchCode !== '' &&
+    transactionLaxForm.benefAccountName !== '' &&
+    transactionLaxForm.beneficiaryAddress  !== '' &&
+    transactionLaxForm.benefIbanOrAccountNo !== '')
+
+    {
+      rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
+
+      transactionLaxForm.transactionAmount = '';
+      transactionLaxForm.beneficiaryBankName = '';
+      transactionLaxForm.beneficiaryBankCode = '';
+      transactionLaxForm.benefAccountName = '';
+      transactionLaxForm.benefIbanOrAccountNo = '';
+      transactionLaxForm.beneficiaryAddress = '';
+      transactionLaxForm.benefBranchCode = '';
+    }
+
+}
+
+const removeTransactionLax = ()=> {
+  if(selectedTransactionLax.value !== '')
+  {
+    rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item)=>item.benefIbanOrAccountNo === selectedTransactionLax.value)
+    selectedTransactionLax.value = '';
+  }
+
 }
 
 </script>
@@ -195,7 +358,7 @@ const getAccountDetails = async () => {
           </el-col>
           <el-col :span="2"></el-col>
           <el-col :span="5">
-            <el-checkbox label="Customer Acc."/>
+            <el-checkbox v-if="isBankTransferType" v-model="rtgsForm.isCustAcc" label="Customer Acc."/>
           </el-col>
         </el-row>
       </fieldset>
@@ -209,17 +372,17 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="2">
           <el-form-item>
-            <el-input v-model="rtgsForm.custNo" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
+            <el-input v-model="rtgsForm.custNo" :disabled="!rtgsForm.isCustAcc" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
           </el-form-item>
         </el-col>
         <el-col :span="3">
           <el-form-item>
-            <span>A/C No.</span>
+            <span>{{rtgsForm.isCustAcc ? 'A/C No.' : 'GL A/C No.'}}</span>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-select v-model="rtgsForm.accNo" :disabled="isAccNoListEmpty" @change="getAccountDetails" placeholder="Select A/C">
+            <el-select v-model="rtgsForm.accNo"  @change="getAccountDetails" placeholder="Select A/C">
               <el-option v-for="item in accNoList" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
@@ -252,12 +415,12 @@ const getAccountDetails = async () => {
       <el-row>
         <el-col :span="4">
           <el-form-item>
-            <span>A/C Name</span>
+            <span>{{rtgsForm.isCustAcc ? 'A/C Name' : 'GL A/C Name'}}</span>
           </el-form-item>
         </el-col>
         <el-col :span="16">
           <el-form-item>
-            <el-input v-model="rtgsForm.accName" disabled/>
+            <el-input  v-model="rtgsForm.accName" disabled/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -295,7 +458,7 @@ const getAccountDetails = async () => {
           <el-form-item>
             <el-radio-group v-model="rtgsForm.paymentMode">
               <el-radio value="instruction">Instruction</el-radio>
-              <!-- <el-radio value="2">Cheque</el-radio> -->
+              <!-- <el-radio value="2" :disabled="rtgsForm.isCustAcc">Cheque</el-radio> -->
             </el-radio-group>
           </el-form-item>
         </el-col>
@@ -309,7 +472,7 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-input />
+            <el-input  :disabled="rtgsForm.isCustAcc"/>
           </el-form-item>
         </el-col>
 
@@ -334,7 +497,7 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="7">
           <el-form-item>
-            <el-input />
+            <el-input v-model="transactionLaxForm.transactionAmount"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -346,12 +509,12 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input />
+            <el-input v-model="transactionLaxForm.beneficiaryBankName" disabled/>
           </el-form-item>
         </el-col>
         <el-col :span="1"></el-col>
         <el-col :span="2">
-          <el-button class="generic-button" type="primary">List</el-button>
+          <el-button class="generic-button" @click="dialogTableVisible = true" type="primary">List</el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -362,12 +525,12 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input />
+            <el-input v-model="transactionLaxForm.benefIbanOrAccountNo"/>
           </el-form-item>
         </el-col>
         <el-col :span="1"></el-col>
         <el-col :span="2">
-          <el-button class="generic-button" type="primary">Fetch</el-button>
+          <el-button class="generic-button" @click="getBenefBankDetails" type="primary">Fetch</el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -378,7 +541,7 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input />
+            <el-input v-model="transactionLaxForm.benefAccountName" disabled/>
           </el-form-item>
         </el-col>
         <el-col :span="1"></el-col>
@@ -391,7 +554,7 @@ const getAccountDetails = async () => {
             </el-col>
             <el-col :span="12">
               <el-form-item>
-                <el-input />
+                <el-input v-model="transactionLaxForm.benefBranchCode" disabled/>
               </el-form-item>
             </el-col>
           </el-row>
@@ -405,28 +568,28 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input :autosize=false type="textarea" :rows="2"/>
+            <el-input v-model="transactionLaxForm.beneficiaryAddress" :autosize=false type="textarea" :rows="2"/>
           </el-form-item>
         </el-col>
       </el-row>
     </fieldset>
     <div>
-      <el-table highlight-current-row style="width: 100%" max-height="250">
-        <el-table-column property="TransactionAmount" label="Transaction Amount" width="200" />
-        <el-table-column property="Amount" label="Beneficiary IBAN/AC #" width="180" />
-        <el-table-column property="PostBy" label="Account Name" />
-        <el-table-column property="PostDate" label="Beneficiary Bank Name" />
-        <el-table-column property="VoucherNo" label="Beneficiary Address" />
+      <el-table :data="rtgsForm.transactionLaxList" @current-change="handleTransactionLaxSelectedChange" highlight-current-row  style="width: 100%" height="120" max-height="250">
+        <el-table-column property="transactionAmount" label="Transaction Amount" width="200" />
+        <el-table-column property="benefIbanOrAccountNo" label="Beneficiary IBAN/AC #" width="180" />
+        <el-table-column property="benefAccountName" label="Account Name" />
+        <el-table-column property="beneficiaryBankName" label="Beneficiary Bank Name" />
+        <el-table-column property="beneficiaryAddress" label="Beneficiary Address" />
       </el-table>
     </div>
     <fieldset>
       <el-row gutter="1">
         <el-col :span="17"></el-col>
         <el-col :span="3" style="margin-right: 8px;">
-          <el-button class="generic-button" type="primary">Remove</el-button>
+          <el-button class="generic-button" @click="removeTransactionLax" type="primary">Remove</el-button>
         </el-col>
         <el-col :span="3">
-          <el-button class="generic-button" type="primary">Add</el-button>
+          <el-button class="generic-button" @click="insertTransactionLax" type="primary">Add</el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -451,7 +614,7 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="15">
           <el-form-item>
-            <el-input :autosize=false type="textarea" :rows="2"/>
+            <el-input v-model="rtgsForm.remarks" :autosize=false type="textarea" :rows="2"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -463,7 +626,7 @@ const getAccountDetails = async () => {
         </el-col>
         <el-col :span="15">
           <el-form-item>
-            <el-input :autosize=false type="textarea" :rows="2"/>
+            <el-input v-model="rtgsForm.senderToReceiverInformation" :autosize=false type="textarea" :rows="2"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -471,7 +634,7 @@ const getAccountDetails = async () => {
     <h4>Charges:</h4>
     <el-row>
       <el-col :span="21">
-        <el-table highlight-current-row style="width: 100%" max-height="250">
+        <el-table highlight-current-row  style="width: 100%" height="110" max-height="250">
           <el-table-column property="tranDesc" label="Tran Description" width="200" />
           <el-table-column property="glAccount" label="GL Account" width="180" />
           <el-table-column property="trancd" label="Trancd" />
@@ -479,7 +642,7 @@ const getAccountDetails = async () => {
         </el-table>
       </el-col>
       <el-col :span="3">
-        <el-row gutter="2">
+        <el-row style="gap: 6px;padding: 0px 6px;">
           <el-col>
             <el-button class="generic-button" type="primary">Add Charges</el-button>
           </el-col>
@@ -495,7 +658,7 @@ const getAccountDetails = async () => {
     <fieldset>
       <el-row>
         <el-col :span="3">
-          <el-button class="generic-button" type="primary">OK</el-button>
+          <el-button class="generic-button" @click="submitRtgsForm" type="primary">OK</el-button>
         </el-col>
         <el-col :span="1"></el-col>
         <el-col :span="3">
@@ -508,6 +671,42 @@ const getAccountDetails = async () => {
       </el-row>
     </fieldset>
   </el-form>
+  <el-dialog
+    v-model="dialogTableVisible"
+    :show-close="false"
+    title="Select Beneficiary Bank"
+
+    :before-close ="
+      (doneFn) => {
+        console.log('before-close'), doneFn()
+      }"
+    @open="getBenefBankList"
+    @open-auto-focus="console.log('open-auto-focus')"
+    @opened="console.log('opened')"
+    @close="console.log('close')"
+    @close-auto-focus="console.log('close-auto-focus')"
+    @closed="console.log('closed')"
+    width="1000"
+    >
+    <el-table
+      :data="benefBankList"
+      ref="benefBankListTableRef"
+      highlight-current-row
+      style="width: 100%"
+      @current-change="handleCurrentChange"
+      >
+      <el-table-column property="label"/>
+    </el-table>
+    <el-row style="margin-top: 20px;">
+      <el-col :span="20"></el-col>
+      <el-col :span="2">
+        <el-button @click="dialogTableVisible = false" class="generic-button" type="primary">Select</el-button>
+      </el-col>
+      <el-col :span="2">
+        <el-button @click="dialogTableVisible = false" class="generic-button" type="primary">Cancel</el-button>
+      </el-col>
+    </el-row>
+  </el-dialog>
 </template>
 <style scoped>
 .el-select:has(.el-select__wrapper.is-disabled) {
