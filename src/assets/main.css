@@ -364,6 +364,12 @@ h4 {
   padding-left: 10%;
 }
 
+.menu-item > button:disabled {
+  cursor: not-allowed;
+  background-color: #4a8a81 !important;
+  color: #3a3a3a !important;
+}
+
 .menu-item:hover {
   background: #1b7732;
 }

@@ -74,8 +74,8 @@ const mainMenuBtnClicked = () => {
     <div class="menu-wrapper">
       <button @click="showMenu($event)" class="tile-button thin menu-button">General Posting</button>
       <ul class="menu-list">
-        <li class="menu-item"><button>Transfer Funds</button></li>
-        <li class="menu-item"><button>Cancel Transaction</button></li>
+        <li class="menu-item"><button disabled>Transfer Funds</button></li>
+        <li class="menu-item"><button disabled>Cancel Transaction</button></li>
         <li class="menu-item has-nested-menu">
           <button>SBP Outward</button>
           <ul class="menu-list">
@@ -85,7 +85,7 @@ const mainMenuBtnClicked = () => {
           </ul>
         </li>
         <li class="menu-item">
-          <button>SBP Inward</button>
+          <button disabled>SBP Inward</button>
         </li>
       </ul>
     </div>
