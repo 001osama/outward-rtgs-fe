@@ -45,7 +45,7 @@ const handleTransactionLaxSelectedChange = (val) => {
   console.log(`Handle transaction current change is working`,val);
   if(val && val.value)
   {
-    selectedTransactionLax.value = val.benefIbanOrAccountNo;
+    selectedTransactionLax.value = val.beneficiaryIbanOrAccountNo;
   }
   else console.error('Handle current change is not giving values');
 };
@@ -81,7 +81,7 @@ onMounted(async () => {
 })
 
 // const isAccNoListEmpty = computed(() => accNoList.value.length === 0);
-const isBankTransferType = computed(() => rtgsForm.transferType === '202');
+const isBankTransferType = computed(() => rtgsForm.transferTypeCode === '202');
 
 
 const checkDigits = (event) => {
@@ -92,45 +92,46 @@ const checkDigits = (event) => {
 }
 
 const rtgsForm = reactive({
-  branch: '',
-  currency: '',
-  sBPTranType:'',
-  transferType:'103',
-  custNo:'',
-  accNo:'',
-  accType:'',
-  accName:'',
-  availableBalance:'',
-  iBAN:'',
-  purposeOfPayment:'',
-  paymentMode:'instruction',
-  benefAmout:'',
+  branchCode: '',
+  currencyCode: '',
+  sbpTranTypeCode:'',
+  transferTypeCode:'103',
   isCustAcc:false,
+  customerNo:'',
+  accountNo:'',
+  accountType:'',
+  iBAN:'',
+  accountName:'',
+  availableBalance:'',
+  beneficiaryAmount:'',
+  paymentMode:'instruction',
   transactionLaxList:[],
+  purposeOfPaymentCode:'',
   remarks:'',
   senderToReceiverInformation:'',
-})
+});
 
 
 const transactionLaxForm = reactive({
   transactionAmount: '',
   beneficiaryBankName:'',
   beneficiaryBankCode:'',
-  benefAccountName:'',
-  benefIbanOrAccountNo:'',
+  beneficiaryAccountName:'',
+  beneficiaryIbanOrAccountNo:'',
   beneficiaryAddress:''
-})
+});
+
 const ExitBtnClicked = () => {
-  router.push('remittance')
+  router.push('remittance');
 }
 
 const getCustAccounts = async () => {
-    if(rtgsForm.custNo.length < 6 || previousCustomerNo == rtgsForm.custNo)
+    if(rtgsForm.customerNo.length < 6 || previousCustomerNo == rtgsForm.customerNo)
     return;
 
 
     try {
-    const response = await axios.post(`/start`, { transition:'FETCHCUSTACCOUNTS', data:{ customerNo: rtgsForm.custNo } });
+    const response = await axios.post(`/start`, { transition:'FETCHCUSTACCOUNTS', data:{ customerNo: rtgsForm.customerNo } });
 
     if(response.status == 200)
     {
@@ -140,7 +141,7 @@ const getCustAccounts = async () => {
         console.log("Success response is received from backend", data.data);
         accNoList.value = data.data;
         console.log(data);
-        previousCustomerNo = rtgsForm.custNo
+        previousCustomerNo = rtgsForm.customerNo
       }
       else accNoList.value = [];
     }
@@ -156,7 +157,7 @@ const getCustAccounts = async () => {
 
 const getAccountDetails = async () => {
   try {
-    const response = await axios.post(`/start`, { transition:'FETCHACCOUNTDETAILS', data:{ accountNo: rtgsForm.accNo } });
+    const response = await axios.post(`/start`, { transition:'FETCHACCOUNTDETAILS', data:{ accountNo: rtgsForm.accountNo } });
 
     if(response.status == 200)
     {
@@ -164,8 +165,8 @@ const getAccountDetails = async () => {
       if(data.success)
       {
         console.log("Success response is received from backend", data.data);
-        rtgsForm.accType = data.data.accountType;
-        rtgsForm.accName = data.data.accountName;
+        rtgsForm.accountType = data.data.accountType;
+        rtgsForm.accountName = data.data.accountName;
         rtgsForm.availableBalance = data.data.availableBalance;
         rtgsForm.iBAN = data.data.iban;
       }
@@ -206,7 +207,7 @@ const getBenefBankList = async () => {
 
 const getBenefBankDetails = async () => {
   try {
-    const response = await axios.post(`/start`, { transition:'FETCHBENEFACCDETAILS', data:{ accountNoOrIban: transactionLaxForm.benefIbanOrAccountNo } });
+    const response = await axios.post(`/start`, { transition:'FETCHBENEFACCDETAILS', data:{ accountNoOrIban: transactionLaxForm.beneficiaryIbanOrAccountNo } });
 
     if(response.status == 200)
     {
@@ -214,7 +215,7 @@ const getBenefBankDetails = async () => {
       if(data.success)
       {
         console.log("Success response is received from backend", data.data);
-        transactionLaxForm.benefAccountName = data.data.accountTitle;
+        transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
         transactionLaxForm.benefBranchCode = data.data.beneficiaryBranchCd;
       }
     }
@@ -230,8 +231,24 @@ const getBenefBankDetails = async () => {
 }
 
 const submitRtgsForm = async () => {
+  const reqObject = {
+    branchCode: rtgsForm.branchCode,
+    currencyCode: rtgsForm.currencyCode,
+    sbpTranTypeCode: rtgsForm.sbpTranTypeCode,
+    transferTypeCode: rtgsForm.transferTypeCode,
+    isCustAcc: rtgsForm.isCustAcc,
+    customerNo: rtgsForm.customerNo,
+    accountNo: rtgsForm.accountNo,
+    totalAmount: rtgsForm.beneficiaryAmount,
+    paymentMode: rtgsForm.paymentMode,
+    transactionLaxList: rtgsForm.transactionLaxList,
+    purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
+    remarks: rtgsForm.remarks,
+    senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
+  }
+
   try {
-    const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS', data:{ rtgsForm: rtgsForm} });
+    const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS', data:{ rtgsForm: reqObject} });
 
     if(response.status == 200)
     {
@@ -239,7 +256,7 @@ const submitRtgsForm = async () => {
       if(data.success)
       {
         console.log("Success response is received from backend", data.data);
-        transactionLaxForm.benefAccountName = data.data.accountTitle;
+        transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
         transactionLaxForm.benefBranchCode = data.data.beneficiaryBranchCd;
       }
     }
@@ -262,9 +279,8 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryBankName !== '' &&
     transactionLaxForm.beneficiaryBankCode !== '' &&
     transactionLaxForm.benefBranchCode !== '' &&
-    transactionLaxForm.benefAccountName !== '' &&
-    transactionLaxForm.beneficiaryAddress  !== '' &&
-    transactionLaxForm.benefIbanOrAccountNo !== '')
+    transactionLaxForm.beneficiaryAccountName !== '' &&
+    transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
 
     {
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
@@ -272,8 +288,8 @@ const insertTransactionLax = () => {
       transactionLaxForm.transactionAmount = '';
       transactionLaxForm.beneficiaryBankName = '';
       transactionLaxForm.beneficiaryBankCode = '';
-      transactionLaxForm.benefAccountName = '';
-      transactionLaxForm.benefIbanOrAccountNo = '';
+      transactionLaxForm.beneficiaryAccountName = '';
+      transactionLaxForm.beneficiaryIbanOrAccountNo = '';
       transactionLaxForm.beneficiaryAddress = '';
       transactionLaxForm.benefBranchCode = '';
     }
@@ -283,7 +299,7 @@ const insertTransactionLax = () => {
 const removeTransactionLax = ()=> {
   if(selectedTransactionLax.value !== '')
   {
-    rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item)=>item.benefIbanOrAccountNo === selectedTransactionLax.value)
+    rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item)=>item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value)
     selectedTransactionLax.value = '';
   }
 
@@ -303,7 +319,7 @@ const removeTransactionLax = ()=> {
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="rtgsForm.branch" placeholder="Select Branch">
+              <el-select v-model="rtgsForm.branchCode" placeholder="Select Branch">
                 <el-option v-for="item in branchList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -319,7 +335,7 @@ const removeTransactionLax = ()=> {
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="rtgsForm.currency" placeholder="Select Currency">
+              <el-select v-model="rtgsForm.currencyCode" placeholder="Select Currency">
                 <el-option v-for="item in currencyList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -335,7 +351,7 @@ const removeTransactionLax = ()=> {
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="rtgsForm.sBPTranType" placeholder="Select SBP Tran Type">
+              <el-select v-model="rtgsForm.sbpTranTypeCode" placeholder="Select SBP Tran Type">
                 <el-option v-for="item in sBPTranTypeList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -349,7 +365,7 @@ const removeTransactionLax = ()=> {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-radio-group v-model="rtgsForm.transferType">
+              <el-radio-group v-model="rtgsForm.transferTypeCode">
                 <el-radio value="102">102(Multiple Beneficiary)</el-radio>
                 <el-radio value="103">103(Single Beneficiary)</el-radio>
                 <el-radio value="202">202(Bank)</el-radio>
@@ -372,7 +388,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="2">
           <el-form-item>
-            <el-input v-model="rtgsForm.custNo" :disabled="!rtgsForm.isCustAcc" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
+            <el-input v-model="rtgsForm.customerNo" :disabled="!rtgsForm.isCustAcc" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
           </el-form-item>
         </el-col>
         <el-col :span="3">
@@ -382,7 +398,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-select v-model="rtgsForm.accNo"  @change="getAccountDetails" placeholder="Select A/C">
+            <el-select v-model="rtgsForm.accountNo"  @change="getAccountDetails" placeholder="Select A/C">
               <el-option v-for="item in accNoList" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
@@ -396,7 +412,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="16">
           <el-form-item>
-            <el-input v-model="rtgsForm.accType" disabled/>
+            <el-input v-model="rtgsForm.accountType" disabled/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -420,7 +436,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="16">
           <el-form-item>
-            <el-input  v-model="rtgsForm.accName" disabled/>
+            <el-input  v-model="rtgsForm.accountName" disabled/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -442,7 +458,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="9">
           <el-form-item>
-            <el-input v-model="rtgsForm.benefAmout"/>
+            <el-input v-model="rtgsForm.beneficiaryAmount"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -525,7 +541,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input v-model="transactionLaxForm.benefIbanOrAccountNo"/>
+            <el-input v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"/>
           </el-form-item>
         </el-col>
         <el-col :span="1"></el-col>
@@ -541,7 +557,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input v-model="transactionLaxForm.benefAccountName" disabled/>
+            <el-input v-model="transactionLaxForm.beneficiaryAccountName" disabled/>
           </el-form-item>
         </el-col>
         <el-col :span="1"></el-col>
@@ -576,14 +592,14 @@ const removeTransactionLax = ()=> {
     <div>
       <el-table :data="rtgsForm.transactionLaxList" @current-change="handleTransactionLaxSelectedChange" highlight-current-row  style="width: 100%" height="120" max-height="250">
         <el-table-column property="transactionAmount" label="Transaction Amount" width="200" />
-        <el-table-column property="benefIbanOrAccountNo" label="Beneficiary IBAN/AC #" width="180" />
-        <el-table-column property="benefAccountName" label="Account Name" />
+        <el-table-column property="beneficiaryIbanOrAccountNo" label="Beneficiary IBAN/AC #" width="180" />
+        <el-table-column property="beneficiaryAccountName" label="Account Name" />
         <el-table-column property="beneficiaryBankName" label="Beneficiary Bank Name" />
         <el-table-column property="beneficiaryAddress" label="Beneficiary Address" />
       </el-table>
     </div>
     <fieldset>
-      <el-row gutter="1">
+      <el-row style="margin-bottom: 8px;">
         <el-col :span="17"></el-col>
         <el-col :span="3" style="margin-right: 8px;">
           <el-button class="generic-button" @click="removeTransactionLax" type="primary">Remove</el-button>
@@ -600,7 +616,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="15">
           <el-form-item>
-            <el-select v-model="rtgsForm.purposeOfPayment" placeholder="Select Purpose of Payment">
+            <el-select v-model="rtgsForm.purposeOfPaymentCode" placeholder="Select Purpose of Payment">
               <el-option v-for="item in purposeOfPaymentList" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
@@ -633,7 +649,7 @@ const removeTransactionLax = ()=> {
     </fieldset>
     <h4>Charges:</h4>
     <el-row>
-      <el-col :span="21">
+      <el-col :span="20">
         <el-table highlight-current-row  style="width: 100%" height="110" max-height="250">
           <el-table-column property="tranDesc" label="Tran Description" width="200" />
           <el-table-column property="glAccount" label="GL Account" width="180" />
@@ -641,7 +657,7 @@ const removeTransactionLax = ()=> {
           <el-table-column property="amount" label="Amount" />
         </el-table>
       </el-col>
-      <el-col :span="3">
+      <el-col :span="4">
         <el-row style="gap: 6px;padding: 0px 6px;">
           <el-col>
             <el-button class="generic-button" type="primary">Add Charges</el-button>

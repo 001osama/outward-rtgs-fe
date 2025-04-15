@@ -5,6 +5,7 @@ import showMenu from '@/menuButton';
 const router = useRouter();
 
 const signOff = ()=>{
+  localStorage.removeItem("token");
   router.push('/');
 }
 

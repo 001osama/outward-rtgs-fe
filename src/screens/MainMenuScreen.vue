@@ -54,7 +54,9 @@ const signOff = async () => {
     // {
     //   console.log("Invalid login attempt")
     //   console.log(response.status)
+
     // }
+    localStorage.removeItem("token");
     router.push('/');
 
     // console.log("response data from server is",response.data);
