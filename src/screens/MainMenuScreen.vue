@@ -3,14 +3,15 @@
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import { ElMessageBox } from 'element-plus'
+import axios from '@/axiosInstance.js';
 
 const router = useRouter();
-let isMessageShown = localStorage.getItem('messageShow');
+let isMessageShown = localStorage.getItem('messageShown');
 onMounted(() => {
   if(!isMessageShown)
     ElMessageBox.alert(
     `Sign-on is Successful<br>
-    Last Sign-on date is 26/03/2025`,
+    Last Sign-on date is 16/04/2025`,
     'Message',
     {
       confirmButtonClass: 'mb-confirm-button',
@@ -21,49 +22,38 @@ onMounted(() => {
       draggable: true,
       center: true,
       callback: () => {
-        localStorage.setItem('messageShow','true');
+        localStorage.setItem('messageShown','true');
       }
     })
 })
 
 
-const signOff = async () => {
-    console.log(`the env variables are ${import.meta.env.VITE_FSM_URL}`)
-    const resultObj = {
-      transition:"SIGNOFF"
-    };
-
-    console.log("Data sending to FSM", resultObj);
-
-    // const authToken = localStorage.getItem("token");
-    // const response = await axios.post(`${import.meta.env.VITE_FSM_URL}/start`, resultObj,
-    //   {
-    //     headers:
-    //     {
-    //       Authorization:`${authToken}`,
-    //     }
-    //   }
-    // );
-
-    // if(response.status == 200)
-    // {
-    //   alert("Sign Off Successfully");
-    //   router.push('/');
-    // }
-    // else
-    // {
-    //   console.log("Invalid login attempt")
-    //   console.log(response.status)
-
-    // }
-    localStorage.removeItem("token");
-    router.push('/');
-
-    // console.log("response data from server is",response.data);
-    // console.log("response status from server is",response.status);
-
+const signOff = async ()=>{
+  try {
+    const response = await axios.post(`/start`, { transition:'SIGNOFF' });
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        localStorage.removeItem("token");
+        localStorage.removeItem("messageShown");
+        router.push('/');
+      }
+      else
+      {
+        console.error(data.message);
+      }
+    }
+    else
+    {
+      console.error(response.message);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
 }
-
 const remittance = () =>{
  router.push('remittance');
 }
