@@ -396,6 +396,23 @@ const removeTransactionLax = ()=> {
 }
 
 const insertCharges = () => {
+  if(rtgsForm.transactionLaxList.length == 0)
+  {
+
+    ElMessageBox.alert(
+      `Please complete the form first`,
+      'Error',
+      {
+        confirmButtonClass: 'mb-confirm-button',
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: 'OK',
+        showCancelButton: false,
+        showClose: false,
+        draggable: true,
+        center: true,
+      })
+    return;
+  }
    const transactionLaxList = [
     {
       trancd:81213,
