@@ -1,7 +1,9 @@
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed,watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
+import { ElMessageBox } from 'element-plus'
+import { decodeJwt } from '@/utils/jwtDecoder';
 import axios from '@/axiosInstance.js';
 
 const router = useRouter();
@@ -10,9 +12,12 @@ const accNoList = ref([]);
 const currencyList = ref([]);
 const sBPTranTypeList = ref([]);
 const purposeOfPaymentList = ref([]);
+const chargesLaxList = ref([]);
 
-
+const selectedChargesLax = ref();
 const selectedTransactionLax = ref();
+
+
 
 let previousCustomerNo = '';
 
@@ -24,6 +29,48 @@ const benefBankList = ref([]);
 
 // const currentRow = ref();
 const benefBankListTableRef = ref(null);
+
+
+const rtgsForm = reactive({
+  branchCode: '',
+  currencyCode: '',
+  sbpTranTypeCode:'',
+  transferTypeCode:'103',
+  isCustAcc:false,
+  customerNo:'',
+  accountNo:'',
+  accountType:'',
+  iBAN:'',
+  accountName:'',
+  availableBalance:'',
+  beneficiaryAmount:0.00,
+  paymentMode:'instruction',
+  transactionLaxList:[],
+  purposeOfPaymentCode:'',
+  remarks:'',
+  senderToReceiverInformation:'',
+});
+
+
+const transactionLaxForm = reactive({
+  transactionAmount: '',
+  beneficiaryBankName:'',
+  beneficiaryBankCode:'',
+  beneficiaryAccountName:'',
+  beneficiaryIbanOrAccountNo:'',
+  beneficiaryAddress:''
+});
+
+const disabilityController = reactive({
+  isSingleBeneficiaryDisabled: false,
+  isMultipleBeneficiaryDisabled: false,
+  isBankDisabled: false,
+
+
+})
+
+
+
 
 // const setCurrent = (row) => {
 //   if (benefBankListTableRef.value && typeof benefBankListTableRef.value.setCurrentRow === 'function') {
@@ -50,10 +97,68 @@ const handleTransactionLaxSelectedChange = (val) => {
   else console.error('Handle current change is not giving values');
 };
 
+const handleChargesLaxSelectedChange = (val) => {
+  console.log(`Handle transaction current change is working`,val);
+  if(val && val.value)
+  {
+    selectedChargesLax.value = val.tranCode;
+  }
+  else console.error('Handle current change is not giving values');
+}
+
+
+
+watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
+  switch (sbpTranTypeCode) {
+    case '41':
+    disabilityController.isSingleBeneficiaryDisabled = false;
+    disabilityController.isMultipleBeneficiaryDisabled = false;
+    disabilityController.isBankDisabled = true;
+    rtgsForm.transferTypeCode = '103';
+    break;
+
+    case '35':
+    case '47':
+    case '49':
+    disabilityController.isSingleBeneficiaryDisabled = true;
+    disabilityController.isMultipleBeneficiaryDisabled = true;
+    disabilityController.isBankDisabled = false;
+    rtgsForm.transferTypeCode = '202';
+    break;
+
+
+    case '52':
+    disabilityController.isSingleBeneficiaryDisabled = true;
+    disabilityController.isMultipleBeneficiaryDisabled = false;
+    disabilityController.isBankDisabled = true;
+    rtgsForm.transferTypeCode = '102';
+    break;
+
+    default:
+    disabilityController.isSingleBeneficiaryDisabled = false;
+    disabilityController.isMultipleBeneficiaryDisabled = false;
+    disabilityController.isBankDisabled = false;
+    rtgsForm.transferTypeCode = '103';
+    break;
+}
+});
+
+
 
 
 onMounted(async () => {
   try {
+    const token = localStorage.getItem('token');
+    const parsedToken = decodeJwt(token);
+    console.log('parsed token is working', parsedToken);
+
+
+    if(!parsedToken.loginId)
+    {
+      localStorage.removeItem('token');
+      router.push('/');
+    }
+
     const response = await axios.post(`/start`, { transition:'FETCHLOV' });
 
     if(response.status == 200)
@@ -66,6 +171,9 @@ onMounted(async () => {
         currencyList.value = data.data.currencyList;
         sBPTranTypeList.value = data.data.sBPTranTypeList;
         purposeOfPaymentList.value = data.data.purposeOfPaymentList;
+        rtgsForm.branchCode = parsedToken.branchCode;
+        rtgsForm.currencyCode = '586';
+        rtgsForm.sbpTranTypeCode = '1';
 
         console.log(data);
       }
@@ -91,35 +199,6 @@ const checkDigits = (event) => {
     }
 }
 
-const rtgsForm = reactive({
-  branchCode: '',
-  currencyCode: '',
-  sbpTranTypeCode:'',
-  transferTypeCode:'103',
-  isCustAcc:false,
-  customerNo:'',
-  accountNo:'',
-  accountType:'',
-  iBAN:'',
-  accountName:'',
-  availableBalance:'',
-  beneficiaryAmount:'',
-  paymentMode:'instruction',
-  transactionLaxList:[],
-  purposeOfPaymentCode:'',
-  remarks:'',
-  senderToReceiverInformation:'',
-});
-
-
-const transactionLaxForm = reactive({
-  transactionAmount: '',
-  beneficiaryBankName:'',
-  beneficiaryBankCode:'',
-  beneficiaryAccountName:'',
-  beneficiaryIbanOrAccountNo:'',
-  beneficiaryAddress:''
-});
 
 const ExitBtnClicked = () => {
   router.push('remittance');
@@ -231,7 +310,19 @@ const getBenefBankDetails = async () => {
 }
 
 const submitRtgsForm = async () => {
+  const token = localStorage.getItem('token');
+  const parsedToken = decodeJwt(token);
+  console.log('parsed token is working', parsedToken);
+
+
+  if(!parsedToken.loginId)
+  {
+    localStorage.removeItem('token');
+    router.push('/');
+  }
+
   const reqObject = {
+    loginId: parsedToken.loginId,
     branchCode: rtgsForm.branchCode,
     currencyCode: rtgsForm.currencyCode,
     sbpTranTypeCode: rtgsForm.sbpTranTypeCode,
@@ -239,7 +330,7 @@ const submitRtgsForm = async () => {
     isCustAcc: rtgsForm.isCustAcc,
     customerNo: rtgsForm.customerNo,
     accountNo: rtgsForm.accountNo,
-    totalAmount: rtgsForm.beneficiaryAmount,
+    totalAmount: rtgsForm.beneficiaryAmount.toString(),
     paymentMode: rtgsForm.paymentMode,
     transactionLaxList: rtgsForm.transactionLaxList,
     purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
@@ -255,9 +346,8 @@ const submitRtgsForm = async () => {
       const { data } = response;
       if(data.success)
       {
+        alert('Outward Rtgs submitted successfully');
         console.log("Success response is received from backend", data.data);
-        transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
-        transactionLaxForm.benefBranchCode = data.data.beneficiaryBranchCd;
       }
     }
     else
@@ -284,6 +374,7 @@ const insertTransactionLax = () => {
 
     {
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
+      rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + transactionLaxForm.transactionAmount;
 
       transactionLaxForm.transactionAmount = '';
       transactionLaxForm.beneficiaryBankName = '';
@@ -302,7 +393,57 @@ const removeTransactionLax = ()=> {
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item)=>item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value)
     selectedTransactionLax.value = '';
   }
+}
 
+const insertCharges = () => {
+   const transactionLaxList = [
+    {
+      trancd:81213,
+      tranDesc:'RTGS103 SBP T1',
+      glAccount: 'C870116010009',
+      amount: '0.00'
+    },
+    {
+      trancd:81212,
+      tranDesc:'RTGS103 BNK T1',
+      glAccount: '1790801510002',
+      amount: '0.00'
+    },
+   ]
+    chargesLaxList.value = transactionLaxList;
+}
+
+const removeCharges = ()=> {
+  chargesLaxList.value = []
+}
+
+const changeCharges = () => {
+  if(chargesLaxList.value.length == 0)
+    ElMessageBox.alert(
+      `Please add charges first`,
+      'Message',
+      {
+        confirmButtonClass: 'mb-confirm-button',
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: 'OK',
+        showCancelButton: false,
+        showClose: false,
+        draggable: true,
+        center: true,
+      })
+  else
+    ElMessageBox.alert(
+        `Default charges cannot be modified`,
+        'Message',
+        {
+          confirmButtonClass: 'mb-confirm-button',
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: 'OK',
+          showCancelButton: false,
+          showClose: false,
+          draggable: true,
+          center: true,
+        })
 }
 
 </script>
@@ -319,7 +460,7 @@ const removeTransactionLax = ()=> {
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="rtgsForm.branchCode" placeholder="Select Branch">
+              <el-select disabled v-model="rtgsForm.branchCode" placeholder="Select Branch">
                 <el-option v-for="item in branchList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -335,7 +476,7 @@ const removeTransactionLax = ()=> {
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="rtgsForm.currencyCode" placeholder="Select Currency">
+              <el-select disabled v-model="rtgsForm.currencyCode" placeholder="Select Currency">
                 <el-option v-for="item in currencyList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -366,9 +507,15 @@ const removeTransactionLax = ()=> {
           <el-col :span="12">
             <el-form-item>
               <el-radio-group v-model="rtgsForm.transferTypeCode">
-                <el-radio value="102">102(Multiple Beneficiary)</el-radio>
-                <el-radio value="103">103(Single Beneficiary)</el-radio>
-                <el-radio value="202">202(Bank)</el-radio>
+                <el-radio
+                :disabled="disabilityController.isMultipleBeneficiaryDisabled"
+                value="102">102(Multiple Beneficiary)</el-radio>
+                <el-radio
+                :disabled="disabilityController.isSingleBeneficiaryDisabled"
+                value="103">103(Single Beneficiary)</el-radio>
+                <el-radio
+                :disabled="disabilityController.isBankDisabled"
+                value="202">202(Bank)</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -388,12 +535,12 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="2">
           <el-form-item>
-            <el-input v-model="rtgsForm.customerNo" :disabled="!rtgsForm.isCustAcc" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
+            <el-input v-model="rtgsForm.customerNo" :disabled="(rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc)" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
           </el-form-item>
         </el-col>
         <el-col :span="3">
           <el-form-item>
-            <span>{{rtgsForm.isCustAcc ? 'A/C No.' : 'GL A/C No.'}}</span>
+            <span>{{(rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc) ? 'GL A/C No.' : 'A/C No.'}}</span>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -458,7 +605,7 @@ const removeTransactionLax = ()=> {
         </el-col>
         <el-col :span="9">
           <el-form-item>
-            <el-input v-model="rtgsForm.beneficiaryAmount"/>
+            <el-input disabled v-model="rtgsForm.beneficiaryAmount"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -650,23 +797,23 @@ const removeTransactionLax = ()=> {
     <h4>Charges:</h4>
     <el-row>
       <el-col :span="20">
-        <el-table highlight-current-row  style="width: 100%" height="110" max-height="250">
-          <el-table-column property="tranDesc" label="Tran Description" width="200" />
-          <el-table-column property="glAccount" label="GL Account" width="180" />
-          <el-table-column property="trancd" label="Trancd" />
+        <el-table :data="chargesLaxList" highlight-current-row @current-change="handleChargesLaxSelectedChange" style="width: 100%" height="110" max-height="250">
+          <el-table-column property="trancd" label="Trancd" width="150"/>
+          <el-table-column property="tranDesc" label="Tran Description" width="300" />
+          <el-table-column property="glAccount" label="GL Account" width="400" />
           <el-table-column property="amount" label="Amount" />
         </el-table>
       </el-col>
       <el-col :span="4">
         <el-row style="gap: 6px;padding: 0px 6px;">
           <el-col>
-            <el-button class="generic-button" type="primary">Add Charges</el-button>
+            <el-button class="generic-button" @click="insertCharges" type="primary">Add Charges</el-button>
           </el-col>
           <el-col>
-            <el-button class="generic-button" type="primary">Change Charges</el-button>
+            <el-button class="generic-button" @click="changeCharges" type="primary">Change Charges</el-button>
           </el-col>
           <el-col>
-            <el-button class="generic-button" type="primary">Remove Charges</el-button>
+            <el-button class="generic-button" :disabled="chargesLaxList.length == 0" @click="removeCharges" type="primary">Remove Charges</el-button>
           </el-col>
         </el-row>
       </el-col>
