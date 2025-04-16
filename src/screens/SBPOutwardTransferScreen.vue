@@ -43,8 +43,8 @@ const rtgsForm = reactive({
   iBAN:'',
   accountName:'',
   availableBalance:'',
-  beneficiaryAmount:0.00,
-  paymentMode:'instruction',
+  beneficiaryAmount:0,
+  paymentMode:'cheque',
   transactionLaxList:[],
   purposeOfPaymentCode:'',
   remarks:'',
@@ -68,6 +68,22 @@ const disabilityController = reactive({
 
 
 })
+
+const clearform = () => {
+  rtgsForm.isCustAcc = false;
+  rtgsForm.customerNo='';
+  rtgsForm.accountNo='';
+  rtgsForm.accountType='';
+  rtgsForm.iBAN='';
+  rtgsForm.accountName='';
+  rtgsForm.availableBalance='';
+  rtgsForm.beneficiaryAmount=0;
+  rtgsForm.paymentMode='instruction';
+  rtgsForm.transactionLaxList=[];
+  rtgsForm.purposeOfPaymentCode='';
+  rtgsForm.remarks='';
+  rtgsForm.senderToReceiverInformation='';
+}
 
 
 
@@ -140,7 +156,10 @@ watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
     disabilityController.isBankDisabled = false;
     rtgsForm.transferTypeCode = '103';
     break;
-}
+  }
+
+  clearform();
+
 });
 
 
@@ -330,7 +349,7 @@ const submitRtgsForm = async () => {
     isCustAcc: rtgsForm.isCustAcc,
     customerNo: rtgsForm.customerNo,
     accountNo: rtgsForm.accountNo,
-    totalAmount: rtgsForm.beneficiaryAmount.toString(),
+    totalAmount: '1000',
     paymentMode: rtgsForm.paymentMode,
     transactionLaxList: rtgsForm.transactionLaxList,
     purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
@@ -347,6 +366,7 @@ const submitRtgsForm = async () => {
       if(data.success)
       {
         alert('Outward Rtgs submitted successfully');
+        router.push('/');
         console.log("Success response is received from backend", data.data);
       }
     }
@@ -523,7 +543,7 @@ const changeCharges = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-radio-group v-model="rtgsForm.transferTypeCode">
+              <el-radio-group @change="clearform" v-model="rtgsForm.transferTypeCode">
                 <el-radio
                 :disabled="disabilityController.isMultipleBeneficiaryDisabled"
                 value="102">102(Multiple Beneficiary)</el-radio>
@@ -637,15 +657,14 @@ const changeCharges = () => {
         <el-col :span="4">
           <el-form-item>
             <el-radio-group v-model="rtgsForm.paymentMode">
-              <el-radio value="instruction">Instruction</el-radio>
-              <!-- <el-radio value="2" :disabled="rtgsForm.isCustAcc">Cheque</el-radio> -->
+              <el-radio value="cheque">Cheque</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
 
         <el-col :span="1"></el-col>
 
-        <!-- <el-col :span="2">
+        <el-col :span="2">
           <el-form-item>
             <span>Cheque#</span>
           </el-form-item>
@@ -665,7 +684,7 @@ const changeCharges = () => {
           <el-form-item>
             <el-input />
           </el-form-item>
-        </el-col> -->
+        </el-col>
       </el-row>
     </fieldset>
     <fieldset>
