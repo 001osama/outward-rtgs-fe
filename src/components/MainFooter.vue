@@ -6,7 +6,7 @@
         <div class="footer-block">Tuesday - 25/03/2025</div>
       </el-col>
       <el-col :span="18">
-        <div class="footer-block">0038 - TSTING</div>
+        <div class="footer-block">1001 - TEST1</div>
       </el-col>
     </el-row>
   </el-footer>

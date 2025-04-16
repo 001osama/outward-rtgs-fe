@@ -36,12 +36,7 @@ import SideNav from '@/components/SideNav.vue';
 }
 .el-main {
     --el-main-padding: 10px;
-}
-
-
-.el-main {
     background-color: var(--bg-ternary);
 }
-
 
 </style>
