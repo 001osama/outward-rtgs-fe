@@ -2,8 +2,8 @@
 import { ref, reactive, computed,watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
-import { ElMessageBox } from 'element-plus'
 import { decodeJwt } from '@/utils/jwtDecoder';
+import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
 
 const router = useRouter();
@@ -22,12 +22,9 @@ const selectedTransactionLax = ref();
 let previousCustomerNo = '';
 
 
-// States for BenefList Modal commented and segregated because have to change it into a separate page
+
 const dialogTableVisible = ref(false);
 const benefBankList = ref([]);
-
-
-// const currentRow = ref();
 const benefBankListTableRef = ref(null);
 
 
@@ -43,8 +40,8 @@ const rtgsForm = reactive({
   iBAN:'',
   accountName:'',
   availableBalance:'',
-  beneficiaryAmount:0,
-  paymentMode:'cheque',
+  beneficiaryAmount: 0,
+  paymentMode:"cheque",
   transactionLaxList:[],
   purposeOfPaymentCode:'',
   remarks:'',
@@ -69,7 +66,7 @@ const disabilityController = reactive({
 
 })
 
-const clearform = () => {
+const resetForm = () => {
   rtgsForm.isCustAcc = false;
   rtgsForm.customerNo='';
   rtgsForm.accountNo='';
@@ -77,12 +74,20 @@ const clearform = () => {
   rtgsForm.iBAN='';
   rtgsForm.accountName='';
   rtgsForm.availableBalance='';
-  rtgsForm.beneficiaryAmount=0;
-  rtgsForm.paymentMode='instruction';
+  rtgsForm.beneficiaryAmount = 0;
+  rtgsForm.paymentMode='cheque';
   rtgsForm.transactionLaxList=[];
   rtgsForm.purposeOfPaymentCode='';
   rtgsForm.remarks='';
   rtgsForm.senderToReceiverInformation='';
+
+
+  transactionLaxForm.transactionAmount = '',
+  transactionLaxForm.beneficiaryBankName='',
+  transactionLaxForm.beneficiaryBankCode='',
+  transactionLaxForm.beneficiaryAccountName='',
+  transactionLaxForm.beneficiaryIbanOrAccountNo='',
+  transactionLaxForm.beneficiaryAddress=''
 }
 
 
@@ -129,36 +134,36 @@ watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
     case '41':
     disabilityController.isSingleBeneficiaryDisabled = false;
     disabilityController.isMultipleBeneficiaryDisabled = false;
-    disabilityController.isBankDisabled = true;
+    // disabilityController.isBankDisabled = true;
     rtgsForm.transferTypeCode = '103';
     break;
 
-    case '35':
-    case '47':
-    case '49':
-    disabilityController.isSingleBeneficiaryDisabled = true;
-    disabilityController.isMultipleBeneficiaryDisabled = true;
-    disabilityController.isBankDisabled = false;
-    rtgsForm.transferTypeCode = '202';
-    break;
+    // case '35':
+    // case '47':
+    // case '49':
+    // disabilityController.isSingleBeneficiaryDisabled = true;
+    // disabilityController.isMultipleBeneficiaryDisabled = true;
+    // disabilityController.isBankDisabled = false;
+    // rtgsForm.transferTypeCode = '202';
+    // break;
 
 
     case '52':
     disabilityController.isSingleBeneficiaryDisabled = true;
     disabilityController.isMultipleBeneficiaryDisabled = false;
-    disabilityController.isBankDisabled = true;
+    // disabilityController.isBankDisabled = true;
     rtgsForm.transferTypeCode = '102';
     break;
 
     default:
     disabilityController.isSingleBeneficiaryDisabled = false;
     disabilityController.isMultipleBeneficiaryDisabled = false;
-    disabilityController.isBankDisabled = false;
+    // disabilityController.isBankDisabled = false;
     rtgsForm.transferTypeCode = '103';
     break;
   }
 
-  clearform();
+  resetForm();
 
 });
 
@@ -304,8 +309,27 @@ const getBenefBankList = async () => {
 }
 
 const getBenefBankDetails = async () => {
+  if(!transactionLaxForm.beneficiaryBankCode.length > 0)
+  {
+    invokeDefaultDialog('Error', 'Please Select Beneficiary Bank first')
+    return
+  }
+
+  if(!transactionLaxForm.beneficiaryIbanOrAccountNo.length > 0 )
+  {
+    invokeDefaultDialog('Error', 'Please Select Benef Bank first')
+    return
+  }
+
   try {
-    const response = await axios.post(`/start`, { transition:'FETCHBENEFACCDETAILS', data:{ accountNoOrIban: transactionLaxForm.beneficiaryIbanOrAccountNo } });
+    const response = await axios.post(`/start`,
+    {
+      transition:'FETCHBENEFACCDETAILS',
+      data:{
+        accOrIban: transactionLaxForm.beneficiaryIbanOrAccountNo,
+        bankCode: transactionLaxForm.beneficiaryBankCode,
+      }
+    });
 
     if(response.status == 200)
     {
@@ -329,56 +353,64 @@ const getBenefBankDetails = async () => {
 }
 
 const submitRtgsForm = async () => {
-  const token = localStorage.getItem('token');
-  const parsedToken = decodeJwt(token);
-  console.log('parsed token is working', parsedToken);
+
+  router.push('/exceptionWindow');
+
+  // if(rtgsForm.beneficiaryAmount > 1000000)
+  //   {
+  //     invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
+  //     return;
+  //   }
+  // const token = localStorage.getItem('token');
+  // const parsedToken = decodeJwt(token);
+  // console.log('parsed token is working', parsedToken);
 
 
-  if(!parsedToken.loginId)
-  {
-    localStorage.removeItem('token');
-    router.push('/');
-  }
+  // if(!parsedToken.loginId)
+  // {
+  //   localStorage.removeItem('token');
+  //   router.push('/');
+  // }
 
-  const reqObject = {
-    loginId: parsedToken.loginId,
-    branchCode: rtgsForm.branchCode,
-    currencyCode: rtgsForm.currencyCode,
-    sbpTranTypeCode: rtgsForm.sbpTranTypeCode,
-    transferTypeCode: rtgsForm.transferTypeCode,
-    isCustAcc: rtgsForm.isCustAcc,
-    customerNo: rtgsForm.customerNo,
-    accountNo: rtgsForm.accountNo,
-    totalAmount: '1000',
-    paymentMode: rtgsForm.paymentMode,
-    transactionLaxList: rtgsForm.transactionLaxList,
-    purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
-    remarks: rtgsForm.remarks,
-    senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
-  }
+  // const reqObject = {
+  //   loginId: parsedToken.loginId,
+  //   branchCode: rtgsForm.branchCode,
+  //   currencyCode: rtgsForm.currencyCode,
+  //   sbpTranTypeCode: rtgsForm.sbpTranTypeCode,
+  //   transferTypeCode: rtgsForm.transferTypeCode,
+  //   isCustAcc: rtgsForm.isCustAcc,
+  //   customerNo: rtgsForm.customerNo,
+  //   accountNo: rtgsForm.accountNo,
+  //   totalAmount: rtgsForm.beneficiaryAmount,
+  //   paymentMode: rtgsForm.paymentMode,
+  //   transactionLaxList: rtgsForm.transactionLaxList,
+  //   purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
+  //   remarks: rtgsForm.remarks,
+  //   senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
+  // }
 
-  try {
-    const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS', data:{ rtgsForm: reqObject} });
+  // try {
+  //   const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS', data:{ rtgsForm: reqObject} });
 
-    if(response.status == 200)
-    {
-      const { data } = response;
-      if(data.success)
-      {
-        alert('Outward Rtgs submitted successfully');
-        router.push('/');
-        console.log("Success response is received from backend", data.data);
-      }
-    }
-    else
-    {
-      console.log('Error getting success response');
-      console.log(response.data);
-    }
-  }
-  catch (error) {
-    console.error(error);
-  }
+  //   if(response.status == 200)
+  //   {
+  //     const { data } = response;
+  //     if(data.success)
+  //     {
+  //       alert('Outward Rtgs submitted successfully');
+  //       router.push('/');
+  //       console.log("Success response is received from backend", data.data);
+  //     }
+  //   }
+  //   else
+  //   {
+  //     console.log('Error getting success response');
+  //     console.log(response.data);
+  //   }
+  // }
+  // catch (error) {
+  //   console.error(error);
+  // }
 }
 
 
@@ -391,10 +423,9 @@ const insertTransactionLax = () => {
     transactionLaxForm.benefBranchCode !== '' &&
     transactionLaxForm.beneficiaryAccountName !== '' &&
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
-
     {
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-      rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + transactionLaxForm.transactionAmount;
+      rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + parseInt(transactionLaxForm.transactionAmount);
 
       transactionLaxForm.transactionAmount = '';
       transactionLaxForm.beneficiaryBankName = '';
@@ -418,21 +449,10 @@ const removeTransactionLax = ()=> {
 const insertCharges = () => {
   if(rtgsForm.transactionLaxList.length == 0)
   {
-
-    ElMessageBox.alert(
-      `Please complete the form first`,
-      'Error',
-      {
-        confirmButtonClass: 'mb-confirm-button',
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: 'OK',
-        showCancelButton: false,
-        showClose: false,
-        draggable: true,
-        center: true,
-      })
+    invokeDefaultDialog('Error', 'Please complete the form first');
     return;
   }
+
    const transactionLaxList = [
     {
       trancd:81213,
@@ -456,31 +476,9 @@ const removeCharges = ()=> {
 
 const changeCharges = () => {
   if(chargesLaxList.value.length == 0)
-    ElMessageBox.alert(
-      `Please add charges first`,
-      'Message',
-      {
-        confirmButtonClass: 'mb-confirm-button',
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: 'OK',
-        showCancelButton: false,
-        showClose: false,
-        draggable: true,
-        center: true,
-      })
+    invokeDefaultDialog('Message', 'Please add charges first');
   else
-    ElMessageBox.alert(
-        `Default charges cannot be modified`,
-        'Message',
-        {
-          confirmButtonClass: 'mb-confirm-button',
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: 'OK',
-          showCancelButton: false,
-          showClose: false,
-          draggable: true,
-          center: true,
-        })
+    invokeDefaultDialog('Message', 'Default charges cannot be modified');
 }
 
 </script>
@@ -543,16 +541,16 @@ const changeCharges = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-radio-group @change="clearform" v-model="rtgsForm.transferTypeCode">
+              <el-radio-group v-model="rtgsForm.transferTypeCode">
                 <el-radio
                 :disabled="disabilityController.isMultipleBeneficiaryDisabled"
                 value="102">102(Multiple Beneficiary)</el-radio>
                 <el-radio
                 :disabled="disabilityController.isSingleBeneficiaryDisabled"
                 value="103">103(Single Beneficiary)</el-radio>
-                <el-radio
+                <!-- <el-radio
                 :disabled="disabilityController.isBankDisabled"
-                value="202">202(Bank)</el-radio>
+                value="202">202(Bank)</el-radio> -->
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -788,7 +786,7 @@ const changeCharges = () => {
           <el-button class="generic-button" @click="removeTransactionLax" type="primary">Remove</el-button>
         </el-col>
         <el-col :span="3">
-          <el-button class="generic-button" @click="insertTransactionLax" type="primary">Add</el-button>
+          <el-button class="generic-button" :disabled="rtgsForm.transferTypeCode==='103' && rtgsForm.transactionLaxList.length > 0" @click="insertTransactionLax" type="primary">Add</el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -880,11 +878,6 @@ const changeCharges = () => {
         console.log('before-close'), doneFn()
       }"
     @open="getBenefBankList"
-    @open-auto-focus="console.log('open-auto-focus')"
-    @opened="console.log('opened')"
-    @close="console.log('close')"
-    @close-auto-focus="console.log('close-auto-focus')"
-    @closed="console.log('closed')"
     width="1000"
     >
     <el-table
@@ -897,10 +890,11 @@ const changeCharges = () => {
       <el-table-column property="label"/>
     </el-table>
     <el-row style="margin-top: 20px;">
-      <el-col :span="20"></el-col>
+      <el-col :span="19"></el-col>
       <el-col :span="2">
         <el-button @click="dialogTableVisible = false" class="generic-button" type="primary">Select</el-button>
       </el-col>
+      <el-col :span="1"></el-col>
       <el-col :span="2">
         <el-button @click="dialogTableVisible = false" class="generic-button" type="primary">Cancel</el-button>
       </el-col>

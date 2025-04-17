@@ -318,6 +318,28 @@ h4 {
   resize: none !important;
 }
 
+
+.el-dialog {
+  border-radius: 0px !important;
+  padding: 0px !important;
+}
+
+.el-dialog__body {
+  background: var(--bg-ternary);
+  padding: 15px ;
+}
+
+
+.el-dialog__header {
+  background: var(--bg-secondary);
+  padding: 20px 15px 15px 15px !important;
+}
+
+.el-dialog__title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .optional-field {
   color: var(--text-optional);
 }
