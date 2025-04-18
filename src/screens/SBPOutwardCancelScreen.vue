@@ -52,7 +52,7 @@ const CancelBtnClicked = () => {
         </el-row>
         <el-row>
           <el-col :span="3">
-            <el-button disabled class="generic-button" type="primary">OK</el-button>
+            <el-button @click="router.push('authWindow')" :disabled="voucherInfo.voucherNo.length < 8" class="generic-button" type="primary">OK</el-button>
           </el-col>
           <el-col :span="14"></el-col>
           <el-col :span="3">

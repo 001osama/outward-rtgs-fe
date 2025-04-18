@@ -337,7 +337,7 @@ h4 {
 
 .el-dialog__title {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
 
 .optional-field {

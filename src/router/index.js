@@ -8,6 +8,7 @@ import SBPOutwardAuth from "../screens/SBPOutwardAuthScreen.vue";
 import SBPOutwardTransfer from "../screens/SBPOutwardTransferScreen.vue";
 import ExceptionWindow from '@/screens/ExceptionWindow.vue';
 import VoucherCreatedScreen from '@/screens/VoucherCreatedScreen.vue';
+import AuthWindow from '@/screens/AuthWindow.vue';
 
 const routes = [
     {path: '/', component: LoginScreen},
@@ -35,13 +36,17 @@ const routes = [
           component: SBPOutwardTransfer
         },
         {
+
           path: '/exceptionwindow',
           component: ExceptionWindow
         },
-
         {
           path: '/vouchercreatedscreen',
           component: VoucherCreatedScreen
+        },
+        {
+          path: '/authWindow',
+          component: AuthWindow
         },
       ]
     },
