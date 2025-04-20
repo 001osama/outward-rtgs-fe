@@ -1,7 +1,6 @@
 <script setup>
-import { ref, reactive, computed,watch } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
 import { decodeJwt } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
@@ -55,7 +54,8 @@ const transactionLaxForm = reactive({
   beneficiaryBankCode:'',
   beneficiaryAccountName:'',
   beneficiaryIbanOrAccountNo:'',
-  beneficiaryAddress:''
+  beneficiaryAddress:'',
+  beneficiaryBranchCode:''
 });
 
 const disabilityController = reactive({
@@ -88,6 +88,7 @@ const resetForm = () => {
   transactionLaxForm.beneficiaryAccountName='',
   transactionLaxForm.beneficiaryIbanOrAccountNo='',
   transactionLaxForm.beneficiaryAddress=''
+  transactionLaxForm.beneficiaryBranchCode=''
 }
 
 
@@ -340,6 +341,11 @@ const getBenefBankDetails = async () => {
         transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
         transactionLaxForm.benefBranchCode = data.data.beneficiaryBranchCd;
       }
+      else
+      {
+        invokeDefaultDialog('error', response.data.message);
+        return
+      }
     }
     else
     {
@@ -354,66 +360,63 @@ const getBenefBankDetails = async () => {
 
 const submitRtgsForm = async () => {
 
-  router.push('/exceptionWindow');
 
-  // if(rtgsForm.beneficiaryAmount > 1000000)
-  //   {
-  //     invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
-  //     return;
-  //   }
-  // const token = localStorage.getItem('token');
-  // const parsedToken = decodeJwt(token);
-  // console.log('parsed token is working', parsedToken);
+  if(rtgsForm.beneficiaryAmount > 1000000)
+    {
+      invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
+      return;
+    }
+  const token = localStorage.getItem('token');
+  const parsedToken = decodeJwt(token);
+  console.log('parsed token is working', parsedToken);
 
 
-  // if(!parsedToken.loginId)
-  // {
-  //   localStorage.removeItem('token');
-  //   router.push('/');
-  // }
+  if(!parsedToken.loginId)
+  {
+    localStorage.removeItem('token');
+    router.push('/');
+  }
 
-  // const reqObject = {
-  //   loginId: parsedToken.loginId,
-  //   branchCode: rtgsForm.branchCode,
-  //   currencyCode: rtgsForm.currencyCode,
-  //   sbpTranTypeCode: rtgsForm.sbpTranTypeCode,
-  //   transferTypeCode: rtgsForm.transferTypeCode,
-  //   isCustAcc: rtgsForm.isCustAcc,
-  //   customerNo: rtgsForm.customerNo,
-  //   accountNo: rtgsForm.accountNo,
-  //   totalAmount: rtgsForm.beneficiaryAmount,
-  //   paymentMode: rtgsForm.paymentMode,
-  //   transactionLaxList: rtgsForm.transactionLaxList,
-  //   purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
-  //   remarks: rtgsForm.remarks,
-  //   senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
-  // }
+  const reqObject = {
+    loginId: parsedToken.loginId,
+    branchCode: rtgsForm.branchCode,
+    currencyCode: rtgsForm.currencyCode,
+    sbpTranTypeCode: rtgsForm.sbpTranTypeCode,
+    transferTypeCode: rtgsForm.transferTypeCode,
+    isCustAcc: rtgsForm.isCustAcc,
+    customerNo: rtgsForm.customerNo,
+    accountNo: rtgsForm.accountNo,
+    totalAmount: rtgsForm.beneficiaryAmount,
+    paymentMode: rtgsForm.paymentMode,
+    transactionLaxList: rtgsForm.transactionLaxList,
+    purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
+    remarks: rtgsForm.remarks,
+    senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
+    activityCode:100,
+  }
 
-  // try {
-  //   const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS', data:{ rtgsForm: reqObject} });
+  try {
+    const response = await axios.post(`/start`, { transition:'RECEIVEOUTWARDRTGS', data:{ rtgsForm: reqObject} });
 
-  //   if(response.status == 200)
-  //   {
-  //     const { data } = response;
-  //     if(data.success)
-  //     {
-  //       alert('Outward Rtgs submitted successfully');
-  //       router.push('/');
-  //       console.log("Success response is received from backend", data.data);
-  //     }
-  //   }
-  //   else
-  //   {
-  //     console.log('Error getting success response');
-  //     console.log(response.data);
-  //   }
-  // }
-  // catch (error) {
-  //   console.error(error);
-  // }
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("Success response is received from backend", data.data);
+        router.push('/exceptionWindow');
+      }
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
 }
-
-
 
 const insertTransactionLax = () => {
 
