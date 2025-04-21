@@ -1,14 +1,41 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from '@/axiosInstance.js';
 
 const router = useRouter();
 const isDialogVisible = ref(false);
+
+
+onMounted(async () => {
+  try {
+    const response = await axios.post(`/start`, { transition:'GETEXCEPTIONLIST' });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        exceptionList.value = data.data;
+        console.log(data);
+      }
+    }
+    else
+    {
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+})
+
+
 const exceptionList = ref([
   {
-    code:'80',
-    exception:'Need Authorization',
-    action:'Need Authorization'
+    exceptionCode:'80',
+    exceptionDescription:'Need Authorization',
+    actionRequired:'Need Authorization'
   }
 ]);
 
@@ -45,8 +72,30 @@ const exceptionForm = reactive({
   reasonDesc:'REQUESTED BY CUSTOMER'
 })
 
-const exceptionAcknowledged = () => {
-  isDialogVisible.value = true;
+const exceptionAcknowledged = async () => {
+  try {
+    const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS' });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        alert('Outward Rtgs submitted successfully');
+        isDialogVisible.value = true;
+        console.log("Success response is received from backend", data.data);
+      }
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+
 }
 
 const exit = () =>{
@@ -56,9 +105,9 @@ const exit = () =>{
 <template>
   <div>
     <el-table :data="exceptionList" style="width: 100%" height="300" max-height="300">
-      <el-table-column property="code" label="Code"  />
-      <el-table-column property="exception" label="Exception" />
-      <el-table-column property="action" label="Action" />
+      <el-table-column property="exceptionCode" label="Code"  />
+      <el-table-column property="exceptionDescription" label="Exception" />
+      <el-table-column property="actionRequired" label="Action" />
     </el-table>
   </div>
 
