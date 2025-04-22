@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { decodeJwt } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
-import { isNumber } from '@/utils/helpers';
+import { isNumber, dateMasking } from '@/utils/helpers';
 
 const router = useRouter();
 const branchList = ref([]);
@@ -684,7 +684,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-input v-model="rtgsForm.chequeDate" placeholder="  /  /  "/>
+            <el-input v-model="rtgsForm.chequeDate" @keydown="dateMasking" placeholder="  /   /  " maxlength="10"/>
           </el-form-item>
         </el-col>
       </el-row>
