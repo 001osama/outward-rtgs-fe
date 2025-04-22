@@ -1,24 +1,36 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 
-const adviseNoList = ref([
+onMounted(()=>{
+  let data = localStorage.getItem('voucher');
+  data = JSON.parse(data);
+  console.log("getting data from local Storage",data);
+  let adviceArray = [];
+  if(data)
   {
-    value:'6491929'
-  },
-  {
-    value:'6491930'
-  },
-]);
+    data.adviceNoList.forEach((u) => {
+      adviceArray.push({advice:u});
+    })
+    adviceNoList.value = adviceArray;
+
+    formData.adviceNo = data.adviceNoList[0];
+    formData.voucherNo = data.voucherLaxList[0].voucherNo;
+
+    console.log(data);
+    console.log("working");
+  }
+});
+
+const adviceNoList = ref([]);
 
 
 const router = useRouter();
 
 
-
 const formData = reactive({
-  adviseNo:'6491929',
+  adviceNo:'7070535',
   voucherNo: '82236/2025'
 })
 </script>
@@ -35,8 +47,8 @@ const formData = reactive({
           </el-col>
           <el-col :span="18">
             <el-form-item>
-              <el-select v-model="formData.adviseNo" placeholder="Select Advice">
-                <el-option v-for="item in adviseNoList" :key="item.value" :label="item.value" :value="item.value" />
+              <el-select v-model="formData.adviceNo" placeholder="Select Advice">
+                <el-option v-for="item in adviceNoList" :key="item.advice" :label="item.advice" :value="item.advice" />
               </el-select>
             </el-form-item>
           </el-col>

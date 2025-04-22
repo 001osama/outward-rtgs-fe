@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, computed, watch } from 'vue';
+import { ref, reactive, computed,watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { decodeJwt } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
@@ -112,7 +112,7 @@ const handleCurrentChange = (val) => {
 
 const handleTransactionLaxSelectedChange = (val) => {
   console.log(`Handle transaction current change is working`,val);
-  if(val && val.value)
+  if(val && val.beneficiaryIbanOrAccountNo)
   {
     selectedTransactionLax.value = val.beneficiaryIbanOrAccountNo;
   }
@@ -339,7 +339,7 @@ const getBenefBankDetails = async () => {
       {
         console.log("Success response is received from backend", data.data);
         transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
-        transactionLaxForm.benefBranchCode = data.data.beneficiaryBranchCd;
+        transactionLaxForm.beneficiaryBranchCode = data.data.beneficiaryBranchCd;
       }
       else
       {
@@ -360,8 +360,9 @@ const getBenefBankDetails = async () => {
 
 const submitRtgsForm = async () => {
 
+  // router.push('/exceptionWindow');
 
-  if(rtgsForm.beneficiaryAmount > 1000000)
+  if(rtgsForm.beneficiaryAmount < 1000000)
     {
       invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
       return;
@@ -398,24 +399,25 @@ const submitRtgsForm = async () => {
   try {
     const response = await axios.post(`/start`, { transition:'RECEIVEOUTWARDRTGS', data:{ rtgsForm: reqObject} });
 
-    if(response.status == 200)
-    {
-      const { data } = response;
-      if(data.success)
-      {
-        console.log("Success response is received from backend", data.data);
-        router.push('/exceptionWindow');
-      }
-    }
-    else
-    {
-      console.log('Error getting success response');
-      console.log(response.data);
-    }
-  }
-  catch (error) {
-    console.error(error);
-  }
+  //   if(response.status == 200)
+  //   {
+  //     const { data } = response;
+  //     if(data.success)
+  //     {
+  //       alert('Outward Rtgs submitted successfully');
+  //       router.push('/');
+  //       console.log("Success response is received from backend", data.data);
+  //     }
+  //   }
+  //   else
+  //   {
+  //     console.log('Error getting success response');
+  //     console.log(response.data);
+  //   }
+  // }
+  // catch (error) {
+  //   console.error(error);
+  // }
 }
 
 const insertTransactionLax = () => {
@@ -423,7 +425,7 @@ const insertTransactionLax = () => {
   if(transactionLaxForm.transactionAmount !== '' &&
     transactionLaxForm.beneficiaryBankName !== '' &&
     transactionLaxForm.beneficiaryBankCode !== '' &&
-    transactionLaxForm.benefBranchCode !== '' &&
+    transactionLaxForm.beneficiaryBranchCode !== '' &&
     transactionLaxForm.beneficiaryAccountName !== '' &&
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
     {
@@ -436,7 +438,7 @@ const insertTransactionLax = () => {
       transactionLaxForm.beneficiaryAccountName = '';
       transactionLaxForm.beneficiaryIbanOrAccountNo = '';
       transactionLaxForm.beneficiaryAddress = '';
-      transactionLaxForm.benefBranchCode = '';
+      transactionLaxForm.beneficiaryBranchCode = '';
     }
 
 }
@@ -444,6 +446,8 @@ const insertTransactionLax = () => {
 const removeTransactionLax = ()=> {
   if(selectedTransactionLax.value !== '')
   {
+    let selectedRowData = rtgsForm.transactionLaxList.find((item) => {item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value});
+    rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount - parseInt(selectedRowData.transactionAmount);
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item)=>item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value)
     selectedTransactionLax.value = '';
   }
@@ -578,7 +582,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="3">
           <el-form-item>
-            <span>{{(rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc) ? 'GL A/C No.' : 'A/C No.'}}</span>
+            <span>A/C No.</span>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -616,7 +620,7 @@ const changeCharges = () => {
       <el-row>
         <el-col :span="4">
           <el-form-item>
-            <span>{{rtgsForm.isCustAcc ? 'A/C Name' : 'GL A/C Name'}}</span>
+            <span>A/C Name</span>
           </el-form-item>
         </el-col>
         <el-col :span="16">
@@ -754,7 +758,7 @@ const changeCharges = () => {
             </el-col>
             <el-col :span="12">
               <el-form-item>
-                <el-input v-model="transactionLaxForm.benefBranchCode" disabled/>
+                <el-input v-model="transactionLaxForm.beneficiaryBranchCode" disabled/>
               </el-form-item>
             </el-col>
           </el-row>
