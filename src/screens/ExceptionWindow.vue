@@ -48,19 +48,17 @@ const reasonCodeList = ref([
 
 const voucherList = ref([
   {
-    vouchNo: '386144/2025',
-    refNo: 'A1072',
-    accNo: '1334',
-    accTitle: '1334',
+    voucherNo: '386144/2025',
+    referenceNo: 'A1072',
+    accountNo: '1334',
     currencyCode: 'PKR',
     debitAmount: '0.00',
     creditAmount: '9000000.00',
   },
   {
-    vouchNo: '386144/2025',
-    refNo: 'A1073',
-    accNo: '1335',
-    accTitle: 'Test Account',
+    voucherNo: '386144/2025',
+    referenceNo: 'A1073',
+    accountNo: '1335',
     currencyCode: 'PKR',
     debitAmount: '9000000.00',
     creditAmount: '0.00',
@@ -82,8 +80,11 @@ const exceptionAcknowledged = async () => {
       if(data.success)
       {
         alert('Outward Rtgs submitted successfully');
-        isDialogVisible.value = true;
+        voucherList.value = data.data.voucherLaxList;
+
+        localStorage.setItem("voucher", JSON.stringify(data.data));
         console.log("Success response is received from backend", data.data);
+        isDialogVisible.value = true;
       }
     }
     else
@@ -165,13 +166,13 @@ const exit = () =>{
       max-height="400"
       @current-change="handleCurrentChange"
       >
-      <el-table-column property="vouchNo" label="Vouch No." />
-      <el-table-column property="refNo" label="Ref No"/>
-      <el-table-column property="accNo" label="Account No."/>
-      <el-table-column property="accTitle" label="A/C Title"/>
-      <el-table-column property="currencyCode" label="CCY"/>
-      <el-table-column property="debitAmount" label="DR"/>
-      <el-table-column property="creditAmount" label="CR"/>
+      <el-table-column property="voucherNo" label="Vouch No." width="120"/>
+      <el-table-column property="referenceNo" label="Ref No" width="100"/>
+      <el-table-column property="accountNo" label="Account No." width="220"/>
+      <el-table-column property="accountNo" label="A/C Title" width="220"/>
+      <el-table-column property="currencyCode" label="CCY" width="100"/>
+      <el-table-column property="debitAmount" label="DR" width="150"/>
+      <el-table-column property="creditAmount" label="CR" width="150"/>
     </el-table>
     <fieldset style="margin-top: 20px;">
       <el-row>
