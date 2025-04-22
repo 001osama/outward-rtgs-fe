@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { decodeJwt } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
+import { isNumber } from '@/utils/helpers';
 
 const router = useRouter();
 const branchList = ref([]);
@@ -45,6 +46,8 @@ const rtgsForm = reactive({
   purposeOfPaymentCode:'',
   remarks:'',
   senderToReceiverInformation:'',
+  chequeNo:'',
+  chequeDate:''
 });
 
 
@@ -217,12 +220,7 @@ onMounted(async () => {
 const isBankTransferType = computed(() => rtgsForm.transferTypeCode === '202');
 
 
-const checkDigits = (event) => {
-    if (event.key.length === 1 && isNaN(Number(event.key)) )
-    {
-        event.preventDefault();
-    }
-}
+
 
 
 const ExitBtnClicked = () => {
@@ -576,7 +574,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="2">
           <el-form-item>
-            <el-input v-model="rtgsForm.customerNo" :disabled="(rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc)" @blur="getCustAccounts" @keydown="checkDigits" maxlength="6"/>
+            <el-input v-model="rtgsForm.customerNo" :disabled="(rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc)" @blur="getCustAccounts" @keydown="isNumber" maxlength="6"/>
           </el-form-item>
         </el-col>
         <el-col :span="3">
@@ -675,7 +673,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-input  :disabled="rtgsForm.isCustAcc"/>
+            <el-input v-model="rtgsForm.chequeNo" @keydown="isNumber" maxlength="6" :disabled="rtgsForm.isCustAcc"/>
           </el-form-item>
         </el-col>
 
@@ -686,7 +684,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-input />
+            <el-input v-model="rtgsForm.chequeDate" placeholder="  /  /  "/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -700,7 +698,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="7">
           <el-form-item>
-            <el-input v-model="transactionLaxForm.transactionAmount"/>
+            <el-input v-model="transactionLaxForm.transactionAmount" @keydown="isNumber" maxlength="18"/>
           </el-form-item>
         </el-col>
       </el-row>

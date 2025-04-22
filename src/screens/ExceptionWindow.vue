@@ -13,7 +13,6 @@ onMounted(async () => {
   try {
     console.log("Hitting api")
     const response = await axios.post(`/start`, { transition:'GETEXCEPTIONLIST' });
-    debugger;
     if(response.status == 200)
     {
       const { data } = response;
@@ -85,7 +84,8 @@ onMounted(async ()=>{
 const exceptionForm = reactive({
   reasonCode:'0005',
   reasonDesc:'REQUESTED BY CUSTOMER'
-})
+});
+
 
 const exceptionAcknowledged = async () => {
   try {
