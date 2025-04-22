@@ -399,25 +399,24 @@ const submitRtgsForm = async () => {
   try {
     const response = await axios.post(`/start`, { transition:'RECEIVEOUTWARDRTGS', data:{ rtgsForm: reqObject} });
 
-  //   if(response.status == 200)
-  //   {
-  //     const { data } = response;
-  //     if(data.success)
-  //     {
-  //       alert('Outward Rtgs submitted successfully');
-  //       router.push('/');
-  //       console.log("Success response is received from backend", data.data);
-  //     }
-  //   }
-  //   else
-  //   {
-  //     console.log('Error getting success response');
-  //     console.log(response.data);
-  //   }
-  // }
-  // catch (error) {
-  //   console.error(error);
-  // }
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        router.push('/exceptionwindow');
+        console.log("Success response is received from backend", data.data);
+      }
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
 }
 
 const insertTransactionLax = () => {

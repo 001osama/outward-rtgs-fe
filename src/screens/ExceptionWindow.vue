@@ -1,16 +1,19 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { invokeDefaultDialog } from '@/utils/dialog';
 import axios from '@/axiosInstance.js';
 
 const router = useRouter();
 const isDialogVisible = ref(false);
 
+const exceptionList = ref([]);
 
 onMounted(async () => {
   try {
+    console.log("Hitting api")
     const response = await axios.post(`/start`, { transition:'GETEXCEPTIONLIST' });
-
+    debugger;
     if(response.status == 200)
     {
       const { data } = response;
@@ -31,13 +34,7 @@ onMounted(async () => {
 })
 
 
-const exceptionList = ref([
-  {
-    exceptionCode:'80',
-    exceptionDescription:'Need Authorization',
-    actionRequired:'Need Authorization'
-  }
-]);
+
 
 const reasonCodeList = ref([
   {
@@ -99,7 +96,6 @@ const exceptionAcknowledged = async () => {
       const { data } = response;
       if(data.success)
       {
-        alert('Outward Rtgs submitted successfully');
         voucherList.value = data.data.voucherLaxList;
 
         localStorage.setItem("voucher", JSON.stringify(data.data));
@@ -116,31 +112,6 @@ const exceptionAcknowledged = async () => {
   catch (error) {
     console.error(error);
   }
-
-const exceptionAcknowledged = async () => {
-  try
-  {
-
-    const response = await axios.get('/start', {transition:'POSTOUTWARDRTGS'});
-    if(response.status == 200)
-    {
-      if(response.data.succes)
-      {
-        voucherList.value = response.data.data;
-        isDialogVisible.value = true;
-      }
-      else
-      {
-        console.log('response from server is ', response.data);
-        invokeDefaultDialog('Error','Network Error');
-      }
-    }
-  }
-  catch(ex)
-  {
-    console.error('Error Occurred', ex);
-    invokeDefaultDialog('Error','Network Error');
-  }
 }
 
 const exit = () =>{
@@ -150,9 +121,6 @@ const exit = () =>{
 <template>
   <div>
     <el-table :data="exceptionList" style="width: 100%" height="300" max-height="300">
-      <el-table-column property="exceptionCode" label="Code"  />
-      <el-table-column property="exceptionDescription" label="Exception" />
-      <el-table-column property="actionRequired" label="Action" />
       <el-table-column property="exceptionCode" label="Code"  />
       <el-table-column property="exceptionDescription" label="Exception" />
       <el-table-column property="actionRequired" label="Action" />
