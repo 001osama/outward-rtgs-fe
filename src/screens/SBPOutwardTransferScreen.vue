@@ -112,7 +112,7 @@ const handleCurrentChange = (val) => {
 
 const handleTransactionLaxSelectedChange = (val) => {
   console.log(`Handle transaction current change is working`,val);
-  if(val && val.value)
+  if(val && val.beneficiaryIbanOrAccountNo)
   {
     selectedTransactionLax.value = val.beneficiaryIbanOrAccountNo;
   }
@@ -388,6 +388,7 @@ const submitRtgsForm = async () => {
     purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
     remarks: rtgsForm.remarks,
     senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
+    activityCode:100,
   }
 
   try {
@@ -443,8 +444,8 @@ const insertTransactionLax = () => {
 const removeTransactionLax = ()=> {
   if(selectedTransactionLax.value !== '')
   {
-    debugger;
-    rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount - parseInt(selectedTransactionLax.value);
+    let selectedRowData = rtgsForm.transactionLaxList.find((item) => {item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value});
+    rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount - parseInt(selectedRowData.transactionAmount);
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item)=>item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value)
     selectedTransactionLax.value = '';
   }
