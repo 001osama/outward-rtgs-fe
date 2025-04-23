@@ -30,8 +30,8 @@ const router = useRouter();
 
 
 const formData = reactive({
-  adviceNo:'7070535',
-  voucherNo: '82236/2025'
+  adviceNo:'0000000',
+  voucherNo: '00000/0000'
 })
 
 const acknowledge = () => {

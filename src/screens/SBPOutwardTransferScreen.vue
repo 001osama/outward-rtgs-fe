@@ -8,6 +8,9 @@ import { isNumber, dateMasking } from '@/utils/helpers';
 
 const router = useRouter();
 const $route = useRoute();
+
+const isFormDisabled = ref(false);
+const mode = ref('');
 const branchList = ref([]);
 const accNoList = ref([]);
 const currencyList = ref([]);
@@ -20,8 +23,15 @@ const selectedTransactionLax = ref();
 
 
 
+
 let previousCustomerNo = '';
 
+
+const submitButtonText = computed(() => {
+  if (mode.value === 'auth') return 'Authorize'
+  if (mode.value === 'cancel') return 'Cancel'
+  return 'OK'
+})
 
 
 const dialogTableVisible = ref(false);
@@ -212,6 +222,10 @@ onMounted(async () => {
 
         if($route.query && $route.query.mode && $route.query.voucherNo)
         {
+          isFormDisabled.value=true;
+
+          mode.value = $route.query.mode;
+
           const voucherInfoList = $route.query.voucherNo.split('/');
           await getOutwardRtgs(voucherInfoList[0], voucherInfoList[1]);
         }
@@ -270,8 +284,17 @@ const isBankTransferType = computed(() => rtgsForm.transferTypeCode === '202');
 
 
 
-const ExitBtnClicked = () => {
-  router.push('remittance');
+const handleExitClick = () => {
+  if (mode.value === 'auth')
+  {
+    router.push('sbpoutwardauth');
+  }
+  else if (mode.value === 'cancel')
+  {
+    router.push('sbpoutwardcancel');
+    return
+  }
+  else router.push('remittance');;
 }
 
 const getCustAccounts = async () => {
@@ -403,10 +426,16 @@ const getBenefBankDetails = async () => {
   }
 }
 
-const submitRtgsForm = async () => {
+const handleSubmitClick = async () => {
 
   // router.push('/exceptionWindow');
+  if (mode.value === 'auth') return;
+  if (mode.value === 'cancel') return;
+  else
+    await submitRTGSForm();
+}
 
+const submitRTGSForm = async () => {
   if(rtgsForm.beneficiaryAmount < 1000000)
     {
       invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
@@ -578,7 +607,7 @@ const changeCharges = () => {
           </el-col>
           <el-col :span="16">
             <el-form-item>
-              <el-select v-model="rtgsForm.sbpTranTypeCode" placeholder="Select SBP Tran Type">
+              <el-select :disabled="isFormDisabled" v-model="rtgsForm.sbpTranTypeCode" placeholder="Select SBP Tran Type">
                 <el-option v-for="item in sBPTranTypeList" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -592,7 +621,7 @@ const changeCharges = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-radio-group v-model="rtgsForm.transferTypeCode">
+              <el-radio-group :disabled="isFormDisabled" v-model="rtgsForm.transferTypeCode">
                 <el-radio
                 :disabled="disabilityController.isMultipleBeneficiaryDisabled"
                 value="102">102(Multiple Beneficiary)</el-radio>
@@ -606,9 +635,9 @@ const changeCharges = () => {
             </el-form-item>
           </el-col>
           <el-col :span="2"></el-col>
-          <el-col :span="5">
+          <!-- <el-col :span="5">
             <el-checkbox v-if="isBankTransferType" v-model="rtgsForm.isCustAcc" label="Customer Acc."/>
-          </el-col>
+          </el-col> -->
         </el-row>
       </fieldset>
     </fieldset>
@@ -621,7 +650,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="2">
           <el-form-item>
-            <el-input v-model="rtgsForm.customerNo" :disabled="(rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc)" @blur="getCustAccounts" @keydown="isNumber" maxlength="6"/>
+            <el-input v-model="rtgsForm.customerNo" :disabled="isFormDisabled || (rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc)" @blur="getCustAccounts" @keydown="isNumber" maxlength="6"/>
           </el-form-item>
         </el-col>
         <el-col :span="3">
@@ -631,7 +660,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-select v-model="rtgsForm.accountNo"  @change="getAccountDetails" placeholder="Select A/C">
+            <el-select :disabled="isFormDisabled" v-model="rtgsForm.accountNo"  @change="getAccountDetails" placeholder="Select A/C">
               <el-option v-for="item in accNoList" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
@@ -705,7 +734,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-radio-group v-model="rtgsForm.paymentMode">
+            <el-radio-group :disabled="isFormDisabled" v-model="rtgsForm.paymentMode">
               <el-radio value="cheque">Cheque</el-radio>
             </el-radio-group>
           </el-form-item>
@@ -720,7 +749,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-input v-model="rtgsForm.chequeNo" @keydown="isNumber" maxlength="6" :disabled="rtgsForm.isCustAcc"/>
+            <el-input v-model="rtgsForm.chequeNo" @keydown="isNumber" maxlength="6" :disabled="isFormDisabled || rtgsForm.isCustAcc"/>
           </el-form-item>
         </el-col>
 
@@ -731,7 +760,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="4">
           <el-form-item>
-            <el-input v-model="rtgsForm.chequeDate" @keydown="dateMasking" placeholder="  /   /  " maxlength="10"/>
+            <el-input :disabled="isFormDisabled" v-model="rtgsForm.chequeDate" @keydown="dateMasking" placeholder="  /   /  " maxlength="10"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -745,7 +774,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="7">
           <el-form-item>
-            <el-input v-model="transactionLaxForm.transactionAmount" @keydown="isNumber" maxlength="18"/>
+            <el-input :disabled="isFormDisabled" v-model="transactionLaxForm.transactionAmount" @keydown="isNumber" maxlength="18"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -762,7 +791,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="1"></el-col>
         <el-col :span="2">
-          <el-button class="generic-button" @click="dialogTableVisible = true" type="primary">List</el-button>
+          <el-button :disabled="isFormDisabled" class="generic-button" @click="dialogTableVisible = true" type="primary">List</el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -773,12 +802,12 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"/>
+            <el-input :disabled="isFormDisabled" v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"/>
           </el-form-item>
         </el-col>
         <el-col :span="1"></el-col>
         <el-col :span="2">
-          <el-button class="generic-button" @click="getBenefBankDetails" type="primary">Fetch</el-button>
+          <el-button :disabled="isFormDisabled" class="generic-button" @click="getBenefBankDetails" type="primary">Fetch</el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -816,7 +845,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="12">
           <el-form-item>
-            <el-input v-model="transactionLaxForm.beneficiaryAddress" :autosize=false type="textarea" :rows="2"/>
+            <el-input :disabled="isFormDisabled" v-model="transactionLaxForm.beneficiaryAddress" :autosize=false type="textarea" :rows="2"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -834,10 +863,10 @@ const changeCharges = () => {
       <el-row style="margin-bottom: 8px;">
         <el-col :span="17"></el-col>
         <el-col :span="3" style="margin-right: 8px;">
-          <el-button class="generic-button" @click="removeTransactionLax" type="primary">Remove</el-button>
+          <el-button class="generic-button" :disabled="isFormDisabled" @click="removeTransactionLax" type="primary">Remove</el-button>
         </el-col>
         <el-col :span="3">
-          <el-button class="generic-button" :disabled="rtgsForm.transferTypeCode==='103' && rtgsForm.transactionLaxList.length > 0" @click="insertTransactionLax" type="primary">Add</el-button>
+          <el-button class="generic-button" :disabled="isFormDisabled || (rtgsForm.transferTypeCode==='103' && rtgsForm.transactionLaxList.length > 0)" @click="insertTransactionLax" type="primary">Add</el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -848,7 +877,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="15">
           <el-form-item>
-            <el-select v-model="rtgsForm.purposeOfPaymentCode" placeholder="Select Purpose of Payment">
+            <el-select :disabled="isFormDisabled" v-model="rtgsForm.purposeOfPaymentCode" placeholder="Select Purpose of Payment">
               <el-option v-for="item in purposeOfPaymentList" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
@@ -862,7 +891,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="15">
           <el-form-item>
-            <el-input v-model="rtgsForm.remarks" :autosize=false type="textarea" :rows="2"/>
+            <el-input :disabled="isFormDisabled" v-model="rtgsForm.remarks" :autosize=false type="textarea" :rows="2"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -874,7 +903,7 @@ const changeCharges = () => {
         </el-col>
         <el-col :span="15">
           <el-form-item>
-            <el-input v-model="rtgsForm.senderToReceiverInformation" :autosize=false type="textarea" :rows="2"/>
+            <el-input :disabled="isFormDisabled" v-model="rtgsForm.senderToReceiverInformation" :autosize=false type="textarea" :rows="2"/>
           </el-form-item>
         </el-col>
       </el-row>
@@ -892,13 +921,13 @@ const changeCharges = () => {
       <el-col :span="4">
         <el-row style="gap: 6px;padding: 0px 6px;">
           <el-col>
-            <el-button class="generic-button" @click="insertCharges" type="primary">Add Charges</el-button>
+            <el-button :disabled="isFormDisabled" class="generic-button" @click="insertCharges" type="primary">Add Charges</el-button>
           </el-col>
           <el-col>
-            <el-button class="generic-button" @click="changeCharges" type="primary">Change Charges</el-button>
+            <el-button :disabled="isFormDisabled" class="generic-button" @click="changeCharges" type="primary">Change Charges</el-button>
           </el-col>
           <el-col>
-            <el-button class="generic-button" :disabled="chargesLaxList.length == 0" @click="removeCharges" type="primary">Remove Charges</el-button>
+            <el-button class="generic-button" :disabled="isFormDisabled || chargesLaxList.length == 0" @click="removeCharges" type="primary">Remove Charges</el-button>
           </el-col>
         </el-row>
       </el-col>
@@ -906,15 +935,15 @@ const changeCharges = () => {
     <fieldset>
       <el-row>
         <el-col :span="3">
-          <el-button class="generic-button" @click="submitRtgsForm" type="primary">OK</el-button>
+          <el-button class="generic-button" @click="handleSubmitClick" type="primary">{{submitButtonText}}</el-button>
         </el-col>
         <el-col :span="1"></el-col>
         <el-col :span="3">
-          <el-button class="generic-button" type="primary">View Signature</el-button>
+          <el-button :disabled="isFormDisabled" class="generic-button" type="primary">View Signature</el-button>
         </el-col>
         <el-col :span="13"></el-col>
         <el-col :span="3">
-          <el-button @click="ExitBtnClicked" class="generic-button" type="primary">Exit</el-button>
+          <el-button  @click="handleExitClick" class="generic-button" type="primary">Exit</el-button>
         </el-col>
       </el-row>
     </fieldset>
