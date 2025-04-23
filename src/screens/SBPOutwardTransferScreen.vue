@@ -1,12 +1,13 @@
 <script setup>
 import { ref, reactive, computed,watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { decodeJwt } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
 import { isNumber, dateMasking } from '@/utils/helpers';
 
 const router = useRouter();
+const $route = useRoute();
 const branchList = ref([]);
 const accNoList = ref([]);
 const currencyList = ref([]);
@@ -134,6 +135,8 @@ const handleChargesLaxSelectedChange = (val) => {
 
 
 watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
+
+
   switch (sbpTranTypeCode) {
     case '41':
     disabilityController.isSingleBeneficiaryDisabled = false;
@@ -204,6 +207,14 @@ onMounted(async () => {
         rtgsForm.sbpTranTypeCode = '1';
 
         console.log(data);
+
+        console.log(`we are getting the route ${$route.query}`,$route.query);
+
+        if($route.query && $route.query.mode && $route.query.voucherNo)
+        {
+          const voucherInfoList = $route.query.voucherNo.split('/');
+          await getOutwardRtgs(voucherInfoList[0], voucherInfoList[1]);
+        }
       }
     }
     else
@@ -215,6 +226,23 @@ onMounted(async () => {
     console.error(error);
   }
 })
+
+const getOutwardRtgs = async (voucherNo, voucherYear) => {
+  console.log(`route mode is ${$route.query.mode}`);
+  console.log(`route voucherNo is ${$route.query.voucherNo}`);
+  const response = await axios.post(`/start`, { transition:'FETCHOUTWARDRTGS', data:{voucherNo: voucherNo, voucherYear: voucherYear }  });
+
+  if(response.status == 200)
+  {
+    const { data } = response;
+    if(data.success)
+    {
+      console.log("Success response is received from backend", data.data);
+      console.log(data);
+    }
+  }
+
+}
 
 // const isAccNoListEmpty = computed(() => accNoList.value.length === 0);
 const isBankTransferType = computed(() => rtgsForm.transferTypeCode === '202');

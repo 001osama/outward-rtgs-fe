@@ -1,106 +1,88 @@
 <script setup>
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
-import { ElMessageBox } from 'element-plus'
+import { useRouter} from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { invokeDefaultDialog } from '@/utils/dialog';
+import axios from '@/axiosInstance.js';
 
 const router = useRouter();
+
 const currentSelectedRow = ref(null);
 
 const ExitBtnClicked = () => {
   router.push('remittance')
 }
 
+// const tableData = [
+//   {
+//     amount: 120.50,
+//     currency: 'USD',
+//     expCode: 'EXP-101',
+//     postedBy: 'John Doe',
+//     postedDate: '2023-10-26',
+//     voucherNo: 'VCH-001',
+//   }
+// ]
+
+const tableData = ref([])
+
+onMounted(async ()=>{
+  try {
+    const response = await axios.post('/start', {transition:'FETCHUNAUTHOUTWARDRTGSLIST'})
+    if(response.status == 200)
+    {
+      console.log(response.data)
+      if(response.data.success)
+      {
+        tableData.value = response.data.data;
+      }
+      else
+        invokeDefaultDialog('Error', response.data.message);
+    }
+  }
+  catch(ex)
+  {
+    console.log(ex)
+    invokeDefaultDialog('Error', 'Network Error');
+  }
+});
 
 const handleRowClick = (row) => {
-  currentSelectedRow.value = row.id;
+  currentSelectedRow.value = row.voucherNo;
   console.log('current Selected Row Value Updated', currentSelectedRow.value);
 }
 
-const handleDoubleClick = (row, column, event)=>{
+const handleDoubleClick = (row)=>{
   console.log(`Double click event is working`);
-  console.log(`Receiving Id is ${row.id}`);
-  console.log(`row : ${row}, column: ${column}, event: ${event}`);
+  console.log(`row double clicked : ${row.voucherNo}`);
 }
 
 const OpenVoucher = () => {
   if(!currentSelectedRow.value)
-    ElMessageBox.alert(
-      `Please select a row`,
-      'Message',
-      {
-        confirmButtonClass: 'mb-confirm-button',
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: 'OK',
-        showCancelButton: false,
-        showClose: false,
-        draggable: true,
-        center: true,
-      }
-    )
+  {
+    invokeDefaultDialog("Message", "Please select a row");
+    return;
+  }
 
-  console.log('Sending Voucher Id',currentSelectedRow.value);
+  router.push({ path: '/sbpoutwardtransfer', query: { mode: 'auth', voucherNo: currentSelectedRow.value} });
+  console.log('Sending Voucher Id ',currentSelectedRow.value);
 }
 
 
-const tableData = [
-  {
-    id: 1,
-    Currency: 'USD',
-    Amount: 120.50,
-    PostBy: 'John Doe',
-    PostDate: '2023-10-26',
-    VoucherNo: 'VCH-001',
-    ExpCode: 'EXP-101',
-  },
-  {
-    id: 2,
-    Currency: 'EUR',
-    Amount: 85.75,
-    PostBy: 'Jane Smith',
-    PostDate: '2023-10-25',
-    VoucherNo: 'VCH-002',
-    ExpCode: 'EXP-102',
-  },
-  {
-    id: 3,
-    Currency: 'GBP',
-    Amount: 250.00,
-    PostBy: 'David Lee',
-    PostDate: '2023-10-24',
-    VoucherNo: 'VCH-003',
-    ExpCode: 'EXP-103',
-  },
-  {
-    id: 4,
-    Currency: 'JPY',
-    Amount: 5000,
-    PostBy: 'Sarah Kim',
-    PostDate: '2023-10-23',
-    VoucherNo: 'VCH-004',
-    ExpCode: 'EXP-104',
-  },
-  {
-    id: 5,
-    Currency: 'CAD',
-    Amount: 90.20,
-    PostBy: 'Michael Brown',
-    PostDate: '2023-10-22',
-    VoucherNo: 'VCH-005',
-    ExpCode: 'EXP-105',
-  }
-]
+
 </script>
 <template>
   <div>
     <el-table :data="tableData" highlight-current-row style="width: 100%"
+      height="350"
+      max-height="450"
       @row-click="handleRowClick"
       @row-dblclick="handleDoubleClick">
-      <el-table-column property="Currency" label="Currency" width="120" />
-      <el-table-column property="Amount" label="Amount" width="120" />
-      <el-table-column property="PostBy" label="PostBy" />
-      <el-table-column property="PostDate" label="PostDate" />
-      <el-table-column property="VoucherNo" label="VoucherNo" />
-      <el-table-column property="ExpCode" label="ExpCode" />
+      <el-table-column property="currency" label="Currency" width="150" />
+      <el-table-column property="amount" label="Amount" width="200" />
+      <el-table-column property="postedBy" label="PostBy" />
+      <el-table-column property="postedDate" label="PostDate" />
+      <el-table-column property="voucherNo" label="VoucherNo" />
+      <el-table-column property="expCode" label="ExpCode" />
     </el-table>
 
     <el-row style="margin-top: 20px;">

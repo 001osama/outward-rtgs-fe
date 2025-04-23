@@ -33,6 +33,11 @@ const formData = reactive({
   adviceNo:'7070535',
   voucherNo: '82236/2025'
 })
+
+const acknowledge = () => {
+  localStorage.removeItem('voucher');
+  router.push('/');
+}
 </script>
 <template>
   <fieldset>
@@ -62,7 +67,7 @@ const formData = reactive({
         <el-row class="justify-center">
           <el-col :span="8"></el-col>
           <el-col :span="8">
-            <el-button @click="router.push('/')" class="generic-button" type="primary">OK</el-button>
+            <el-button @click="acknowledge" class="generic-button" type="primary">OK</el-button>
           </el-col>
           <el-col :span="8"></el-col>
         </el-row>
