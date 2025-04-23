@@ -237,6 +237,25 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
     const { data } = response;
     if(data.success)
     {
+      const responseData = data.data;
+
+      rtgsForm.branchCode = responseData.branchCode;
+      rtgsForm.currencyCode = responseData.currencyCode;
+      rtgsForm.sbpTranTypeCode = responseData.sbpTranTypeCode;
+      rtgsForm.customerNo = responseData.customerNo;
+      rtgsForm.transferTypeCode = responseData.transferTypeCode;
+      rtgsForm.accountNo = responseData.accountNo;
+      rtgsForm.paymentMode = responseData.paymentMode;
+      rtgsForm.beneficiaryAmount = responseData.totalAmount;
+      rtgsForm.purposeOfPaymentCode = responseData.purposeOfPaymentCode;
+      rtgsForm.remarks = responseData.remarks;
+      rtgsForm.transactionLaxList = responseData.transactionLaxList;
+      await getCustAccounts();
+      await getAccountDetails();
+      insertCharges();
+
+
+
       console.log("Success response is received from backend", data.data);
       console.log(data);
     }
