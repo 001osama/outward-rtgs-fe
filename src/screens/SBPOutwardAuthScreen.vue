@@ -63,7 +63,8 @@ const OpenVoucher = () => {
     return;
   }
 
-  router.push({ path: '/sbpoutwardtransfer', query: { mode: 'auth', voucherNo: currentSelectedRow.value} });
+  const voucherInfoList = currentSelectedRow.value.split('/');
+  router.push({ path: '/sbpoutwardtransfer', query: { mode: 'auth', voucherNo: voucherInfoList[0], voucherYear: voucherInfoList[1] } });
   console.log('Sending Voucher Id ',currentSelectedRow.value);
 }
 

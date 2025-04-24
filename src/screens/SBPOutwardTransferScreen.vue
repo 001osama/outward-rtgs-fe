@@ -220,14 +220,13 @@ onMounted(async () => {
 
         console.log(`we are getting the route ${$route.query}`,$route.query);
 
-        if($route.query && $route.query.mode && $route.query.voucherNo)
+        if($route.query && $route.query.mode && $route.query.voucherNo && $route.query.voucherYear)
         {
           isFormDisabled.value=true;
 
           mode.value = $route.query.mode;
 
-          const voucherInfoList = $route.query.voucherNo.split('/');
-          await getOutwardRtgs(voucherInfoList[0], voucherInfoList[1]);
+          await getOutwardRtgs($route.query.voucherNo, $route.query.voucherYear);
         }
       }
     }
@@ -430,7 +429,40 @@ const handleSubmitClick = async () => {
 
   // router.push('/exceptionWindow');
   if (mode.value === 'auth') return;
-  if (mode.value === 'cancel') return;
+  if (mode.value === 'cancel')
+  {
+    try {
+      if(!$route.query && !$route.query.mode && !$route.query.voucherNo && !$route.query.voucherYear)
+        return;
+
+      const response = await axios.post(`/start`, {
+         transition:'RECEIVEOUTWARDRTGSVOUCHERINFO',
+         data:{
+          voucherNo: $route.query.voucherNo,
+          voucherYear: $route.query.voucherYear,
+          activityCode: 200
+          }
+        });
+
+      if(response.status == 200)
+      {
+        const { data } = response;
+        if(data.success)
+        {
+          router.push('/exceptionwindow');
+          console.log("Success response is received from backend", data.data);
+        }
+      }
+      else
+      {
+        console.log('Error getting success response');
+        console.log(response.data);
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
   else
     await submitRTGSForm();
 }

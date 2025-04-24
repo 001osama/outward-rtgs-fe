@@ -2,6 +2,7 @@
 import { invokeDefaultDialog } from '@/utils/dialog';
 import {reactive} from 'vue';
 import {useRouter} from 'vue-router';
+import axios from '@/axiosInstance.js';
 
 const authForm = reactive({
   loginId:'',
@@ -10,9 +11,41 @@ const authForm = reactive({
 
 const router = useRouter();
 
-const activityAuthorized = () => {
-  invokeDefaultDialog('Message', 'Voucher No 0082236/2025 has been cancelled', ()=>{ router.push('/') });
+const activityAuthorized = async () => {
+  try {
+      const response = await axios.post(`/start`, {
+         transition:'AUTHORIZEUSER',
+         data:{
+          loginId: authForm.loginId,
+          password: authForm.password,
+          }
+        });
+
+      if(response.status == 200)
+      {
+        const { data } = response;
+        if(data.success)
+        {
+          debugger;
+          console.log("Success response is received from backend", data.data);
+          invokeDefaultDialog('Message', `Voucher No ${data.data.voucherNo}/${data.data.voucherYear} has been cancelled`, ()=>{ router.push('/') });
+
+        }
+      }
+      else
+      {
+        console.log('Error getting success response');
+        console.log(response.data);
+        invokeDefaultDialog('Error', 'Network Error');
+      }
+    }
+    catch (error) {
+      console.error(error);
+      invokeDefaultDialog('Error', 'Network Error');
+    }
 }
+
+
 </script>
 <template>
   <el-row>
@@ -47,7 +80,7 @@ const activityAuthorized = () => {
       <fieldset>
         <el-row>
           <el-col :span="7">
-            <el-button @click="activityAuthorized" class="generic-button" type="primary">Authorize</el-button>
+            <el-button :disabled="authForm.loginId.length < 1 && authForm.password.length < 1" @click="activityAuthorized" class="generic-button" type="primary">Authorize</el-button>
           </el-col>
           <el-col :span="10"></el-col>
           <el-col :span="7">

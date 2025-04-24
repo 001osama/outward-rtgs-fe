@@ -6,12 +6,11 @@ import axios from '@/axiosInstance.js';
 
 const router = useRouter();
 const isDialogVisible = ref(false);
-
 const exceptionList = ref([]);
+let onAcknowledgeAction;
 
 onMounted(async () => {
   try {
-    console.log("Hitting api")
     const response = await axios.post(`/start`, { transition:'GETEXCEPTIONLIST' });
     if(response.status == 200)
     {
@@ -63,12 +62,15 @@ const voucherList = ref([
 
 onMounted(async ()=>{
   try {
-    const response = await axios.post('/start', {transition:'GETEXCEPTIONLIST'})
+    const response = await axios.post('/start', {transition:'GETEXCEPTIONDATA'})
     if(response.status == 200)
     {
       console.log(response.data)
       if(response.data.success)
-        exceptionList.value = response.data.data;
+      {
+        exceptionList.value = response.data.data.exceptionList;
+        onAcknowledgeAction = response.data.data.onAcknowledge;
+      }
       else
         invokeDefaultDialog('Error', response.data.message);
     }
@@ -88,8 +90,17 @@ const exceptionForm = reactive({
 
 
 const exceptionAcknowledged = async () => {
+  if(onAcknowledgeAction?.length <= 0)
+    return;
+
+  if(onAcknowledgeAction === "AUTHORIZEUSER")
+  {
+    router.push("/authWindow");
+    return;
+  }
+
   try {
-    const response = await axios.post(`/start`, { transition:'POSTOUTWARDRTGS' });
+    const response = await axios.post(`/start`, { transition:onAcknowledgeAction });
 
     if(response.status == 200)
     {

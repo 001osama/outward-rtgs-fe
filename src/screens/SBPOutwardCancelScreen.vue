@@ -1,6 +1,9 @@
 <script setup>
 import { reactive } from 'vue';
+import axios from '@/axiosInstance.js';
 import { useRouter } from 'vue-router';
+import { invokeDefaultDialog } from '@/utils/dialog';
+import { isNumber } from '@/utils/helpers';
 
 const router = useRouter();
 
@@ -10,11 +13,41 @@ const voucherInfo = reactive({
   voucherYear: '2025'
 })
 
+const insertPadding = () => {
+    if(voucherInfo.voucherNo)
+    voucherInfo.voucherNo = voucherInfo.voucherNo.padStart(7, '0');
+}
+
 
 const CancelBtnClicked = () => {
   router.push('remittance');
 }
+const handleSubmit = async () => {
+  try {
+    const response = await axios.post('/start', {
+      transition:'ISVOUCHEREXISTFORCANCELLATION',
+      data:{
+        voucherNo: voucherInfo.voucherNo,
+        voucherYear: voucherInfo.voucherYear
+      }
+    })
 
+    if(response.status == 200)
+    {
+      console.log(response.data)
+      if(response.data.success)
+        router.push({ path: '/sbpoutwardtransfer', query: { mode: 'cancel', voucherNo: voucherInfo.voucherNo, voucherYear: voucherInfo.voucherYear} });
+      else
+        invokeDefaultDialog('Error', response.data.message);
+    }
+  }
+  catch(ex)
+  {
+    console.log(ex)
+    invokeDefaultDialog('Error', 'Network Error');
+  }
+
+}
 </script>
 <template>
   <el-row>
@@ -31,7 +64,7 @@ const CancelBtnClicked = () => {
               </el-col>
               <el-col :span="16">
                 <el-form-item>
-                  <el-input dir="rtl" v-model="voucherInfo.voucherNo" />
+                  <el-input dir="rtl" v-model="voucherInfo.voucherNo" @blur="insertPadding" @keydown="isNumber" maxlength="7"/>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -45,14 +78,14 @@ const CancelBtnClicked = () => {
                 </el-form-item>
               </el-col>
               <el-col :span="20">
-                <el-input v-model="voucherInfo.voucherYear" />
+                <el-input v-model="voucherInfo.voucherYear" maxlength="4"/>
               </el-col>
             </el-row>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="3">
-            <el-button @click="router.push('authWindow')" :disabled="voucherInfo.voucherNo.length < 8" class="generic-button" type="primary">OK</el-button>
+            <el-button @click="handleSubmit" :disabled="voucherInfo.voucherNo.length < 6" class="generic-button" type="primary">OK</el-button>
           </el-col>
           <el-col :span="14"></el-col>
           <el-col :span="3">
