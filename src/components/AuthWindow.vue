@@ -1,15 +1,16 @@
 <script setup>
 import { invokeDefaultDialog } from '@/utils/dialog';
-import {reactive} from 'vue';
-import {useRouter} from 'vue-router';
+import {reactive, defineEmits} from 'vue';
 import axios from '@/axiosInstance.js';
+
+
+const emit = defineEmits(['cancelled', 'success']);
 
 const authForm = reactive({
   loginId:'',
   password:'',
 })
 
-const router = useRouter();
 
 const activityAuthorized = async () => {
   try {
@@ -26,11 +27,11 @@ const activityAuthorized = async () => {
         const { data } = response;
         if(data.success)
         {
-          debugger;
-          console.log("Success response is received from backend", data.data);
-          invokeDefaultDialog('Message', `Voucher No ${data.data.voucherNo}/${data.data.voucherYear} has been cancelled`, ()=>{ router.push('/') });
-
+          console.log("User successfully authorized", data.data);
+          emit('success');
         }
+        else
+          invokeDefaultDialog('Error', data.message);
       }
       else
       {
@@ -44,8 +45,6 @@ const activityAuthorized = async () => {
       invokeDefaultDialog('Error', 'Network Error');
     }
 }
-
-
 </script>
 <template>
   <el-row>
@@ -84,7 +83,7 @@ const activityAuthorized = async () => {
           </el-col>
           <el-col :span="10"></el-col>
           <el-col :span="7">
-            <el-button class="generic-button" type="primary">Back</el-button>
+            <el-button @click="emit('cancelled')" class="generic-button" type="primary">Back</el-button>
           </el-col>
         </el-row>
       </fieldset>
