@@ -7,6 +7,7 @@ import axios from '@/axiosInstance.js';
 import { isNumber, dateMasking } from '@/utils/helpers';
 import ExceptionWindow from '@/components/ExceptionWindow.vue';
 import AuthWindow from '@/components/AuthWindow.vue';
+import MessageWindow from '@/components/MessageWindow.vue';
 
 
 const step = ref(1);
@@ -14,20 +15,7 @@ const currentActivityCode = ref(100);
 const router = useRouter();
 const $route = useRoute();
 
-const isFormDisabled = ref(false);
-const mode = ref('');
-const branchList = ref([]);
-const accNoList = ref([]);
-const currencyList = ref([]);
-const sBPTranTypeList = ref([]);
-const purposeOfPaymentList = ref([]);
-const chargesLaxList = ref([]);
-
-const selectedChargesLax = ref();
-const selectedTransactionLax = ref();
-
-
-const voucherList = ref([
+const voucherLaxList = ref([
   {
     voucherNo: '386144/2025',
     referenceNo: 'A1072',
@@ -45,6 +33,23 @@ const voucherList = ref([
     creditAmount: '0.00',
   },
 ]);
+
+const adviceNoList = ref([]);
+
+const isVoucherDialogVisible = ref(false);
+
+const isFormDisabled = ref(false);
+const mode = ref('');
+const branchList = ref([]);
+const accNoList = ref([]);
+const currencyList = ref([]);
+const sBPTranTypeList = ref([]);
+const purposeOfPaymentList = ref([]);
+const chargesLaxList = ref([]);
+
+const selectedChargesLax = ref();
+const selectedTransactionLax = ref();
+
 
 let previousCustomerNo = '';
 
@@ -239,9 +244,9 @@ onMounted(async () => {
         if ($route.query && $route.query.mode && $route.query.voucherNo && $route.query.voucherYear) {
           isFormDisabled.value = true;
 
-          if($route.query.mode === 'auth')
+          if ($route.query.mode === 'auth')
             currentActivityCode.value = 100;
-          if($route.query.mode === 'cancel')
+          if ($route.query.mode === 'cancel')
             currentActivityCode.value = 200;
 
 
@@ -427,18 +432,15 @@ const getBenefBankDetails = async () => {
 }
 
 const handleSubmitClick = async () => {
-  if (mode?.value === 'auth')
-  {
-    step.value=3;
+  if (mode?.value === 'auth') {
+    step.value = 3;
     return;
   }
-  else if (mode?.value === 'cancel')
-  {
+  else if (mode?.value === 'cancel') {
     step.value = 2;
     return
   }
-  else
-  {
+  else {
     await submitRTGSForm();
   }
 }
@@ -451,9 +453,6 @@ const submitRTGSForm = async () => {
 
   currentActivityCode.value = 100;
   step.value = 2;
-
-
-
 }
 
 const insertTransactionLax = () => {
@@ -521,54 +520,55 @@ const changeCharges = () => {
     invokeDefaultDialog('Message', 'Default charges cannot be modified');
 }
 
-const onExceptionCancelled = () =>{
+const onExceptionCancelled = () => {
   step.value = 1;
 }
 
-const onExceptionAcknowledge = () =>{
-  step.value = 3;
+const onExceptionAcknowledge = async () => {
+  if (mode?.value == 'cancel') {
+    step.value = 3;
+    return;
+  }
+
+  await createOutwardRTGS();
 }
 
 const onAuthSuccess = async () => {
-  if(mode?.value == 'auth')
-  {
+  if (mode?.value == 'auth') {
     await authorizeOutwardRTGS();
     return;
   }
-  else if(mode?.value == 'cancel')
-  {
+  else if (mode?.value == 'cancel') {
     await cancelOutwardRTGS();
     return;
   }
-  else
-    await createOutwardRTGS();
 }
 
 const cancelOutwardRTGS = async () => {
   try {
     const voucherNo = $route.query.voucherNo;
     const voucherYear = $route.query.voucherYear;
-      const response = await axios.post(`/start`, {
-        transition: 'CANCELOUTWARDRTGS',
-        data: {
-          voucherNo: voucherNo,
-          voucherYear: voucherYear
-        }
-      });
+    const response = await axios.post(`/start`, {
+      transition: 'CANCELOUTWARDRTGS',
+      data: {
+        voucherNo: voucherNo,
+        voucherYear: voucherYear
+      }
+    });
 
-      if (response.status == 200) {
-        const { data } = response;
-        if (data.success) {
-          console.log("Success response is received from backend", data.data);
-          invokeDefaultDialog("Message", `Voucher ${voucherNo}/${voucherYear} cancelled successfully`, ()=>{router.push('/')});
-        }
-        else
-          invokeDefaultDialog("Message", data.message);
+    if (response.status == 200) {
+      const { data } = response;
+      if (data.success) {
+        console.log("Success response is received from backend", data.data);
+        invokeDefaultDialog("Message", `Voucher ${voucherNo}/${voucherYear} cancelled successfully`, () => { router.push('/') });
       }
-      else {
-        console.log('Error getting success response');
-        console.log(response.data);
-      }
+      else
+        invokeDefaultDialog("Message", data.message);
+    }
+    else {
+      console.log('Error getting success response');
+      console.log(response.data);
+    }
   }
   catch (error) {
     console.error(error);
@@ -576,31 +576,31 @@ const cancelOutwardRTGS = async () => {
 }
 
 
-const authorizeOutwardRTGS = async () =>{
+const authorizeOutwardRTGS = async () => {
   try {
     const voucherNo = $route.query.voucherNo;
     const voucherYear = $route.query.voucherYear;
-      const response = await axios.post(`/start`, {
-        transition: 'AUTHORIZEOUTWARDRTGS',
-        data: {
-          voucherNo: voucherNo,
-          voucherYear: voucherYear
-        }
-      });
+    const response = await axios.post(`/start`, {
+      transition: 'AUTHORIZEOUTWARDRTGS',
+      data: {
+        voucherNo: voucherNo,
+        voucherYear: voucherYear
+      }
+    });
 
-      if (response.status == 200) {
-        const { data } = response;
-        if (data.success) {
-          console.log("Success response is received from backend", data.data);
-          invokeDefaultDialog("Message", `Voucher ${voucherNo}/${voucherYear} authorized successfully`, ()=>{router.push('/')});
-        }
-        else
-          invokeDefaultDialog("Message", data.message);
+    if (response.status == 200) {
+      const { data } = response;
+      if (data.success) {
+        console.log("Success response is received from backend", data.data);
+        invokeDefaultDialog("Message", `Voucher ${voucherNo}/${voucherYear} authorized successfully`, () => { router.push('/') });
       }
-      else {
-        console.log('Error getting success response');
-        console.log(response.data);
-      }
+      else
+        invokeDefaultDialog("Message", data.message);
+    }
+    else {
+      console.log('Error getting success response');
+      console.log(response.data);
+    }
   }
   catch (error) {
     console.error(error);
@@ -643,7 +643,11 @@ const createOutwardRTGS = async () => {
       const { data } = response;
       if (data.success) {
         console.log("Success response is received from backend", data.data);
-        alert("Success response is received");
+
+        voucherLaxList.value = data.data.voucherLaxList;
+        adviceNoList.value = data.data.adviceNoList;
+
+        isVoucherDialogVisible.value = true;
       }
     }
     else {
@@ -658,7 +662,11 @@ const createOutwardRTGS = async () => {
 
 const onAuthCancel = () => {
   step.value = 2;
+}
 
+const voucherSeen = () => {
+  isVoucherDialogVisible.value = false;
+  step.value = 4;
 
 }
 
@@ -1058,7 +1066,8 @@ const onAuthCancel = () => {
       <fieldset>
         <el-row>
           <el-col :span="3">
-            <el-button class="generic-button" @click="handleSubmitClick" type="primary">{{ submitButtonText }}</el-button>
+            <el-button class="generic-button" @click="handleSubmitClick" type="primary">{{ submitButtonText
+              }}</el-button>
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="3">
@@ -1073,15 +1082,28 @@ const onAuthCancel = () => {
     </el-form>
   </template>
   <template v-if="step === 2">
-    <ExceptionWindow :activityCode="currentActivityCode" @acknowledged="onExceptionAcknowledge" @cancelled="onExceptionCancelled"/>
+    <ExceptionWindow
+      :activityCode="currentActivityCode"
+      @acknowledged="onExceptionAcknowledge"
+      @cancelled="onExceptionCancelled" />
   </template>
   <template v-if="step === 3">
-    <AuthWindow @success="onAuthSuccess" @cancelled = onAuthCancel />
+    <AuthWindow
+      @success="onAuthSuccess"
+      @cancelled="onAuthCancel" />
+  </template>
+  <template v-if="step === 4">
+    <MessageWindow
+      :adviceNoList="adviceNoList"
+      :voucherNo="voucherLaxList[0].voucherNo" />
+  </template>
+  <template>
+
   </template>
 
-  <el-dialog v-model="dialogTableVisible" :show-close="false" title="Select Beneficiary Bank" :before-close="(doneFn) => {
-      console.log('before-close'), doneFn()
-    }" @open="getBenefBankList" width="1000">
+  <el-dialog v-model="dialogTableVisible" :show-close="false" title="Select Beneficiary Bank"
+    :before-close="(doneFn) => {console.log('before-close'), doneFn() }"
+    @open="getBenefBankList" width="1000">
     <el-table :data="benefBankList" ref="benefBankListTableRef" highlight-current-row style="width: 100%"
       @current-change="handleCurrentChange">
       <el-table-column property="label" />
@@ -1098,8 +1120,9 @@ const onAuthCancel = () => {
     </el-row>
   </el-dialog>
 
-  <el-dialog v-model="isDialogVisible" :show-close="false" title="Voucher" width="1000" :close-on-click-modal="false">
-    <el-table :data="voucherList" ref="VoucherTableRef" highlight-current-row style="width: 100%" height="350"
+  <el-dialog v-model="isVoucherDialogVisible" :show-close="false" title="Voucher" width="1000"
+    :close-on-click-modal="false">
+    <el-table :data="voucherLaxList" ref="VoucherTableRef" highlight-current-row style="width: 100%" height="350"
       max-height="400" @current-change="handleCurrentChange">
       <el-table-column property="voucherNo" label="Vouch No." width="120" />
       <el-table-column property="referenceNo" label="Ref No" width="100" />
@@ -1112,17 +1135,18 @@ const onAuthCancel = () => {
     <fieldset style="margin-top: 20px;">
       <el-row>
         <el-col :span="3">
-          <el-button @click="router.push('/vouchercreatedscreen')" class="generic-button" type="primary">OK</el-button>
+          <el-button @click="voucherSeen" class="generic-button" type="primary">OK</el-button>
         </el-col>
         <el-col :span="18"></el-col>
         <el-col :span="3">
-          <el-button @click="isDialogVisible = false" class="generic-button" type="primary">Print</el-button>
+          <el-button @click="isVoucherDialogVisible=false" class="generic-button" type="primary">Print</el-button>
         </el-col>
       </el-row>
     </fieldset>
   </el-dialog>
 
 </template>
+
 <style scoped>
 .el-select:has(.el-select__wrapper.is-disabled) {
   cursor: not-allowed;

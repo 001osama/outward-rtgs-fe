@@ -21,24 +21,7 @@ const reasonCodeList = ref([
   }
 ]);
 
-const voucherList = ref([
-  {
-    voucherNo: '386144/2025',
-    referenceNo: 'A1072',
-    accountNo: '1334',
-    currencyCode: 'PKR',
-    debitAmount: '0.00',
-    creditAmount: '9000000.00',
-  },
-  {
-    voucherNo: '386144/2025',
-    referenceNo: 'A1073',
-    accountNo: '1335',
-    currencyCode: 'PKR',
-    debitAmount: '9000000.00',
-    creditAmount: '0.00',
-  },
-]);
+
 
 onMounted(async ()=>{
   try {

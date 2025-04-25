@@ -1,32 +1,6 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { defineProps, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-
-
-onMounted(()=>{
-  let data = localStorage.getItem('voucher');
-  data = JSON.parse(data);
-  console.log("getting data from local Storage",data);
-  let adviceArray = [];
-  if(data)
-  {
-    data.adviceNoList.forEach((u) => {
-      adviceArray.push({advice:u});
-    })
-    adviceNoList.value = adviceArray;
-
-    formData.adviceNo = data.adviceNoList[0];
-    formData.voucherNo = data.voucherLaxList[0].voucherNo;
-
-    console.log(data);
-    console.log("working");
-  }
-});
-
-const adviceNoList = ref([]);
-
-
-const router = useRouter();
 
 
 const formData = reactive({
@@ -34,10 +8,33 @@ const formData = reactive({
   voucherNo: '00000/0000'
 })
 
+
+const props = defineProps({
+  adviceNoList: Array,
+  voucherNo: String
+});
+
+
+onMounted(()=>{
+
+  if(props.adviceNoList && props.voucherNo)
+  {
+    formData.adviceNo = props.adviceNoList[0];
+    formData.voucherNo = props.voucherNo;
+  }
+
+});
+
+
+
+const router = useRouter();
+
+
 const acknowledge = () => {
   localStorage.removeItem('voucher');
   router.push('/');
 }
+
 </script>
 <template>
   <fieldset>
@@ -53,7 +50,7 @@ const acknowledge = () => {
           <el-col :span="18">
             <el-form-item>
               <el-select v-model="formData.adviceNo" placeholder="Select Advice">
-                <el-option v-for="item in adviceNoList" :key="item.advice" :label="item.advice" :value="item.advice" />
+                <el-option v-for="item in props.adviceNoList" :key="item.advice" :label="item.advice" :value="item.advice" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -62,7 +59,7 @@ const acknowledge = () => {
           <strong>SBP Cheque Outward</strong>
         </el-row>
         <el-row style="justify-content: center; margin-bottom: 4%;">
-          Voucher No. {{ formData.voucherNo }}
+          Voucher No. {{ props.voucherNo }}
         </el-row>
         <el-row class="justify-center">
           <el-col :span="8"></el-col>
