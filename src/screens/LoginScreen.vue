@@ -112,7 +112,7 @@ const isInvalid = computed(() => {
                           <button :disabled="isInvalid" type="submit" class="primary-button">Sign In</button>
                       </div>
                       <div>
-                          <button class="primary-button">Exit</button>
+                          <button type="button" class="primary-button">Exit</button>
                       </div>
                   </div>
               </form>

@@ -1,3 +1,9 @@
+// @blur="() => {
+//   if (!validateDate(rtgsForm.chequeDate)) {
+//     rtgsForm.chequeDate = ''
+//   }
+// }"
+
 const isNumber = (event) => {
   const allowedKeys = [
     'Backspace',
@@ -37,21 +43,31 @@ const dateMasking = (event) => {
     'Escape',
   ]
 
-  if (event.ctrlKey || event.metaKey) return
+  if (event.ctrlKey || event.metaKey || allowedKeys.includes(event.key)) return
 
-  if (allowedKeys.includes(event.key)) return
-
-  if (event.key.length === 1 && !/^\d$/.test(event.key)) {
+  // Only allow digits
+  if (!/^\d$/.test(event.key)) {
     event.preventDefault()
-  }
-  const input = event.target.value.replace(/\D/g, '')
-  if (input.length === 2 || input.length === 4) {
-    event.target.value += '/'
+    return
   }
 
-  if (event.target.value >= 10) {
+  let val = event.target.value.replace(/\D/g, '')
+
+  // Limit to 8 digits (ddmmyyyy)
+  if (val.length >= 8) {
     event.preventDefault()
+    return
   }
+
+  // Add slashes automatically
+  setTimeout(() => {
+    let cleaned = event.target.value.replace(/\D/g, '')
+    let formatted = ''
+    if (cleaned.length > 0) formatted += cleaned.substring(0, 2)
+    if (cleaned.length > 2) formatted += '/' + cleaned.substring(2, 4)
+    if (cleaned.length > 4) formatted += '/' + cleaned.substring(4, 8)
+    event.target.value = formatted
+  }, 0)
 }
 
 export { isNumber, dateMasking }
