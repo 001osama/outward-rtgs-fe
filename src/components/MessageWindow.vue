@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, reactive, onMounted } from 'vue';
+import { reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 
@@ -50,7 +50,7 @@ const acknowledge = () => {
           <el-col :span="18">
             <el-form-item>
               <el-select v-model="formData.adviceNo" placeholder="Select Advice">
-                <el-option v-for="item in props.adviceNoList" :key="item.advice" :label="item.advice" :value="item.advice" />
+                <el-option v-for="item in props.adviceNoList" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
           </el-col>
