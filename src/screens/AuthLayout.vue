@@ -16,8 +16,6 @@ import SideNav from '@/components/SideNav.vue';
         </el-header>
         <el-main>
           <RouterView />
-          <!-- <MainMenuScreen/> -->
-           <!-- <RemittanceScreen /> -->
         </el-main>
         <MainFooter />
       </el-container>

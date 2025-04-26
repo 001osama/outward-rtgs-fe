@@ -8,12 +8,16 @@ import { isNumber, dateMasking } from '@/utils/helpers';
 import ExceptionWindow from '@/components/ExceptionWindow.vue';
 import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
+import { validateDate } from '@/utils/validators';
 
 
 const step = ref(1);
 const currentActivityCode = ref(100);
 const router = useRouter();
 const $route = useRoute();
+
+
+const formRef = ref();
 
 const voucherLaxList = ref([
   {
@@ -52,6 +56,15 @@ const selectedTransactionLax = ref();
 
 
 let previousCustomerNo = '';
+
+
+
+
+const rules = reactive({
+  chequeDate: [
+    { validator: validateDate, trigger: 'blur' },
+  ],
+})
 
 
 const submitButtonText = computed(() => {
@@ -121,15 +134,17 @@ const resetForm = () => {
   rtgsForm.purposeOfPaymentCode = '';
   rtgsForm.remarks = '';
   rtgsForm.senderToReceiverInformation = '';
+  rtgsForm.chequeNo= '';
+  rtgsForm.chequeDate= '';
 
 
-  transactionLaxForm.transactionAmount = '',
-    transactionLaxForm.beneficiaryBankName = '',
-    transactionLaxForm.beneficiaryBankCode = '',
-    transactionLaxForm.beneficiaryAccountName = '',
-    transactionLaxForm.beneficiaryIbanOrAccountNo = '',
-    transactionLaxForm.beneficiaryAddress = ''
-  transactionLaxForm.beneficiaryBranchCode = ''
+  transactionLaxForm.transactionAmount = '';
+  transactionLaxForm.beneficiaryBankName = '';
+  transactionLaxForm.beneficiaryBankCode = '';
+  transactionLaxForm.beneficiaryAccountName = '';
+  transactionLaxForm.beneficiaryIbanOrAccountNo = '';
+  transactionLaxForm.beneficiaryAddress = '';
+  transactionLaxForm.beneficiaryBranchCode = '';
 }
 
 
@@ -203,7 +218,6 @@ watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
       rtgsForm.transferTypeCode = '103';
       break;
   }
-
   resetForm();
 
 });
@@ -286,6 +300,9 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
       rtgsForm.purposeOfPaymentCode = responseData.purposeOfPaymentCode;
       rtgsForm.remarks = responseData.remarks;
       rtgsForm.transactionLaxList = responseData.transactionLaxList;
+      rtgsForm.chequeDate = responseData.chequeDate;
+      rtgsForm.senderToReceiverInformation = responseData.senderToReceiverInformation;
+      rtgsForm.chequeNo = responseData.chequeNo;
       await getCustAccounts();
       await getAccountDetails();
       insertCharges();
@@ -431,7 +448,9 @@ const getBenefBankDetails = async () => {
   }
 }
 
-const handleSubmitClick = async () => {
+
+const handleSubmitClick = async (formRef) => {
+
   if (mode?.value === 'auth') {
     step.value = 3;
     return;
@@ -441,7 +460,18 @@ const handleSubmitClick = async () => {
     return
   }
   else {
-    await submitRTGSForm();
+    console.log(formRef);
+    if (!formRef) return
+    formRef.validate(async (valid) => {
+      if (valid) {
+        console.log('submit!');
+        await submitRTGSForm();
+      } else {
+        console.log('error submit!')
+      }
+    })
+
+
   }
 }
 
@@ -462,26 +492,38 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryBankCode !== '' &&
     transactionLaxForm.beneficiaryBranchCode !== '' &&
     transactionLaxForm.beneficiaryAccountName !== '' &&
-    transactionLaxForm.beneficiaryIbanOrAccountNo !== '') {
-    rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-    rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + parseInt(transactionLaxForm.transactionAmount);
+    transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
+    {
+      const accountAlreadyAdded = rtgsForm.transactionLaxList.some(
+        (item) => item.beneficiaryIbanOrAccountNo === transactionLaxForm.beneficiaryIbanOrAccountNo
+      );
 
-    transactionLaxForm.transactionAmount = '';
-    transactionLaxForm.beneficiaryBankName = '';
-    transactionLaxForm.beneficiaryBankCode = '';
-    transactionLaxForm.beneficiaryAccountName = '';
-    transactionLaxForm.beneficiaryIbanOrAccountNo = '';
-    transactionLaxForm.beneficiaryAddress = '';
-    transactionLaxForm.beneficiaryBranchCode = '';
+      if(accountAlreadyAdded)
+      {
+        invokeDefaultDialog("Message", "Beneficiary Account already added");
+        return
+      }
+
+      rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
+      rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + parseInt(transactionLaxForm.transactionAmount);
+
+      transactionLaxForm.transactionAmount = '';
+      transactionLaxForm.beneficiaryBankName = '';
+      transactionLaxForm.beneficiaryBankCode = '';
+      transactionLaxForm.beneficiaryAccountName = '';
+      transactionLaxForm.beneficiaryIbanOrAccountNo = '';
+      transactionLaxForm.beneficiaryAddress = '';
+      transactionLaxForm.beneficiaryBranchCode = '';
   }
 
 }
 
 const removeTransactionLax = () => {
+  console.log("debugger")
   if (selectedTransactionLax.value !== '') {
-    let selectedRowData = rtgsForm.transactionLaxList.find((item) => { item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value });
+    let selectedRowData = rtgsForm.transactionLaxList.find((item) => item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value );
     rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount - parseInt(selectedRowData.transactionAmount);
-    rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value)
+    rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.beneficiaryIbanOrAccountNo !== selectedTransactionLax.value)
     selectedTransactionLax.value = '';
   }
 }
@@ -633,6 +675,8 @@ const createOutwardRTGS = async () => {
     purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
     remarks: rtgsForm.remarks,
     senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
+    chequeNo: rtgsForm.chequeNo,
+    chequeDate: rtgsForm.chequeDate,
     activityCode: 100,
   }
 
@@ -649,6 +693,7 @@ const createOutwardRTGS = async () => {
 
         isVoucherDialogVisible.value = true;
       }
+      else invokeDefaultDialog("Error",data.message);
     }
     else {
       console.log('Error getting success response');
@@ -667,14 +712,18 @@ const onAuthCancel = () => {
 const voucherSeen = () => {
   isVoucherDialogVisible.value = false;
   step.value = 4;
-
 }
 
 </script>
 
 <template>
   <template v-if="step === 1">
-    <el-form :label-position="formAlign" label-width="auto">
+    <el-form
+      ref="formRef"
+      :rules="rules"
+      :label-position="formAlign"
+      :model="rtgsForm"
+      label-width="auto">
       <fieldset>
         <fieldset>
           <el-row>
@@ -873,9 +922,13 @@ const voucherSeen = () => {
             </el-form-item>
           </el-col>
           <el-col :span="4">
-            <el-form-item>
-              <el-input :disabled="isFormDisabled" v-model="rtgsForm.chequeDate" @keydown="dateMasking"
-                placeholder="  /   /  " maxlength="10" />
+            <el-form-item prop="chequeDate">
+              <el-input
+                :disabled="isFormDisabled"
+                v-model="rtgsForm.chequeDate"
+                @keydown="dateMasking"
+                placeholder="  /   /  "
+                maxlength="10" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -919,7 +972,11 @@ const voucherSeen = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input :disabled="isFormDisabled" v-model="transactionLaxForm.beneficiaryIbanOrAccountNo" />
+              <el-input
+                :disabled="isFormDisabled"
+                v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
+                maxLength="16"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1066,8 +1123,7 @@ const voucherSeen = () => {
       <fieldset>
         <el-row>
           <el-col :span="3">
-            <el-button class="generic-button" @click="handleSubmitClick" type="primary">{{ submitButtonText
-              }}</el-button>
+            <el-button class="generic-button" @click="handleSubmitClick(formRef)" type="primary">{{ submitButtonText }}</el-button>
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="3">
@@ -1081,24 +1137,24 @@ const voucherSeen = () => {
       </fieldset>
     </el-form>
   </template>
+
   <template v-if="step === 2">
     <ExceptionWindow
       :activityCode="currentActivityCode"
       @acknowledged="onExceptionAcknowledge"
       @cancelled="onExceptionCancelled" />
   </template>
+
   <template v-if="step === 3">
     <AuthWindow
       @success="onAuthSuccess"
       @cancelled="onAuthCancel" />
   </template>
+
   <template v-if="step === 4">
     <MessageWindow
       :adviceNoList="adviceNoList"
       :voucherNo="voucherLaxList[0].voucherNo" />
-  </template>
-  <template>
-
   </template>
 
   <el-dialog v-model="dialogTableVisible" :show-close="false" title="Select Beneficiary Bank"
@@ -1122,7 +1178,8 @@ const voucherSeen = () => {
 
   <el-dialog v-model="isVoucherDialogVisible" :show-close="false" title="Voucher" width="1000"
     :close-on-click-modal="false">
-    <el-table :data="voucherLaxList" ref="VoucherTableRef" highlight-current-row style="width: 100%" height="350"
+    <el-table
+      :data="voucherLaxList" ref="VoucherTableRef" highlight-current-row style="width: 100%" height="350"
       max-height="400" @current-change="handleCurrentChange">
       <el-table-column property="voucherNo" label="Vouch No." width="120" />
       <el-table-column property="referenceNo" label="Ref No" width="100" />
