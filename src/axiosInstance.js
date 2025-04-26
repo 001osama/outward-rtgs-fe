@@ -5,6 +5,27 @@ const axiosInstance = axios.create({
   timeout: 100000,
 })
 
+let buttonsState = new Map()
+
+const disableAllButtons = () => {
+  const buttons = document.querySelectorAll('button')
+  buttons.forEach((button) => {
+    buttonsState.set(button, button.disabled)
+    button.disabled = true
+  })
+}
+
+const enableAllButtons = () => {
+  const buttons = document.querySelectorAll('button')
+  buttons.forEach((button) => {
+    const wasOriginallyDisabled = buttonsState.get(button)
+    if (wasOriginallyDisabled !== undefined) {
+      button.disabled = wasOriginallyDisabled
+    }
+  })
+  buttonsState.clear()
+}
+
 axiosInstance.interceptors.request.use(
   (config) => {
     disableAllButtons()
@@ -30,19 +51,5 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error)
   },
 )
-
-const disableAllButtons = () => {
-  const buttons = document.querySelectorAll('button')
-  buttons.forEach((button) => {
-    button.disabled = true
-  })
-}
-
-const enableAllButtons = () => {
-  const buttons = document.querySelectorAll('button')
-  buttons.forEach((button) => {
-    button.disabled = false
-  })
-}
 
 export default axiosInstance
