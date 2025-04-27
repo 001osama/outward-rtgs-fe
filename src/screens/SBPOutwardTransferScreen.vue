@@ -10,6 +10,7 @@ import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
+import { downloadBase64Report } from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
 const step = ref(1);
@@ -485,7 +486,8 @@ const handleSubmitClick = async (formRef) => {
         console.log('submit!');
         await submitRTGSForm();
       } else {
-        console.log('error submit!')
+        console.log('error submit!');
+        invokeDefaultDialog("Error", "Please Complete the form")
       }
     })
   }
@@ -733,8 +735,44 @@ const voucherSeen = () => {
   changeStep(4);
 }
 
-const downloadReport = () => {
-  console.log("Report download working");
+const downloadExcelReport = async () => {
+  const voucherInfo = voucherLaxList?.value[0]?.voucherNo;
+
+  if(!voucherInfo) return;
+
+  const voucherInfoList = voucherInfo.split('/');
+  try
+  {
+    const response = await axios.post(`/start`, {
+        transition:'FETCHEXCELREPORT',
+        data:{
+        voucherNo: voucherInfoList[0],
+        voucherYear: voucherInfoList[1],
+        }
+      });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("User successfully authorized", data.data);
+        downloadBase64Report(data.data);
+      }
+      else
+        invokeDefaultDialog('Error', data.message);
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+      invokeDefaultDialog('Error', 'Network Error');
+    }
+  }
+  catch (error) {
+    console.error(error);
+    invokeDefaultDialog('Error', 'Network Error');
+  }
 }
 
 </script>
@@ -1224,7 +1262,7 @@ const downloadReport = () => {
         </el-col>
         <el-col :span="18"></el-col>
         <el-col :span="3">
-          <el-button @click="downloadReport" class="generic-button" type="primary">Print</el-button>
+          <el-button @click="downloadExcelReport" class="generic-button" type="primary">Print</el-button>
         </el-col>
       </el-row>
     </fieldset>

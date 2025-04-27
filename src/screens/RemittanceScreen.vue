@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import showMenu from '@/menuButton';
+import showMenu from '@/utils/menuButton';
 import axios from '@/axiosInstance.js';
 
 const router = useRouter();
