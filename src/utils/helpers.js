@@ -45,7 +45,6 @@ const dateMasking = (event) => {
 
   if (event.ctrlKey || event.metaKey || allowedKeys.includes(event.key)) return
 
-  // Only allow digits
   if (!/^\d$/.test(event.key)) {
     event.preventDefault()
     return
@@ -53,13 +52,11 @@ const dateMasking = (event) => {
 
   let val = event.target.value.replace(/\D/g, '')
 
-  // Limit to 8 digits (ddmmyyyy)
   if (val.length >= 8) {
     event.preventDefault()
     return
   }
 
-  // Add slashes automatically
   setTimeout(() => {
     let cleaned = event.target.value.replace(/\D/g, '')
     let formatted = ''
