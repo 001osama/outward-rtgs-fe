@@ -1,11 +1,24 @@
-<script setup></script>
+<script setup>
+import { useRoute, useRouter } from 'vue-router';
+import {computed} from 'vue';
+
+const $route = useRoute();
+const router = useRouter();
+
+
+const isActive = computed(()=>{
+  console.log("IS active working");
+  return $route?.name === "MainMenu"
+});
+
+</script>
 <template>
   <el-aside class="side-nav">
     <div class="image-container">
       <img src="../../public/bahl-logo.png" width="55%;"  alt="main-logo">
     </div>
     <ul class="menu-item-container">
-      <li class="menu-item is-active">Main Menu</li>
+      <li class="menu-item" @click="router.push('/')" :class="{ active: isActive }">Main Menu</li>
       <li class="menu-item is-disabled">Setup</li>
       <li class="menu-item is-disabled">CRM - Account Opening</li>
       <li class="menu-item is-disabled">CRM Operational Activities</li>
@@ -27,7 +40,7 @@
     padding: 0;
 }
 
-.menu-item.is-active{
+.menu-item.active{
     color: #000 !important;
     background-image: linear-gradient(#a0c8a8 10%, #006363 120%);
     border-top-right-radius: 50%;

@@ -9,12 +9,26 @@ import ExceptionWindow from '@/components/ExceptionWindow.vue';
 import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
+import { useHeaderStore } from '@/stores';
 
-
+const headerStore = useHeaderStore();
 const step = ref(1);
 const currentActivityCode = ref(100);
 const router = useRouter();
 const $route = useRoute();
+
+const stepHeaders = {
+    1: 'SBP Cheque Outward Lodgement',
+    2: 'Exceptions',
+    3: 'Authorization',
+    4: 'Message',
+  };
+
+const changeStep = (stepNo) => {
+  const title = stepHeaders[stepNo] || 'SBP Cheque Outward Lodgement';
+  step.value=stepNo;
+  headerStore.setHeaderTitle(title);
+};
 
 
 const formRef = ref();
@@ -64,6 +78,9 @@ const rules = reactive({
   chequeDate: [
     { validator: validateDate, trigger: 'blur' },
   ],
+  chequeNo: [
+    { required: true, message:'Field is required', trigger: 'blur'}
+  ]
 })
 
 
@@ -452,12 +469,13 @@ const getBenefBankDetails = async () => {
 const handleSubmitClick = async (formRef) => {
 
   if (mode?.value === 'auth') {
-    step.value = 3;
+    changeStep(3);
+    headerStore.setHeaderTitle('Authorization');
     return;
   }
   else if (mode?.value === 'cancel') {
-    step.value = 2;
-    return
+    changeStep(2)
+    return;
   }
   else {
     console.log(formRef);
@@ -470,8 +488,6 @@ const handleSubmitClick = async (formRef) => {
         console.log('error submit!')
       }
     })
-
-
   }
 }
 
@@ -482,7 +498,7 @@ const submitRTGSForm = async () => {
   }
 
   currentActivityCode.value = 100;
-  step.value = 2;
+  changeStep(2)
 }
 
 const insertTransactionLax = () => {
@@ -563,12 +579,12 @@ const changeCharges = () => {
 }
 
 const onExceptionCancelled = () => {
-  step.value = 1;
+  changeStep(1)
 }
 
 const onExceptionAcknowledge = async () => {
   if (mode?.value == 'cancel') {
-    step.value = 3;
+    changeStep(3)
     return;
   }
 
@@ -584,6 +600,11 @@ const onAuthSuccess = async () => {
     await cancelOutwardRTGS();
     return;
   }
+}
+
+const onAuthCancel = () => {
+  if (mode?.value == 'auth') changeStep(1)
+  else changeStep(2)
 }
 
 const cancelOutwardRTGS = async () => {
@@ -705,13 +726,15 @@ const createOutwardRTGS = async () => {
   }
 }
 
-const onAuthCancel = () => {
-  step.value = 2;
-}
+
 
 const voucherSeen = () => {
   isVoucherDialogVisible.value = false;
-  step.value = 4;
+  changeStep(4);
+}
+
+const downloadReport = () => {
+  console.log("Report download working");
 }
 
 </script>
@@ -910,7 +933,7 @@ const voucherSeen = () => {
             </el-form-item>
           </el-col>
           <el-col :span="4">
-            <el-form-item>
+            <el-form-item prop="chequeNo">
               <el-input v-model="rtgsForm.chequeNo" @keydown="isNumber" maxlength="6"
                 :disabled="isFormDisabled || rtgsForm.isCustAcc" />
             </el-form-item>
@@ -1097,9 +1120,9 @@ const voucherSeen = () => {
         <el-col :span="20">
           <el-table :data="chargesLaxList" highlight-current-row @current-change="handleChargesLaxSelectedChange"
             style="width: 100%" height="110" max-height="250">
-            <el-table-column property="trancd" label="Trancd" width="150" />
-            <el-table-column property="tranDesc" label="Tran Description" width="300" />
-            <el-table-column property="glAccount" label="GL Account" width="400" />
+            <el-table-column property="trancd" label="Trancd" width="100" />
+            <el-table-column property="tranDesc" label="Tran Description" width="200" />
+            <el-table-column property="glAccount" label="GL Account" width="300" />
             <el-table-column property="amount" label="Amount" />
           </el-table>
         </el-col>
@@ -1176,7 +1199,12 @@ const voucherSeen = () => {
     </el-row>
   </el-dialog>
 
-  <el-dialog v-model="isVoucherDialogVisible" :show-close="false" title="Voucher" width="1000"
+  <el-dialog
+    v-model="isVoucherDialogVisible"
+    :show-close="false"
+    title="Voucher"
+    width="1000"
+    top="8vh"
     :close-on-click-modal="false">
     <el-table
       :data="voucherLaxList" ref="VoucherTableRef" highlight-current-row style="width: 100%" height="350"
@@ -1196,7 +1224,7 @@ const voucherSeen = () => {
         </el-col>
         <el-col :span="18"></el-col>
         <el-col :span="3">
-          <el-button @click="isVoucherDialogVisible=false" class="generic-button" type="primary">Print</el-button>
+          <el-button @click="downloadReport" class="generic-button" type="primary">Print</el-button>
         </el-col>
       </el-row>
     </fieldset>
@@ -1208,8 +1236,6 @@ const voucherSeen = () => {
 .el-select:has(.el-select__wrapper.is-disabled) {
   cursor: not-allowed;
 }
-
-
 
 .el-input__inner:disabled {
   color: var(--text-primary) !important;
