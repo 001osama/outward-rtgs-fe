@@ -437,5 +437,5 @@ h4 {
 }
 
 .el-form-item__error {
-  color: #e40000 !important;
+  color: var(--bg-danger) !important;
 }
