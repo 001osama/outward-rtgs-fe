@@ -10,7 +10,7 @@ const showMenu = ($event) => {
       : menuButton.classList.add('menu-opened')
 
     if (!isOpen) {
-      debugger
+      console.log('Menu button is opened')
       // Get button position
       const buttonRect = menuButton.getBoundingClientRect()
       const menuHeight = menuList.offsetHeight || 200 // fallback if not rendered yet

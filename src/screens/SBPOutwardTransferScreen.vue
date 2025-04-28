@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { decodeJwt } from '@/utils/jwtDecoder';
+import { getToken } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
 import { isNumber, dateMasking } from '@/utils/helpers';
@@ -17,6 +17,9 @@ const step = ref(1);
 const currentActivityCode = ref(100);
 const router = useRouter();
 const $route = useRoute();
+
+const voucherNo = ref('');
+const voucherYear = ref('');
 
 const stepHeaders = {
     1: 'SBP Cheque Outward Lodgement',
@@ -116,7 +119,8 @@ const rtgsForm = reactive({
   remarks: '',
   senderToReceiverInformation: '',
   chequeNo: '',
-  chequeDate: ''
+  chequeDate: '',
+  isBeneficiaryTitleFetch: false
 });
 
 
@@ -134,9 +138,8 @@ const disabilityController = reactive({
   isSingleBeneficiaryDisabled: false,
   isMultipleBeneficiaryDisabled: false,
   isBankDisabled: false,
-
-
 })
+
 
 const resetForm = () => {
   rtgsForm.isCustAcc = false;
@@ -154,7 +157,8 @@ const resetForm = () => {
   rtgsForm.senderToReceiverInformation = '';
   rtgsForm.chequeNo= '';
   rtgsForm.chequeDate= '';
-
+  rtgsForm.isBeneficiaryTitleFetch=true;
+  chargesLaxList.value = [];
 
   transactionLaxForm.transactionAmount = '';
   transactionLaxForm.beneficiaryBankName = '';
@@ -198,7 +202,6 @@ const handleChargesLaxSelectedChange = (val) => {
   }
   else console.error('Handle current change is not giving values');
 }
-
 
 
 watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
@@ -245,12 +248,10 @@ watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('token');
-    const parsedToken = decodeJwt(token);
-    console.log('parsed token is working', parsedToken);
+    const token = getToken();
 
 
-    if (!parsedToken.loginId) {
+    if (!token) {
       localStorage.removeItem('token');
       router.push('/');
     }
@@ -265,7 +266,7 @@ onMounted(async () => {
         currencyList.value = data.data.currencyList;
         sBPTranTypeList.value = data.data.sBPTranTypeList;
         purposeOfPaymentList.value = data.data.purposeOfPaymentList;
-        rtgsForm.branchCode = parsedToken.branchCode;
+        rtgsForm.branchCode = token.branchCode;
         rtgsForm.currencyCode = '586';
         rtgsForm.sbpTranTypeCode = '1';
 
@@ -281,6 +282,9 @@ onMounted(async () => {
           if ($route.query.mode === 'cancel')
             currentActivityCode.value = 200;
 
+
+          voucherNo.value = $route.query.voucherNo;
+          voucherYear.value = $route.query.voucherYear;
 
           mode.value = $route.query.mode;
 
@@ -338,7 +342,38 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
 const isBankTransferType = computed(() => rtgsForm.transferTypeCode === '202');
 
 
+const validateChequeStatus = async () => {
 
+  if(!rtgsForm.accountNo || rtgsForm.chequeNo.length < 6)
+    return;
+
+  try {
+    const response = await axios.post(`/start`, {
+      transition: 'FETCHCHEQUESTATUS',
+      data: {
+        accountNo: rtgsForm.accountNo,
+        chequeNo: rtgsForm.chequeNo
+      }
+    });
+
+    if (response.status == 200) {
+
+      const { data } = response;
+
+      if (data.success) {
+        console.log("Success response is received from backend", data.data);
+      }
+      else invokeDefaultDialog("Message", data.message);
+    }
+    else {
+      invokeDefaultDialog("Message", "Network Error");
+    }
+  }
+  catch (error) {
+    invokeDefaultDialog("Error", "Network Error");
+    console.error(error);
+  }
+}
 
 
 const handleExitClick = () => {
@@ -450,8 +485,10 @@ const getBenefBankDetails = async () => {
         console.log("Success response is received from backend", data.data);
         transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
         transactionLaxForm.beneficiaryBranchCode = data.data.beneficiaryBranchCd;
+        rtgsForm.isBeneficiaryTitleFetch = true;
       }
       else {
+        rtgsForm.isBeneficiaryTitleFetch = false;
         invokeDefaultDialog('error', response.data.message);
         return
       }
@@ -512,6 +549,13 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryAccountName !== '' &&
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
     {
+
+      if(parseInt(transactionLaxForm.transactionAmount) > parseInt(rtgsForm.availableBalance))
+      {
+        invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
+        return;
+      }
+
       const accountAlreadyAdded = rtgsForm.transactionLaxList.some(
         (item) => item.beneficiaryIbanOrAccountNo === transactionLaxForm.beneficiaryIbanOrAccountNo
       );
@@ -605,6 +649,7 @@ const onAuthSuccess = async () => {
 }
 
 const onAuthCancel = () => {
+  console.log("on Auth cancel")
   if (mode?.value == 'auth') changeStep(1)
   else changeStep(2)
 }
@@ -613,6 +658,7 @@ const cancelOutwardRTGS = async () => {
   try {
     const voucherNo = $route.query.voucherNo;
     const voucherYear = $route.query.voucherYear;
+
     const response = await axios.post(`/start`, {
       transition: 'CANCELOUTWARDRTGS',
       data: {
@@ -643,13 +689,22 @@ const cancelOutwardRTGS = async () => {
 
 const authorizeOutwardRTGS = async () => {
   try {
+    const token = getToken();
+
+    if (!token) {
+      localStorage.removeItem('token');
+      router.push('/');
+      return;
+    }
+
     const voucherNo = $route.query.voucherNo;
     const voucherYear = $route.query.voucherYear;
     const response = await axios.post(`/start`, {
       transition: 'AUTHORIZEOUTWARDRTGS',
       data: {
         voucherNo: voucherNo,
-        voucherYear: voucherYear
+        voucherYear: voucherYear,
+        loginId: token.loginId
       }
     });
 
@@ -674,17 +729,15 @@ const authorizeOutwardRTGS = async () => {
 
 
 const createOutwardRTGS = async () => {
-  const token = localStorage.getItem('token');
-  const parsedToken = decodeJwt(token);
-  console.log('parsed token is working', parsedToken);
+  const token = getToken()
 
-  if (!parsedToken.loginId) {
+  if (!token) {
     localStorage.removeItem('token');
     router.push('/');
   }
 
   const reqObject = {
-    loginId: parsedToken.loginId,
+    loginId: token.loginId,
     branchCode: rtgsForm.branchCode,
     currencyCode: rtgsForm.currencyCode,
     sbpTranTypeCode: rtgsForm.sbpTranTypeCode,
@@ -701,6 +754,7 @@ const createOutwardRTGS = async () => {
     chequeNo: rtgsForm.chequeNo,
     chequeDate: rtgsForm.chequeDate,
     activityCode: 100,
+    isBeneficiaryTitleFetch: rtgsForm.isBeneficiaryTitleFetch,
   }
 
   try {
@@ -843,7 +897,7 @@ const downloadExcelReport = async () => {
             </el-col>
             <el-col :span="12">
               <el-form-item>
-                <el-radio-group :disabled="isFormDisabled" v-model="rtgsForm.transferTypeCode">
+                <el-radio-group :disabled="isFormDisabled" @change="resetForm()" v-model="rtgsForm.transferTypeCode">
                   <el-radio :disabled="disabilityController.isMultipleBeneficiaryDisabled" value="102">102(Multiple
                     Beneficiary)</el-radio>
                   <el-radio :disabled="disabilityController.isSingleBeneficiaryDisabled" value="103">103(Single
@@ -972,7 +1026,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="4">
             <el-form-item prop="chequeNo">
-              <el-input v-model="rtgsForm.chequeNo" @keydown="isNumber" maxlength="6"
+              <el-input v-model="rtgsForm.chequeNo" @blur="validateChequeStatus" @keydown="isNumber" maxlength="6"
                 :disabled="isFormDisabled || rtgsForm.isCustAcc" />
             </el-form-item>
           </el-col>
@@ -1054,7 +1108,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input v-model="transactionLaxForm.beneficiaryAccountName" disabled />
+              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="rtgsForm.isBeneficiaryTitleFetch" />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1067,7 +1121,7 @@ const downloadExcelReport = async () => {
               </el-col>
               <el-col :span="12">
                 <el-form-item>
-                  <el-input v-model="transactionLaxForm.beneficiaryBranchCode" disabled />
+                  <el-input v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.isBeneficiaryTitleFetch" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -1208,6 +1262,8 @@ const downloadExcelReport = async () => {
 
   <template v-if="step === 3">
     <AuthWindow
+      :voucherNo="voucherNo"
+      :voucherYear="voucherYear"
       @success="onAuthSuccess"
       @cancelled="onAuthCancel" />
   </template>

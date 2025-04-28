@@ -4,12 +4,16 @@ import {reactive, defineEmits} from 'vue';
 import axios from '@/axiosInstance.js';
 
 
+
 const emit = defineEmits(['cancelled', 'success']);
 
 const authForm = reactive({
   loginId:'',
   password:'',
 })
+
+
+
 
 
 const activityAuthorized = async () => {
@@ -59,7 +63,7 @@ const activityAuthorized = async () => {
           </el-col>
           <el-col :span="19">
             <el-form-item>
-              <el-input v-model="authForm.loginId"/>
+              <el-input v-model="authForm.loginId" maxlength="10"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -71,7 +75,7 @@ const activityAuthorized = async () => {
           </el-col>
           <el-col :span="19">
             <el-form-item>
-              <el-input v-model="authForm.password"/>
+              <el-input type="password" v-model="authForm.password" maxlength="10"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -79,7 +83,7 @@ const activityAuthorized = async () => {
       <fieldset>
         <el-row>
           <el-col :span="7">
-            <el-button :disabled="authForm.loginId.length < 1 && authForm.password.length < 1" @click="activityAuthorized" class="generic-button" type="primary">Authorize</el-button>
+            <el-button :disabled="authForm.loginId.length < 3 || authForm.password.length < 3" @click="activityAuthorized" class="generic-button" type="primary">Authorize</el-button>
           </el-col>
           <el-col :span="10"></el-col>
           <el-col :span="7">
