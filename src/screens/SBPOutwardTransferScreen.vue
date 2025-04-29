@@ -58,7 +58,13 @@ const voucherLaxList = ref([
 
 const adviceNoList = ref([]);
 
+
+// dialog visibility
+const isSignatureDialogVisible = ref(false);
 const isVoucherDialogVisible = ref(false);
+const dialogTableVisible = ref(false);
+
+
 
 const isFormDisabled = ref(false);
 const mode = ref('');
@@ -95,7 +101,7 @@ const submitButtonText = computed(() => {
 })
 
 
-const dialogTableVisible = ref(false);
+
 const benefBankList = ref([]);
 const benefBankListTableRef = ref(null);
 
@@ -120,7 +126,8 @@ const rtgsForm = reactive({
   senderToReceiverInformation: '',
   chequeNo: '',
   chequeDate: '',
-  isBeneficiaryTitleFetch: false
+  isBeneficiaryTitleFetch: false,
+  isSignatureSeen: false,
 });
 
 
@@ -301,6 +308,8 @@ onMounted(async () => {
   }
 })
 
+
+
 const getOutwardRtgs = async (voucherNo, voucherYear) => {
   console.log(`route mode is ${$route.query.mode}`);
   console.log(`route voucherNo is ${$route.query.voucherNo}`);
@@ -363,7 +372,11 @@ const validateChequeStatus = async () => {
       if (data.success) {
         console.log("Success response is received from backend", data.data);
       }
-      else invokeDefaultDialog("Message", data.message);
+      else
+      {
+        rtgsForm.chequeNo = '';
+        invokeDefaultDialog("Message", data.message);
+      }
     }
     else {
       invokeDefaultDialog("Message", "Network Error");
@@ -388,6 +401,20 @@ const handleExitClick = () => {
 }
 
 const getCustAccounts = async () => {
+  debugger;
+
+  if(!mode.value)
+  {
+
+    accNoList.value = []
+    rtgsForm.accountType='';
+    rtgsForm.accountNo='';
+    rtgsForm.iBAN='';
+    rtgsForm.accountName='';
+    rtgsForm.availableBalance='';
+    previousCustomerNo = '';
+  }
+
   if (rtgsForm.customerNo.length < 6 || previousCustomerNo == rtgsForm.customerNo)
     return;
 
@@ -505,6 +532,12 @@ const getBenefBankDetails = async () => {
 
 
 const handleSubmitClick = async (formRef) => {
+
+  if(!rtgsForm.accountNo && !rtgsForm.isSignatureSeen)
+  {
+    invokeDefaultDialog("Message", "Please view customer signature");
+    return;
+  }
 
   if (mode?.value === 'auth') {
     changeStep(3);
@@ -637,13 +670,13 @@ const onExceptionAcknowledge = async () => {
   await createOutwardRTGS();
 }
 
-const onAuthSuccess = async () => {
+const onAuthSuccess = async (loginId) => {
   if (mode?.value == 'auth') {
-    await authorizeOutwardRTGS();
+    await authorizeOutwardRTGS(loginId);
     return;
   }
   else if (mode?.value == 'cancel') {
-    await cancelOutwardRTGS();
+    await cancelOutwardRTGS(loginId);
     return;
   }
 }
@@ -654,7 +687,8 @@ const onAuthCancel = () => {
   else changeStep(2)
 }
 
-const cancelOutwardRTGS = async () => {
+const cancelOutwardRTGS = async (loginId) => {
+  console.log(loginId);
   try {
     const voucherNo = $route.query.voucherNo;
     const voucherYear = $route.query.voucherYear;
@@ -687,15 +721,8 @@ const cancelOutwardRTGS = async () => {
 }
 
 
-const authorizeOutwardRTGS = async () => {
+const authorizeOutwardRTGS = async (loginId) => {
   try {
-    const token = getToken();
-
-    if (!token) {
-      localStorage.removeItem('token');
-      router.push('/');
-      return;
-    }
 
     const voucherNo = $route.query.voucherNo;
     const voucherYear = $route.query.voucherYear;
@@ -704,7 +731,7 @@ const authorizeOutwardRTGS = async () => {
       data: {
         voucherNo: voucherNo,
         voucherYear: voucherYear,
-        loginId: token.loginId
+        loginId: loginId,
       }
     });
 
@@ -782,12 +809,16 @@ const createOutwardRTGS = async () => {
   }
 }
 
-
+const showSignature = () => {
+  rtgsForm.isSignatureSeen = true;
+  isSignatureDialogVisible.value = true;
+}
 
 const voucherSeen = () => {
   isVoucherDialogVisible.value = false;
   changeStep(4);
 }
+
 
 const downloadExcelReport = async () => {
   const voucherInfo = voucherLaxList?.value[0]?.voucherNo;
@@ -1242,7 +1273,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="3">
-            <el-button :disabled="isFormDisabled" class="generic-button" type="primary">View Signature</el-button>
+            <el-button :disabled="!rtgsForm.customerNo" @click="showSignature" class="generic-button" type="primary">View Signature</el-button>
           </el-col>
           <el-col :span="13"></el-col>
           <el-col :span="3">
@@ -1323,6 +1354,25 @@ const downloadExcelReport = async () => {
       </el-row>
     </fieldset>
   </el-dialog>
+
+  <el-dialog v-model="isSignatureDialogVisible" :show-close="false" title="Customer Signature"
+    :before-close="(doneFn) => {console.log('before-close'), doneFn() }"
+    @open="getBenefBankList" width="1000">
+    <el-row>
+      <el-col :span="6"></el-col>
+      <el-col :span="12">
+        <el-image style="width: 100%; height: 300px" :src="'/cust-sign.jpeg'" :fit="fit" />
+      </el-col>
+      <el-col :span="6"></el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="21"></el-col>
+      <el-col :span="3">
+        <el-button @click="isSignatureDialogVisible = false" class="generic-button" type="primary">Close</el-button>
+      </el-col>
+    </el-row>
+  </el-dialog>
+
 
 </template>
 

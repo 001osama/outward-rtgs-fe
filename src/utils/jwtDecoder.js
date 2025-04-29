@@ -25,4 +25,4 @@ const getToken = () => {
   return null
 }
 
-export { getToken};
+export { getToken };
