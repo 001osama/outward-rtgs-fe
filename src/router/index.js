@@ -6,15 +6,16 @@ import MainMenuScreen from '../screens/MainMenuScreen.vue'
 import SBPOutwardCancel from '../screens/SBPOutwardCancelScreen.vue'
 import SBPOutwardAuth from '../screens/SBPOutwardAuthScreen.vue'
 import SBPOutwardTransfer from '../screens/SBPOutwardTransferScreen.vue'
+import RTGSInquiryReportScreen from '@/screens/RTGSInquiryReportScreen.vue'
 
 const routes = [
   {
-    path: '/',
+    // path: '/',
     component: LoginScreen,
     name: 'Login',
   },
   {
-    path: '/authlayout',
+    path: '/',
     component: AuthLayout,
     children: [
       {
@@ -29,6 +30,10 @@ const routes = [
         name: 'Remittance',
         meta: { title: 'Remittance', componentName: 'Remittance' },
       },
+        {
+          path: '/rtgsinquiry',
+          component: RTGSInquiryReportScreen
+        },
       {
         path: '/sbpoutwardcancel',
         component: SBPOutwardCancel,

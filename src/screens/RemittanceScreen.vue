@@ -151,8 +151,34 @@ const mainMenuBtnClicked = () => {
     </el-col>
     <el-col :span="1"></el-col>
     <el-col :span="2">
-      <button class="tile-button bottom">Report</button>
+
+      <div class="menu-wrapper">
+        <button @click="showMenu($event)" class="tile-button bottom menu-button">Report</button>
+        <ul class="menu-list">
+          <li class="menu-item"><button disabled>Cent Imports Reports</button></li>
+          <li class="menu-item"><button disabled>Reports</button></li>
+          <li class="menu-item"><button disabled>TBML Reports</button></li>
+          <li class="menu-item"><button disabled>Online Statement</button></li>
+          <li class="menu-item"><button disabled>General</button></li>
+          <li class="menu-item"><button disabled>Banker's Cheque</button></li>
+          <li class="menu-item"><button disabled>Call Deposit Receipt</button></li>
+          <li class="menu-item"><button disabled>Demand Draft</button></li>
+          <li class="menu-item"><button disabled>IBCA/IBDA</button></li>
+          <li class="menu-item"><button disabled>Pay Order</button></li>
+          <li class="menu-item"><button disabled>Standing Instructions</button></li>
+          <li class="menu-item">
+            <button @click="router.push('/rtgsinquiry')">RTGS Inquiry</button>
+          </li>
+          <li class="menu-item"><button disabled>Home Remittance</button></li>
+          <li class="menu-item"><button disabled>Pool Management</button></li>
+          <li class="menu-item"><button disabled>FIU Watchlist</button></li>
+        </ul>
+      </div>
     </el-col>
+
+    <!-- <el-col :span="2">
+       <button class="tile-button bottom">Report</button> -->
+    <!-- </el-col> --> 
     <el-col :span="1"></el-col>
     <el-col :span="2">
       <button class="tile-button bottom">Batch</button>
