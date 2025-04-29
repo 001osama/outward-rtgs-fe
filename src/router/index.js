@@ -10,12 +10,12 @@ import RTGSInquiryReportScreen from '@/screens/RTGSInquiryReportScreen.vue'
 
 const routes = [
   {
-    // path: '/',
+    path: '/',
     component: LoginScreen,
     name: 'Login',
   },
   {
-    path: '/',
+    path: '/authLayout',
     component: AuthLayout,
     children: [
       {

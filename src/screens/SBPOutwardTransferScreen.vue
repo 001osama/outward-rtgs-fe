@@ -532,7 +532,7 @@ const getBenefBankDetails = async () => {
 
 
 const handleSubmitClick = async (formRef) => {
-
+  console.log("Handle submit click");
   if(!rtgsForm.accountNo && !rtgsForm.isSignatureSeen)
   {
     invokeDefaultDialog("Message", "Please view customer signature");

@@ -22,8 +22,9 @@ const showMenu = ($event) => {
       menuList.style.bottom = 'auto'
 
       if (buttonRect.bottom + menuHeight > windowHeight) {
-        menuList.style.top = `auto`
-        menuList.style.bottom = `${menuButton.offsetHeight + menuHeight + 14}px`
+        console.log("Dynamic menu position working")
+        menuList.style.top = 'auto';
+        menuList.style.bottom = `${buttonRect.height}px`
       }
 
       const handleOutsideClick = (e) => {
