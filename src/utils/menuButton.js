@@ -10,20 +10,15 @@ const showMenu = ($event) => {
       : menuButton.classList.add('menu-opened')
 
     if (!isOpen) {
-      console.log('Menu button is opened')
-      // Get button position
       const buttonRect = menuButton.getBoundingClientRect()
-      const menuHeight = menuList.offsetHeight || 200 // fallback if not rendered yet
+      const menuHeight = menuList.offsetHeight || 200
       const windowHeight = window.innerHeight
-
-      // If not enough space below, open above
 
       menuList.style.top = 'auto'
       menuList.style.bottom = 'auto'
 
       if (buttonRect.bottom + menuHeight > windowHeight) {
-        console.log("Dynamic menu position working")
-        menuList.style.top = 'auto';
+        console.log('Dynamic menu position working')
         menuList.style.bottom = `${buttonRect.height}px`
       }
 

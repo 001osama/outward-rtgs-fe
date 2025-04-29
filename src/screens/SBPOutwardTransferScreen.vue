@@ -10,7 +10,7 @@ import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
-import { downloadBase64Report } from '@/utils/helpers';
+import { downloadBase64Report,convertDateFormat } from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
 const step = ref(1);
@@ -90,6 +90,9 @@ const rules = reactive({
   ],
   chequeNo: [
     { required: true, message:'Field is required', trigger: 'blur'}
+  ],
+  purposeOfPaymentCode: [
+    { required: true, message:'Field is required', trigger: 'change'}
   ]
 })
 
@@ -320,6 +323,8 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
     if (data.success) {
       const responseData = data.data;
 
+      const formattedDate = convertDateFormat(responseData?.chequeDate);
+
       rtgsForm.branchCode = responseData.branchCode;
       rtgsForm.currencyCode = responseData.currencyCode;
       rtgsForm.sbpTranTypeCode = responseData.sbpTranTypeCode;
@@ -331,7 +336,7 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
       rtgsForm.purposeOfPaymentCode = responseData.purposeOfPaymentCode;
       rtgsForm.remarks = responseData.remarks;
       rtgsForm.transactionLaxList = responseData.transactionLaxList;
-      rtgsForm.chequeDate = responseData.chequeDate;
+      rtgsForm.chequeDate = formattedDate;
       rtgsForm.senderToReceiverInformation = responseData.senderToReceiverInformation;
       rtgsForm.chequeNo = responseData.chequeNo;
       await getCustAccounts();
@@ -403,7 +408,7 @@ const handleExitClick = () => {
 const getCustAccounts = async () => {
   debugger;
 
-  if(!mode.value)
+  if(!mode.value && previousCustomerNo != rtgsForm.customerNo)
   {
 
     accNoList.value = []
@@ -413,6 +418,8 @@ const getCustAccounts = async () => {
     rtgsForm.accountName='';
     rtgsForm.availableBalance='';
     previousCustomerNo = '';
+    rtgsForm.chequeDate = '';
+    rtgsForm.chequeNo = '';
   }
 
   if (rtgsForm.customerNo.length < 6 || previousCustomerNo == rtgsForm.customerNo)
@@ -487,12 +494,12 @@ const getBenefBankList = async () => {
 
 const getBenefBankDetails = async () => {
   if (!transactionLaxForm.beneficiaryBankCode.length > 0) {
-    invokeDefaultDialog('Error', 'Please Select Beneficiary Bank first')
+    invokeDefaultDialog('Error', 'Please Select Beneficiary Bank first');
     return
   }
 
   if (!transactionLaxForm.beneficiaryIbanOrAccountNo.length > 0) {
-    invokeDefaultDialog('Error', 'Please Select Benef Bank first')
+    invokeDefaultDialog('Error', 'Please Enter benef account No');
     return
   }
 
@@ -532,8 +539,21 @@ const getBenefBankDetails = async () => {
 
 
 const handleSubmitClick = async (formRef) => {
-  console.log("Handle submit click");
-  if(!rtgsForm.accountNo && !rtgsForm.isSignatureSeen)
+
+  if(!rtgsForm.accountNo ||
+      rtgsForm.transactionLaxList.length === 0)
+  {
+    invokeDefaultDialog("Error", "Please Complete the form")
+    return;
+  }
+
+  if(chargesLaxList.value.length ==0)
+  {
+    invokeDefaultDialog("Error", "Please add charges");
+    return;
+  }
+
+  if(!rtgsForm.isSignatureSeen)
   {
     invokeDefaultDialog("Message", "Please view customer signature");
     return;
@@ -549,16 +569,16 @@ const handleSubmitClick = async (formRef) => {
     return;
   }
   else {
-    console.log(formRef);
     if (!formRef) return
     formRef.validate(async (valid) => {
-      if (valid) {
-        console.log('submit!');
-        await submitRTGSForm();
-      } else {
+      if(!valid)
+      {
         console.log('error submit!');
         invokeDefaultDialog("Error", "Please Complete the form")
+        return;
       }
+
+      await submitRTGSForm();
     })
   }
 }
@@ -1186,7 +1206,7 @@ const downloadExcelReport = async () => {
         <el-row style="margin-bottom: 8px;">
           <el-col :span="17"></el-col>
           <el-col :span="3" style="margin-right: 8px;">
-            <el-button class="generic-button" :disabled="isFormDisabled" @click="removeTransactionLax"
+            <el-button class="generic-button" :disabled="isFormDisabled || rtgsForm.transactionLaxList == 0" @click="removeTransactionLax"
               type="primary">Remove</el-button>
           </el-col>
           <el-col :span="3">
@@ -1195,14 +1215,14 @@ const downloadExcelReport = async () => {
               @click="insertTransactionLax" type="primary">Add</el-button>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row style="margin-bottom: 8px;">
           <el-col :span="4">
             <el-form-item>
               <span>Purpose of Payment</span>
             </el-form-item>
           </el-col>
           <el-col :span="15">
-            <el-form-item>
+            <el-form-item prop="purposeOfPaymentCode">
               <el-select :disabled="isFormDisabled" v-model="rtgsForm.purposeOfPaymentCode"
                 placeholder="Select Purpose of Payment">
                 <el-option v-for="item in purposeOfPaymentList" :key="item.value" :label="item.label"
@@ -1211,7 +1231,7 @@ const downloadExcelReport = async () => {
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row style="margin-bottom: 8px;">
           <el-col :span="4">
             <el-form-item>
               <span class="optional-field">Remarks</span>
@@ -1224,7 +1244,7 @@ const downloadExcelReport = async () => {
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row style="margin-bottom: 8px;">
           <el-col :span="4">
             <el-form-item>
               <span class="optional-field">Sender To Receiver Information</span>

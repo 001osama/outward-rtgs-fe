@@ -90,4 +90,51 @@ const downloadBase64Report = (base64Data) => {
   window.URL.revokeObjectURL(url)
 }
 
-export { isNumber, dateMasking, downloadBase64Report }
+const convertToIsoFormat = (dateStr) => {
+  if (typeof dateStr !== 'string' || !dateStr.trim()) {
+    return null
+  }
+
+  const trimmed = dateStr.trim()
+  const datePattern = /^\d{2}\/\d{2}\/\d{4}$/
+
+  if (!datePattern.test(trimmed)) {
+    return null
+  }
+
+  const [month, day, year] = trimmed.split('/')
+  return `${year}-${month}-${day}`
+}
+
+const convertDateFormat = (dateStr) => {
+  debugger
+  if (typeof dateStr !== 'string' || !dateStr.trim()) {
+    return null
+  }
+
+  const trimmed = dateStr.trim()
+
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/
+  if (!datePattern.test(trimmed)) {
+    return null
+  }
+
+  const [year, month, day] = trimmed.split('-')
+  return `${month}/${day}/${year}`
+}
+
+function isWithin60Days(dateStr) {
+  const [day, month, year] = dateStr.split('/')
+  const inputDate = new Date(`${year}-${month}-${day}`)
+  const today = new Date()
+
+  inputDate.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+
+  const diffTime = today - inputDate
+  const diffDays = diffTime / (1000 * 60 * 60 * 24)
+
+  return diffDays <= 60
+}
+
+export { isNumber, dateMasking, downloadBase64Report, convertDateFormat }

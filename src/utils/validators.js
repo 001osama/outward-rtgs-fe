@@ -19,7 +19,7 @@ const validateDate = (rule, value, callback) => {
   //   return
   // }
 
-  const [dd, mm, yyyy] = value.split('/').map(Number)
+  const [mm, dd, yyyy] = value.split('/').map(Number)
 
   if (
     !dd ||
@@ -32,7 +32,7 @@ const validateDate = (rule, value, callback) => {
     yyyy < 2000 ||
     yyyy > currentYear
   ) {
-    callback(new Error(`Date format is dd/mm/yyyy.`))
+    callback(new Error(`Date format is mm/dd/yyyy.`))
   } else {
     callback()
   }
