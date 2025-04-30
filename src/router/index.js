@@ -30,10 +30,10 @@ const routes = [
         name: 'Remittance',
         meta: { title: 'Remittance', componentName: 'Remittance' },
       },
-        {
-          path: '/rtgsinquiry',
-          component: RTGSInquiryReportScreen
-        },
+      {
+        path: '/rtgsinquiry',
+        component: RTGSInquiryReportScreen
+      },
       {
         path: '/sbpoutwardcancel',
         component: SBPOutwardCancel,

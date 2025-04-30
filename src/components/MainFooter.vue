@@ -1,6 +1,20 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, reactive } from 'vue'
+import { getToken } from '@/utils/jwtDecoder'
 
+const loggedInUserInfo = reactive({
+  branchCode: '1001',
+  loginId: 'TEST1'
+})
+
+onMounted(()=>{
+  const userInfo = getToken();
+  if(userInfo)
+  {
+   loggedInUserInfo.branchCode = userInfo.branchCode;
+   loggedInUserInfo.loginId = userInfo.loginId.toUpperCase();
+  }
+})
 const formattedDate = computed(() => {
   const date = new Date()
 
@@ -16,6 +30,8 @@ const formattedDate = computed(() => {
   return `${dayName} - ${day}/${month}/${year}`
 })
 
+
+
 </script>
 <template>
   <el-footer>
@@ -24,7 +40,7 @@ const formattedDate = computed(() => {
         <div class="footer-block">{{formattedDate}}</div>
       </el-col>
       <el-col :span="18">
-        <div class="footer-block">1001 - TEST1</div>
+        <div class="footer-block">{{loggedInUserInfo.branchCode}} - {{loggedInUserInfo.loginId}}</div>
       </el-col>
     </el-row>
   </el-footer>
