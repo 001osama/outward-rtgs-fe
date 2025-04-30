@@ -10,7 +10,7 @@ import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
-import { downloadBase64Report,convertDateFormat } from '@/utils/helpers';
+import { downloadBase64Report,convertDateFormat, isWithin60Days } from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
 const step = ref(1);
@@ -89,7 +89,8 @@ const rules = reactive({
     { validator: validateDate, trigger: 'blur' },
   ],
   chequeNo: [
-    { required: true, message:'Field is required', trigger: 'blur'}
+    { required: true, message:'Field is required', trigger: 'blur'},
+    { min: 6, message: 'Please insert complete cheque value', trigger: 'blur' }
   ],
   purposeOfPaymentCode: [
     { required: true, message:'Field is required', trigger: 'change'}
@@ -575,6 +576,13 @@ const handleSubmitClick = async (formRef) => {
       {
         console.log('error submit!');
         invokeDefaultDialog("Error", "Please Complete the form")
+        return;
+      }
+
+      const result = isWithin60Days(rtgsForm.chequeDate);
+      if(!result)
+      {
+        invokeDefaultDialog("Error", "Check is expired");
         return;
       }
 
@@ -1141,7 +1149,7 @@ const downloadExcelReport = async () => {
               <el-input
                 :disabled="isFormDisabled"
                 v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
-                maxLength="16"
+                maxLength="20"
               />
             </el-form-item>
           </el-col>
@@ -1159,7 +1167,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="rtgsForm.isBeneficiaryTitleFetch" />
+              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="rtgsForm.isBeneficiaryTitleFetch" maxlength="10" />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1172,7 +1180,7 @@ const downloadExcelReport = async () => {
               </el-col>
               <el-col :span="12">
                 <el-form-item>
-                  <el-input v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.isBeneficiaryTitleFetch" />
+                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.isBeneficiaryTitleFetch" maxlength="4" />
                 </el-form-item>
               </el-col>
             </el-row>

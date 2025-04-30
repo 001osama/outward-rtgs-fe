@@ -123,8 +123,8 @@ const convertDateFormat = (dateStr) => {
   return `${month}/${day}/${year}`
 }
 
-function isWithin60Days(dateStr) {
-  const [day, month, year] = dateStr.split('/')
+const isWithin60Days = (dateStr) => {
+  const [month, day, year] = dateStr.split('/')
   const inputDate = new Date(`${year}-${month}-${day}`)
   const today = new Date()
 
@@ -137,4 +137,4 @@ function isWithin60Days(dateStr) {
   return diffDays <= 60
 }
 
-export { isNumber, dateMasking, downloadBase64Report, convertDateFormat }
+export { isNumber, dateMasking, downloadBase64Report, convertDateFormat, isWithin60Days }

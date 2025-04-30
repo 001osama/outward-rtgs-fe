@@ -18,7 +18,6 @@ const showMenu = ($event) => {
       menuList.style.bottom = 'auto'
 
       if (buttonRect.bottom + menuHeight > windowHeight) {
-        console.log('Dynamic menu position working')
         menuList.style.bottom = `${buttonRect.height}px`
       }
 
