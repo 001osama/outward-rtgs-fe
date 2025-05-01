@@ -3,10 +3,11 @@ import { useRouter} from 'vue-router';
 import { ref, onMounted } from 'vue';
 import { invokeDefaultDialog } from '@/utils/dialog';
 import axios from '@/axiosInstance.js';
+import { getToken } from '@/utils/jwtDecoder';
 
 const router = useRouter();
 
-const currentSelectedRow = ref(null);
+const currentSelectedRow = ref({});
 
 const ExitBtnClicked = () => {
   router.push('remittance')
@@ -47,7 +48,7 @@ onMounted(async ()=>{
 });
 
 const handleRowClick = (row) => {
-  currentSelectedRow.value = row.voucherNo;
+  currentSelectedRow.value = row;
   console.log('current Selected Row Value Updated', currentSelectedRow.value);
 }
 
@@ -57,13 +58,22 @@ const handleDoubleClick = (row)=>{
 }
 
 const OpenVoucher = () => {
-  if(!currentSelectedRow.value)
+  console.log("Current selected Value", currentSelectedRow.value);
+
+  if(!currentSelectedRow.value.voucherNo)
   {
     invokeDefaultDialog("Message", "Please select a row");
     return;
   }
+  const userInfo = getToken();
+  if(userInfo &&
+    userInfo.loginId == currentSelectedRow.value.postedBy)
+  {
+    invokeDefaultDialog("Message", "Same user cannot authorize");
+    return;
+  }
 
-  const voucherInfoList = currentSelectedRow.value.split('/');
+  const voucherInfoList = currentSelectedRow.value.voucherNo.split('/');
   router.push({ path: '/sbpoutwardtransfer', query: { mode: 'auth', voucherNo: voucherInfoList[0], voucherYear: voucherInfoList[1] } });
   console.log('Sending Voucher Id ',currentSelectedRow.value);
 }
