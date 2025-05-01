@@ -10,7 +10,7 @@ import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
-import { downloadBase64Report,convertDateFormat, isWithin60Days } from '@/utils/helpers';
+import { downloadBase64Report, convertDateFormat, convertToIsoFormat, isWithin60Days } from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
 const step = ref(1);
@@ -80,8 +80,6 @@ const selectedTransactionLax = ref();
 
 
 let previousCustomerNo = '';
-
-
 
 
 const rules = reactive({
@@ -579,13 +577,6 @@ const handleSubmitClick = async (formRef) => {
         return;
       }
 
-      const result = isWithin60Days(rtgsForm.chequeDate);
-      if(!result)
-      {
-        invokeDefaultDialog("Error", "Check is expired");
-        return;
-      }
-
       await submitRTGSForm();
     })
   }
@@ -628,7 +619,11 @@ const insertTransactionLax = () => {
       }
 
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-      rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + parseInt(transactionLaxForm.transactionAmount);
+      const transactionLaxAmount = parseInt(transactionLaxForm.transactionAmount);
+
+      rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + transactionLaxAmount;
+      const currentBalance = parseInt(rtgsForm.availableBalance) - transactionLaxAmount
+      rtgsForm.availableBalance = currentBalance.toString();
 
       transactionLaxForm.transactionAmount = '';
       transactionLaxForm.beneficiaryBankName = '';
@@ -645,7 +640,14 @@ const removeTransactionLax = () => {
   console.log("debugger")
   if (selectedTransactionLax.value !== '') {
     let selectedRowData = rtgsForm.transactionLaxList.find((item) => item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value );
-    rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount - parseInt(selectedRowData.transactionAmount);
+
+
+    const transactionLaxAmount = parseInt(selectedRowData.transactionAmount);
+    rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount - transactionLaxAmount;
+    const currentBalance = parseInt(rtgsForm.availableBalance) + transactionLaxAmount
+
+    rtgsForm.availableBalance = currentBalance.toString() + '.00';
+
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.beneficiaryIbanOrAccountNo !== selectedTransactionLax.value)
     selectedTransactionLax.value = '';
   }
@@ -791,6 +793,7 @@ const createOutwardRTGS = async () => {
     router.push('/');
   }
 
+  const chequeDate = convertToIsoFormat(rtgsForm.chequeDate);
   const reqObject = {
     loginId: token.loginId,
     branchCode: rtgsForm.branchCode,
@@ -807,7 +810,7 @@ const createOutwardRTGS = async () => {
     remarks: rtgsForm.remarks,
     senderToReceiverInformation: rtgsForm.senderToReceiverInformation,
     chequeNo: rtgsForm.chequeNo,
-    chequeDate: rtgsForm.chequeDate,
+    chequeDate: chequeDate,
     activityCode: 100,
     isBeneficiaryTitleFetch: rtgsForm.isBeneficiaryTitleFetch,
   }
@@ -1280,12 +1283,10 @@ const downloadExcelReport = async () => {
         <el-col :span="4">
           <el-row style="gap: 6px;padding: 0px 6px;">
             <el-col>
-              <el-button :disabled="isFormDisabled" class="generic-button" @click="insertCharges" type="primary">Add
-                Charges</el-button>
+              <el-button :disabled="isFormDisabled" class="generic-button" @click="insertCharges" type="primary">Add Charges</el-button>
             </el-col>
             <el-col>
-              <el-button :disabled="isFormDisabled" class="generic-button" @click="changeCharges" type="primary">Change
-                Charges</el-button>
+              <el-button :disabled="isFormDisabled" class="generic-button" @click="changeCharges" type="primary">Change Charges</el-button>
             </el-col>
             <el-col>
               <el-button class="generic-button" :disabled="isFormDisabled || chargesLaxList.length == 0"

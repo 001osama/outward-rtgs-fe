@@ -102,7 +102,7 @@ const convertToIsoFormat = (dateStr) => {
     return null
   }
 
-  const [month, day, year] = trimmed.split('/')
+  const [day, month, year] = trimmed.split('/')
   return `${year}-${month}-${day}`
 }
 
@@ -120,7 +120,7 @@ const convertDateFormat = (dateStr) => {
   }
 
   const [year, month, day] = trimmed.split('-')
-  return `${month}/${day}/${year}`
+  return `${day}/${month}/${year}`
 }
 
 const isWithin60Days = (dateStr) => {
@@ -137,4 +137,11 @@ const isWithin60Days = (dateStr) => {
   return diffDays <= 60
 }
 
-export { isNumber, dateMasking, downloadBase64Report, convertDateFormat, isWithin60Days }
+export {
+  isNumber,
+  dateMasking,
+  downloadBase64Report,
+  convertDateFormat,
+  isWithin60Days,
+  convertToIsoFormat,
+}

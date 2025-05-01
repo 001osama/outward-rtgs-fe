@@ -14,12 +14,12 @@ const validateYear = (rule, value, callback) => {
 const validateDate = (rule, value, callback) => {
   const currentYear = new Date().getFullYear()
 
-  // if (!value) {
-  //   callback(new Error('Field is required'))
-  //   return
-  // }
+  if (!value) {
+    callback(new Error('Field is required'))
+    return
+  }
 
-  const [mm, dd, yyyy] = value.split('/').map(Number)
+  const [dd, mm, yyyy] = value.split('/').map(Number)
 
   if (
     !dd ||
@@ -32,7 +32,7 @@ const validateDate = (rule, value, callback) => {
     yyyy < 2000 ||
     yyyy > currentYear
   ) {
-    callback(new Error(`Date format is mm/dd/yyyy.`))
+    callback(new Error(`Date format is dd/mm/yyyy.`))
   } else {
     callback()
   }
