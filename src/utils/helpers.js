@@ -3,6 +3,7 @@
 //     rtgsForm.chequeDate = ''
 //   }
 // }"
+import dayjs from './dayjs'
 
 const isNumber = (event) => {
   const allowedKeys = [
@@ -90,37 +91,58 @@ const downloadBase64Report = (base64Data) => {
   window.URL.revokeObjectURL(url)
 }
 
+// const convertToIsoFormat = (dateStr) => {
+//   if (typeof dateStr !== 'string' || !dateStr.trim()) {
+//     return null
+//   }
+
+//   const trimmed = dateStr.trim()
+//   const datePattern = /^\d{2}\/\d{2}\/\d{4}$/
+
+//   if (!datePattern.test(trimmed)) {
+//     return null
+//   }
+
+//   const [day, month, year] = trimmed.split('/')
+//   return `${year}-${month}-${day}`
+// }
+
+// const convertDateFormat = (dateStr) => {
+//   if (typeof dateStr !== 'string' || !dateStr.trim()) {
+//     return null
+//   }
+
+//   const trimmed = dateStr.trim()
+
+//   const datePattern = /^\d{4}-\d{2}-\d{2}$/
+//   if (!datePattern.test(trimmed)) {
+//     return null
+//   }
+
+//   const [year, month, day] = trimmed.split('-')
+//   return `${day}/${month}/${year}`
+// }
+
 const convertToIsoFormat = (dateStr) => {
   if (typeof dateStr !== 'string' || !dateStr.trim()) {
     return null
   }
 
   const trimmed = dateStr.trim()
-  const datePattern = /^\d{2}\/\d{2}\/\d{4}$/
+  const parsed = dayjs(trimmed, 'DD/MM/YYYY', true)
 
-  if (!datePattern.test(trimmed)) {
-    return null
-  }
-
-  const [day, month, year] = trimmed.split('/')
-  return `${year}-${month}-${day}`
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null
 }
 
 const convertDateFormat = (dateStr) => {
-  debugger
   if (typeof dateStr !== 'string' || !dateStr.trim()) {
     return null
   }
 
   const trimmed = dateStr.trim()
+  const parsed = dayjs(trimmed, 'YYYY-MM-DD', true)
 
-  const datePattern = /^\d{4}-\d{2}-\d{2}$/
-  if (!datePattern.test(trimmed)) {
-    return null
-  }
-
-  const [year, month, day] = trimmed.split('-')
-  return `${day}/${month}/${year}`
+  return parsed.isValid() ? parsed.format('DD/MM/YYYY') : null
 }
 
 const isWithin60Days = (dateStr) => {

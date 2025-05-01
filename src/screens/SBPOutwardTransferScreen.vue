@@ -10,7 +10,7 @@ import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
-import { downloadBase64Report, convertDateFormat, convertToIsoFormat, isWithin60Days } from '@/utils/helpers';
+import { downloadBase64Report, convertDateFormat, convertToIsoFormat } from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
 const step = ref(1);
@@ -130,6 +130,7 @@ const rtgsForm = reactive({
   chequeDate: '',
   isBeneficiaryTitleFetch: false,
   isSignatureSeen: false,
+  postedBy:''
 });
 
 
@@ -338,10 +339,10 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
       rtgsForm.chequeDate = formattedDate;
       rtgsForm.senderToReceiverInformation = responseData.senderToReceiverInformation;
       rtgsForm.chequeNo = responseData.chequeNo;
+      rtgsForm.postedBy = responseData.postedBy;
       await getCustAccounts();
       await getAccountDetails();
       insertCharges();
-
 
 
       console.log("Success response is received from backend", data.data);
@@ -559,12 +560,14 @@ const handleSubmitClick = async (formRef) => {
   }
 
   if (mode?.value === 'auth') {
-    changeStep(3);
-    headerStore.setHeaderTitle('Authorization');
+    // changeStep(3);
+    const userInfo = getToken();
+    await authorizeOutwardRTGS(userInfo.loginId);
+
     return;
   }
   else if (mode?.value === 'cancel') {
-    changeStep(2)
+    changeStep(3)
     return;
   }
   else {
