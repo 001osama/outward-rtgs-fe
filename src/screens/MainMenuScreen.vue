@@ -4,14 +4,18 @@ import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import { ElMessageBox } from 'element-plus'
 import axios from '@/axiosInstance.js';
+import { getToken } from '@/utils/jwtDecoder';
 
 const router = useRouter();
 let isMessageShown = localStorage.getItem('messageShown');
 onMounted(() => {
-  if(!isMessageShown)
-    ElMessageBox.alert(
+  const userInfo = getToken();
+  if(!isMessageShown && userInfo?.lastLoggedInDate)
+{
+
+  ElMessageBox.alert(
     `Sign-on is Successful<br>
-    Last Sign-on date is 16/04/2025`,
+    Last Sign-on date is ${userInfo?.lastLoggedInDate}`,
     'Message',
     {
       confirmButtonClass: 'mb-confirm-button',
@@ -25,6 +29,7 @@ onMounted(() => {
         localStorage.setItem('messageShown','true');
       }
     })
+  }
 })
 
 

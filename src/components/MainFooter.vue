@@ -1,33 +1,34 @@
 <script setup>
-import { computed, onMounted, reactive } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { getToken } from '@/utils/jwtDecoder'
+import dayjs from '@/utils/dayjs';
 
 const loggedInUserInfo = reactive({
   branchCode: '1001',
-  loginId: 'TEST1'
+  loginId: 'TEST1',
+  loggedInUserDate: new Date(),
+  loggedInUserDay: 'Sunday'
 })
+
+const dateStr = '02/05/2025'
+const parsedDate = dayjs(dateStr, 'DD/MM/YYYY')
+const dayName = parsedDate.format('dddd')
+
+console.log(dayName)
+
 
 onMounted(()=>{
   const userInfo = getToken();
   if(userInfo)
   {
+    const parsedDate = dayjs(userInfo.currentLoggedInDate, 'DD/MM/YYYY')
+    const dayName = parsedDate.format('dddd')
+
    loggedInUserInfo.branchCode = userInfo.branchCode;
    loggedInUserInfo.loginId = userInfo.loginId.toUpperCase();
+   loggedInUserInfo.loggedInUserDate = userInfo.currentLoggedInDate;
+   loggedInUserInfo.loggedInUserDay =  dayName;
   }
-})
-const formattedDate = computed(() => {
-  const date = new Date()
-
-  const daysOfWeek = [
-    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-  ]
-
-  const dayName = daysOfWeek[date.getDay()]
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const year = date.getFullYear()
-
-  return `${dayName} - ${day}/${month}/${year}`
 })
 
 
@@ -37,7 +38,7 @@ const formattedDate = computed(() => {
   <el-footer>
     <el-row>
       <el-col :span="6">
-        <div class="footer-block">{{formattedDate}}</div>
+        <div class="footer-block">{{loggedInUserInfo.loggedInUserDay}} - {{loggedInUserInfo.loggedInUserDate}}</div>
       </el-col>
       <el-col :span="18">
         <div class="footer-block">{{loggedInUserInfo.branchCode}} - {{loggedInUserInfo.loginId}}</div>
