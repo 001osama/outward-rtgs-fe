@@ -1,65 +1,107 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
 import { ElDatePicker } from 'element-plus';
-import { useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
 import { invokeDefaultDialog } from '@/utils/dialog';
 import { downloadBase64ReportPdf } from '@/utils/helpers';
 import axios from '@/axiosInstance';
+import { getToken } from '@/utils/jwtDecoder';
+import { isNumber } from '@/utils/helpers';
 
 const router = useRouter();
 
-const branch = ref('KASUR BRANCH-0038');
-const transactionType = ref('102');
-const fromDate = ref();
-const toDate = ref(new Date('2025-04-03'));
-const custAcNo = ref('');
-const status = ref('All');
+const formRef = ref();
+const branchList = ref([]);
+const accountNoList = ref([]);
 
-
-onMounted(()=>{
-
-
-});
-
-const getBranchList = () => {
-
-}
 
 const reportForm = reactive({
-  branchCode:'',
-  rtgsType:'outward',
-  transactionType:'',
-  isFromDate:true,
-  fromDate:new Date('2025-04-03'),
-  isToDate:true,
-  toDate:new Date('2025-04-03'),
-  customerNo:'',
-  accountNo:'',
-  status:''
+  branchCode: '',
+  rtgsType: 'outward',
+  transactionType: '',
+  isFromDate: true,
+  fromDate: new Date('2025-04-03'),
+  isToDate: true,
+  toDate: new Date('2025-04-03'),
+  customerNo: '',
+  accountNo: '',
+  status: 'All'
+})
+
+const rules = reactive({
+  transactionType: [
+    { required: true, message: 'Field is required', trigger: 'change' },
+  ],
+  fromDate: [
+    { required: true, message: 'Field is required', trigger: 'blur' },
+    { min: 6, message: 'Please insert complete cheque value', trigger: 'blur' }
+  ],
+  toDate: [
+    { required: true, message: 'Field is required', trigger: 'change' },
+    { min: 6, message: 'Please insert complete cheque value', trigger: 'blur' }
+  ]
 })
 
 
-const downloadPdfReport = async () => {
-  try
-  {
-    const response = await axios.post(`/start`, {
-        transition:'FETCHRTGSPDFREPORT',
-        // data:{}
-      });
+onMounted(async () => {
+  await getBranchList();
+});
 
-    if(response.status == 200)
-    {
+
+
+const getBranchList = async () => {
+  try {
+    const token = getToken();
+
+
+    if (!token) {
+      localStorage.removeItem('token');
+      router.push('/');
+    }
+
+    const response = await axios.post(`/start`, { transition: 'FETCHBRANCHLIST' });
+
+    if (response.status == 200) {
       const { data } = response;
-      if(data.success)
-      {
+      if (data.success) {
+        branchList.value = data.data;
+        console.log("Recieved branch list is")
+        console.log(data.data);
+        reportForm.branchCode = token.branchCode;
+      }
+      else
+        invokeDefaultDialog("Error", data.message);
+    }
+    else {
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    invokeDefaultDialog("Error", "Network Error");
+    console.error(error);
+  }
+}
+
+
+
+
+const downloadPdfReport = async () => {
+  try {
+    const response = await axios.post(`/start`, {
+      transition: 'FETCHRTGSPDFREPORT',
+      // data:{}
+    });
+
+    if (response.status == 200) {
+      const { data } = response;
+      if (data.success) {
         console.log("Report is being fetch successfully", data.data);
         downloadBase64ReportPdf(data.data);
       }
       else
         invokeDefaultDialog('Error', data.message);
     }
-    else
-    {
+    else {
       console.log('Error getting success response');
       console.log(response.data);
       invokeDefaultDialog('Error', 'Network Error');
@@ -72,9 +114,46 @@ const downloadPdfReport = async () => {
 }
 
 
-const handleSubmit = async () => {
-  await downloadPdfReport();
-  // Implement your logic for the "Ok" button
+
+let previousCustomerNo = '';
+const getCustAccounts = async () => {
+
+  if (reportForm.customerNo.length < 6 || previousCustomerNo == reportForm.customerNo)
+    return;
+
+
+  try {
+    const response = await axios.post(`/start`, { transition: 'FETCHCUSTACCOUNTS', data: { customerNo: reportForm.customerNo } });
+
+    if (response.status == 200) {
+      const { data } = response;
+      if (data.success) {
+        console.log("Success response is received from backend", data.data);
+        accountNoList.value = data.data;
+        console.log(data);
+        previousCustomerNo = reportForm.customerNo
+      }
+      else accountNoList.value = [];
+    }
+    else {
+      console.log(response.data);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+
+
+const handleSubmit = async (formRef) => {
+  if (!formRef) return
+    formRef.validate(async (valid) => {
+      if(!valid)
+        return;
+
+      await downloadPdfReport();
+    })
 };
 
 const handleExport = () => {
@@ -94,143 +173,151 @@ const handleExit = () => {
   <el-row>
     <el-col :span="4"></el-col>
     <el-col :span="16">
-      <fieldset>
-        <el-row>
-          <el-col :span="3">
-            <el-form-item>
-              <span>Branch</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="16">
-            <el-form-item>
-              <el-select v-model="reportForm.branchCode" disabled placeholder="Select Branch">
-                <el-option />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </fieldset>
-      <fieldset>
-        <el-form-item>
-          <el-radio-group v-model="reportForm.rtgsType">
-            <el-radio value="outward">RTGS Outward</el-radio>
-            <el-radio disabled value="inward">RTGS Inward</el-radio>
-            <el-radio disabled value="unprocessed">UNPROCESSED</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </fieldset>
-      <fieldset>
-        <el-row>
-          <el-col :span="5">
-            <el-form-item>
-              <span>Transaction Type</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item>
-              <el-radio-group v-model="reportForm.transactionType">
-                <el-radio value="102">102</el-radio>
-                <el-radio value="103">103</el-radio>
-                <el-radio value="202">202</el-radio>
-                <el-radio value="All">All</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </fieldset>
-      <fieldset>
-        <el-row>
-          <el-col :span="2">
-            <el-form-item>
-              <span style="margin-top: 6px;">From</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="1">
-            <el-checkbox v-model="reportForm.isFromDate"/>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-date-picker v-model="reportForm.fromDate" type="date" placeholder="Pick a date" style="width: 100%;" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="4"></el-col>
-          <el-col :span="1">
-            <el-form-item>
-              <span style="margin-top: 6px;">To</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="1">
-            <el-checkbox v-model="reportForm.isToDate"/>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item>
-              <el-date-picker v-model="reportForm.toDate" type="date" placeholder="Pick a date" style="width: 100%;" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </fieldset>
-      <fieldset>
-        <el-row>
-          <el-col :span="4">
-            <el-form-item>
-              <span>Customer No.</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item>
-              <el-input v-model="reportForm.customerNo" maxlength="6"/>
-            </el-form-item>
-          </el-col>
-          <el-col :span="3">
-            <el-form-item>
-              <span>A/C No.</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item>
-              <el-select v-model="reportForm.accountNo" placeholder="Select A/C">
-                <el-option />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </fieldset>
-      <fieldset>
-        <el-row>
-          <el-col :span="4">
-            <el-form-item>
-              <span>Status</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="20">
-            <el-form-item>
-              <el-select v-model="reportForm.accountNo" placeholder="Select Status">
-                <el-option />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </fieldset>
-      <fieldset>
-        <el-row>
-          <el-col :span="4">
-            <el-button @click="handleSubmit" class="generic-button" type="primary">OK</el-button>
-          </el-col>
-          <el-col :span="1"></el-col>
-          <el-col :span="4">
-            <el-button class="generic-button" type="primary">Export(.xls)</el-button>
-          </el-col>
-          <el-col :span="6"></el-col>
-          <el-col :span="4">
-            <el-button disabled class="generic-button" type="primary">Back</el-button>
-          </el-col>
-          <el-col :span="1"></el-col>
-          <el-col :span="4">
-            <el-button @click="router.push('remittance')" class="generic-button" type="primary">Exit</el-button>
-          </el-col>
-        </el-row>
-      </fieldset>
+      <el-form ref="formRef" :rules="rules" :label-position="formAlign" :model="reportForm">
+        <fieldset>
+          <el-row>
+            <el-col :span="3">
+              <el-form-item>
+                <span>Branch</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="16">
+              <el-form-item>
+                <el-select v-model="reportForm.branchCode" disabled placeholder="Select Branch">
+                  <el-option v-for="item in branchList" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </fieldset>
+        <fieldset>
+          <el-form-item>
+            <el-radio-group v-model="reportForm.rtgsType">
+              <el-radio value="outward">RTGS Outward</el-radio>
+              <el-radio disabled value="inward">RTGS Inward</el-radio>
+              <el-radio disabled value="unprocessed">UNPROCESSED</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </fieldset>
+        <fieldset>
+          <el-row>
+            <el-col :span="5">
+              <el-form-item>
+                <span>Transaction Type</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item  prop="transactionType">
+                <el-radio-group v-model="reportForm.transactionType">
+                  <el-radio value="102">102</el-radio>
+                  <el-radio value="103">103</el-radio>
+                  <el-radio value="202">202</el-radio>
+                  <el-radio value="All">All</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </fieldset>
+        <fieldset>
+          <el-row>
+            <el-col :span="2">
+              <el-form-item>
+                <span style="margin-top: 6px;">From</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="1">
+              <el-checkbox v-model="reportForm.isFromDate" />
+            </el-col>
+            <el-col :span="6">
+              <el-form-item prop="fromDate">
+                <el-date-picker v-model="reportForm.fromDate" type="date" placeholder="Pick a date"
+                  style="width: 100%;" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="4"></el-col>
+            <el-col :span="1">
+              <el-form-item>
+                <span style="margin-top: 6px;">To</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="1">
+              <el-checkbox v-model="reportForm.isToDate" />
+            </el-col>
+            <el-col :span="6">
+              <el-form-item prop="toDate">
+                <el-date-picker v-model="reportForm.toDate" type="date" placeholder="Pick a date"
+                  style="width: 100%;" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </fieldset>
+        <fieldset>
+          <el-row>
+            <el-col :span="4">
+              <el-form-item>
+                <span>Customer No.</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-form-item>
+                <el-input v-model="reportForm.customerNo" @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="3">
+              <el-form-item>
+                <span>A/C No.</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item>
+                <el-select v-model="reportForm.accountNo" placeholder="Select A/C">
+                  <el-option v-for="item in accountNoList" :key="item" :label="item" :value="item" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </fieldset>
+        <fieldset>
+          <el-row>
+            <el-col :span="4">
+              <el-form-item>
+                <span>Status</span>
+              </el-form-item>
+            </el-col>
+            <el-col :span="20">
+              <el-form-item>
+                <el-select v-model="reportForm.status" placeholder="Select Status">
+                  <el-option label="All" value="All" />
+                  <el-option label="Unauthorized" value="U" />
+                  <el-option label="Authorized" value="A" />
+                  <el-option label="Cancelled" value="C" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </fieldset>
+        <fieldset>
+          <el-row>
+            <el-col :span="4">
+              <el-button @click="handleSubmit(formRef)" class="generic-button" type="primary">OK</el-button>
+            </el-col>
+            <el-col :span="1"></el-col>
+            <el-col :span="4">
+              <el-button class="generic-button" type="primary">Export(.xls)</el-button>
+            </el-col>
+            <el-col :span="6"></el-col>
+            <el-col :span="4">
+              <el-button disabled class="generic-button" type="primary">Back</el-button>
+            </el-col>
+            <el-col :span="1"></el-col>
+            <el-col :span="4">
+              <el-button @click="router.push('remittance')" class="generic-button" type="primary">Exit</el-button>
+            </el-col>
+          </el-row>
+        </fieldset>
+      </el-form>
     </el-col>
+
     <el-col :span="4"></el-col>
   </el-row>
 

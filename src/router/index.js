@@ -32,7 +32,9 @@ const routes = [
       },
       {
         path: '/rtgsinquiry',
-        component: RTGSInquiryReportScreen
+        component: RTGSInquiryReportScreen,
+        name: 'RTGSInquiry',
+        meta: { title: 'RTGS Inquiry', componentName: 'RTGSInquiry' },
       },
       {
         path: '/sbpoutwardcancel',
