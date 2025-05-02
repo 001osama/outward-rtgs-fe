@@ -11,23 +11,23 @@ let isMessageShown = localStorage.getItem('messageShown');
 onMounted(() => {
   const userInfo = getToken();
   if(!isMessageShown && userInfo?.lastLoggedInDate)
-{
+  {
 
-  ElMessageBox.alert(
-    `Sign-on is Successful<br>
-    Last Sign-on date is ${userInfo?.lastLoggedInDate}`,
-    'Message',
-    {
-      confirmButtonClass: 'mb-confirm-button',
-      dangerouslyUseHTMLString: true,
-      confirmButtonText: 'OK',
-      showCancelButton: false,
-      showClose: false,
-      draggable: true,
-      center: true,
-      callback: () => {
-        localStorage.setItem('messageShown','true');
-      }
+    ElMessageBox.alert(
+      `Sign-on is Successful<br>
+      Last Sign-on date is ${userInfo?.lastLoggedInDate}`,
+      'Message',
+      {
+        confirmButtonClass: 'mb-confirm-button',
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: 'OK',
+        showCancelButton: false,
+        showClose: false,
+        draggable: true,
+        center: true,
+        callback: () => {
+          localStorage.setItem('messageShown','true');
+        }
     })
   }
 })

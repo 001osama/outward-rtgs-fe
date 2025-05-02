@@ -2,6 +2,9 @@
 import { reactive, ref, onMounted } from 'vue';
 import { ElDatePicker } from 'element-plus';
 import { useRouter} from 'vue-router';
+import { invokeDefaultDialog } from '@/utils/dialog';
+import { downloadBase64ReportPdf } from '@/utils/helpers';
+import axios from '@/axiosInstance';
 
 const router = useRouter();
 
@@ -35,15 +38,43 @@ const reportForm = reactive({
   status:''
 })
 
-const handleOk = () => {
+
+const downloadPdfReport = async () => {
+  try
+  {
+    const response = await axios.post(`/start`, {
+        transition:'FETCHRTGSPDFREPORT',
+        // data:{}
+      });
+
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("Report is being fetch successfully", data.data);
+        downloadBase64ReportPdf(data.data);
+      }
+      else
+        invokeDefaultDialog('Error', data.message);
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+      invokeDefaultDialog('Error', 'Network Error');
+    }
+  }
+  catch (error) {
+    console.error(error);
+    invokeDefaultDialog('Error', 'Network Error');
+  }
+}
+
+
+const handleSubmit = async () => {
+  await downloadPdfReport();
   // Implement your logic for the "Ok" button
-  console.log('Ok button clicked');
-  console.log('Branch:', branch.value);
-  console.log('Transaction Type:', transactionType.value);
-  console.log('From Date:', fromDate.value);
-  console.log('To Date:', toDate.value);
-  console.log('Cust/Ac No:', custAcNo.value);
-  console.log('Status:', status.value);
 };
 
 const handleExport = () => {
@@ -183,7 +214,7 @@ const handleExit = () => {
       <fieldset>
         <el-row>
           <el-col :span="4">
-            <el-button class="generic-button" type="primary">OK</el-button>
+            <el-button @click="handleSubmit" class="generic-button" type="primary">OK</el-button>
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="4">

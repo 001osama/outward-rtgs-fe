@@ -10,7 +10,7 @@ import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
-import { downloadBase64Report, convertDateFormat, convertToIsoFormat } from '@/utils/helpers';
+import { downloadBase64ReportExcel, convertDateFormat, convertToIsoFormat } from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
 const step = ref(1);
@@ -406,7 +406,6 @@ const handleExitClick = () => {
 }
 
 const getCustAccounts = async () => {
-  debugger;
 
   if(!mode.value && previousCustomerNo != rtgsForm.customerNo)
   {
@@ -876,7 +875,7 @@ const downloadExcelReport = async () => {
       if(data.success)
       {
         console.log("User successfully authorized", data.data);
-        downloadBase64Report(data.data);
+        downloadBase64ReportExcel(data.data);
       }
       else
         invokeDefaultDialog('Error', data.message);

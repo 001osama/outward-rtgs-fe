@@ -68,28 +68,62 @@ const dateMasking = (event) => {
   }, 0)
 }
 
-const downloadBase64Report = (base64Data) => {
+const downloadBase64ReportExcel = (base64Data) => {
   const base64Excel = base64Data
 
-  const byteCharacters = atob(base64Excel)
-  const byteNumbers = new Array(byteCharacters.length)
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i)
-  }
-  const byteArray = new Uint8Array(byteNumbers)
-  const blob = new Blob([byteArray], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  })
+  try{
 
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'report.xlsx'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  window.URL.revokeObjectURL(url)
+    const byteCharacters = atob(base64Excel)
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    const blob = new Blob([byteArray], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'report.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error downloading Excel:', error);
+  }
 }
+
+const downloadBase64ReportPdf = (base64Data) => {
+  const base64Pdf = base64Data;
+
+  try {
+    const byteCharacters = atob(base64Pdf);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {
+      type: 'application/pdf',
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error downloading PDF:', error);
+
+  }
+};
+
 
 // const convertToIsoFormat = (dateStr) => {
 //   if (typeof dateStr !== 'string' || !dateStr.trim()) {
@@ -162,7 +196,8 @@ const isWithin60Days = (dateStr) => {
 export {
   isNumber,
   dateMasking,
-  downloadBase64Report,
+  downloadBase64ReportExcel,
+  downloadBase64ReportPdf,
   convertDateFormat,
   isWithin60Days,
   convertToIsoFormat,
