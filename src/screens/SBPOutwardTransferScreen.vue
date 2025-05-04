@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { getToken } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
-import { isNumber, dateMasking } from '@/utils/helpers';
+import { isNumber } from '@/utils/helpers';
 import ExceptionWindow from '@/components/ExceptionWindow.vue';
 import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
@@ -1051,7 +1051,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="8">
             <el-form-item>
-              <el-input v-model="rtgsForm.availableBalance" disabled />
+              <el-input  v-model="rtgsForm.availableBalance" disabled />
             </el-form-item>
           </el-col>
           <el-col :span="2">
@@ -1061,7 +1061,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="9">
             <el-form-item>
-              <el-input disabled v-model="rtgsForm.beneficiaryAmount" />
+              <el-input disabled  v-model="rtgsForm.beneficiaryAmount" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -1105,7 +1105,7 @@ const downloadExcelReport = async () => {
               <el-input
                 :disabled="isFormDisabled"
                 v-model="rtgsForm.chequeDate"
-                @keydown="dateMasking"
+                v-date
                 placeholder="  /   /  "
                 maxlength="10" />
             </el-form-item>
@@ -1121,7 +1121,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="7">
             <el-form-item>
-              <el-input :disabled="isFormDisabled" v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
+              <el-input  :disabled="isFormDisabled" v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
                 maxlength="18" />
             </el-form-item>
           </el-col>
