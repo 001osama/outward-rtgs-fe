@@ -862,7 +862,7 @@ const downloadExcelReport = async () => {
   try
   {
     const response = await axios.post(`/start`, {
-        transition:'FETCHEXCELREPORT',
+        transition:'FETCHVOUCHEREXCEL',
         data:{
         voucherNo: voucherInfoList[0],
         voucherYear: voucherInfoList[1],

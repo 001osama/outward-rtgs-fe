@@ -3,7 +3,7 @@ import { reactive, ref, onMounted } from 'vue';
 import { ElDatePicker } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { invokeDefaultDialog } from '@/utils/dialog';
-import { downloadBase64ReportPdf } from '@/utils/helpers';
+import { downloadBase64ReportPdf, convertToIsoFormat } from '@/utils/helpers';
 import axios from '@/axiosInstance';
 import { getToken } from '@/utils/jwtDecoder';
 import { isNumber } from '@/utils/helpers';
@@ -13,6 +13,7 @@ const router = useRouter();
 const formRef = ref();
 const branchList = ref([]);
 const accountNoList = ref([]);
+const loggedInDate = ref('');
 
 
 const reportForm = reactive({
@@ -20,9 +21,9 @@ const reportForm = reactive({
   rtgsType: 'outward',
   transactionType: '',
   isFromDate: true,
-  fromDate: new Date('2025-04-03'),
+  fromDate: '2025-04-03',
   isToDate: true,
-  toDate: new Date('2025-04-03'),
+  toDate: '2025-04-03',
   customerNo: '',
   accountNo: '',
   status: 'All'
@@ -34,17 +35,22 @@ const rules = reactive({
   ],
   fromDate: [
     { required: true, message: 'Field is required', trigger: 'blur' },
-    { min: 6, message: 'Please insert complete cheque value', trigger: 'blur' }
+    { type: 'date', required: true, message: 'Please pick a date', trigger: 'change'},
   ],
   toDate: [
-    { required: true, message: 'Field is required', trigger: 'change' },
-    { min: 6, message: 'Please insert complete cheque value', trigger: 'blur' }
+    { required: true, message: 'Field is required', trigger: 'blur' },
+    { type: 'date', required: true, message: 'Please pick a date', trigger: 'change'},
   ]
 })
 
 
 onMounted(async () => {
   await getBranchList();
+
+  const token = getToken();
+  loggedInDate.value = convertToIsoFormat(token.currentLoggedInDate);
+  reportForm.fromDate = loggedInDate.value;
+  reportForm.toDate = loggedInDate.value;
 });
 
 
@@ -144,7 +150,9 @@ const getCustAccounts = async () => {
   }
 }
 
-
+const disabledDate = (time) => {
+  return time.getTime() > new Date(loggedInDate.value)
+}
 
 const handleSubmit = async (formRef) => {
   if (!formRef) return
@@ -230,7 +238,13 @@ const handleExit = () => {
             </el-col>
             <el-col :span="6">
               <el-form-item prop="fromDate">
-                <el-date-picker v-model="reportForm.fromDate" type="date" placeholder="Pick a date"
+                <el-date-picker
+                  v-model="reportForm.fromDate"
+                  type="date"
+                  format="DD/MM/YYYY"
+                  value-format="YYYY-MM-DD"
+                  placeholder="Pick a date"
+                  :disabled-date="disabledDate"
                   style="width: 100%;" />
               </el-form-item>
             </el-col>
@@ -245,7 +259,13 @@ const handleExit = () => {
             </el-col>
             <el-col :span="6">
               <el-form-item prop="toDate">
-                <el-date-picker v-model="reportForm.toDate" type="date" placeholder="Pick a date"
+                <el-date-picker
+                  v-model="reportForm.toDate"
+                  type="date"
+                  format="DD/MM/YYYY"
+                  value-format="YYYY-MM-DD"
+                  placeholder="Pick a date"
+                  :disabled-date="disabledDate"
                   style="width: 100%;" />
               </el-form-item>
             </el-col>
@@ -317,7 +337,6 @@ const handleExit = () => {
         </fieldset>
       </el-form>
     </el-col>
-
     <el-col :span="4"></el-col>
   </el-row>
 
