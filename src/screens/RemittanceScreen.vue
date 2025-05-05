@@ -2,8 +2,10 @@
 import { useRouter } from 'vue-router';
 import showMenu from '@/utils/menuButton';
 import axios from '@/axiosInstance.js';
+import { getToken } from '@/utils/jwtDecoder.js'
 
 const router = useRouter();
+const token = getToken();
 
 const signOff = async ()=>{
   try {
@@ -31,6 +33,10 @@ const signOff = async ()=>{
     console.error(error);
   }
 }
+
+
+
+
 
 const mainMenuBtnClicked = () => {
   router.push('/authlayout');
@@ -103,9 +109,9 @@ const mainMenuBtnClicked = () => {
         <li class="menu-item has-nested-menu">
           <button>SBP Outward</button>
           <ul class="menu-list">
-            <li class="menu-item"><button @click="router.push('/sbpoutwardtransfer')">Transfer</button></li>
-            <li class="menu-item"><button @click="router.push('/sbpoutwardcancel')">Cancel</button></li>
-            <li class="menu-item"><button @click="router.push('/sbpoutwardauth')">Authorize</button></li>
+            <li class="menu-item"><button :disabled="token?.roleId == 1" @click="router.push('/sbpoutwardtransfer')">Transfer</button></li>
+            <li class="menu-item"><button :disabled="token?.roleId == 1" @click="router.push('/sbpoutwardcancel')">Cancel</button></li>
+            <li class="menu-item"><button :disabled="token?.roleId == 2" @click="router.push('/sbpoutwardauth')">Authorize</button></li>
           </ul>
         </li>
         <li class="menu-item">
@@ -178,7 +184,7 @@ const mainMenuBtnClicked = () => {
 
     <!-- <el-col :span="2">
        <button class="tile-button bottom">Report</button> -->
-    <!-- </el-col> --> 
+    <!-- </el-col> -->
     <el-col :span="1"></el-col>
     <el-col :span="2">
       <button class="tile-button bottom">Batch</button>
