@@ -3,7 +3,7 @@ import { reactive, ref, onMounted } from 'vue';
 import { ElDatePicker } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { invokeDefaultDialog } from '@/utils/dialog';
-import { downloadBase64ReportPdf, convertToIsoFormat } from '@/utils/helpers';
+import { downloadBase64ReportPdf, downloadBase64ReportExcel, convertToIsoFormat } from '@/utils/helpers';
 import axios from '@/axiosInstance';
 import { getToken } from '@/utils/jwtDecoder';
 import { isNumber } from '@/utils/helpers';
@@ -35,11 +35,17 @@ const rules = reactive({
   ],
   fromDate: [
     { required: true, message: 'Field is required', trigger: 'blur' },
-    { type: 'date', required: true, message: 'Please pick a date', trigger: 'change'},
+    { type: 'date', required: true, message: 'Please pick a date', trigger: 'change' },
   ],
   toDate: [
     { required: true, message: 'Field is required', trigger: 'blur' },
-    { type: 'date', required: true, message: 'Please pick a date', trigger: 'change'},
+    { type: 'date', required: true, message: 'Please pick a date', trigger: 'change' },
+  ],
+  customerNo: [
+    { required: true, message: 'Field is required', trigger: 'blur' },
+  ],
+  accountNo: [
+  { required: true, message: 'Field is required', trigger: 'change' },
   ]
 })
 
@@ -91,33 +97,75 @@ const getBranchList = async () => {
 
 
 
-const downloadPdfReport = async () => {
-  try {
-    const response = await axios.post(`/start`, {
-      transition: 'FETCHRTGSPDFREPORT',
-      // data:{}
-    });
+// const downloadPdfReport = async () => {
+//   try {
+//     const response = await axios.post(`/start`, {
+//       transition: 'FETCHRTGSPDFREPORT',
+//       // data:{}
+//     });
 
-    if (response.status == 200) {
-      const { data } = response;
-      if (data.success) {
-        console.log("Report is being fetch successfully", data.data);
-        downloadBase64ReportPdf(data.data);
+//     if (response.status == 200) {
+//       const { data } = response;
+//       if (data.success) {
+//         console.log("Report is being fetch successfully", data.data);
+//         downloadBase64ReportPdf(data.data);
+//       }
+//       else
+//         invokeDefaultDialog('Error', data.message);
+//     }
+//     else {
+//       console.log('Error getting success response');
+//       console.log(response.data);
+//       invokeDefaultDialog('Error', 'Network Error');
+//     }
+//   }
+//   catch (error) {
+//     console.error(error);
+//     invokeDefaultDialog('Error', 'Network Error');
+//   }
+// }
+
+
+const downloadReport = async (formRef, reportFormat) => {
+  if (!formRef) return
+  formRef.validate(async (valid) => {
+    if (!valid)
+      return;
+
+    try {
+      const response = await axios.post(`/start`, {
+        transition: 'FETCHRTGSREPORT',
+        data: {reportForm:
+          {
+            reportFormat, ...reportForm
+          }
+        }
+      });
+
+      if (response.status == 200) {
+        const { data } = response;
+        if (data.success) {
+          console.log("Report is being fetch successfully", data.data);
+
+          reportFormat === 'pdf' ? downloadBase64ReportPdf(data.data) : downloadBase64ReportExcel(data.data) ;
+        }
+        else
+          invokeDefaultDialog('Error', data.message);
       }
-      else
-        invokeDefaultDialog('Error', data.message);
+      else {
+        console.log('Error getting success response');
+        console.log(response.data);
+        invokeDefaultDialog('Error', 'Network Error');
+      }
     }
-    else {
-      console.log('Error getting success response');
-      console.log(response.data);
+    catch (error) {
+      console.error(error);
       invokeDefaultDialog('Error', 'Network Error');
     }
-  }
-  catch (error) {
-    console.error(error);
-    invokeDefaultDialog('Error', 'Network Error');
-  }
+  })
+
 }
+
 
 
 
@@ -154,27 +202,20 @@ const disabledDate = (time) => {
   return time.getTime() > new Date(loggedInDate.value)
 }
 
-const handleSubmit = async (formRef) => {
-  if (!formRef) return
-    formRef.validate(async (valid) => {
-      if(!valid)
-        return;
+// const handleSubmit = async (formRef) => {
+//   if (!formRef) return
+//   formRef.validate(async (valid) => {
+//     if (!valid)
+//       return;
 
-      await downloadPdfReport();
-    })
-};
+//     await downloadPdfReport();
+//   })
+// };
 
-const handleExport = () => {
-  console.log('Export(xls) button clicked');
-};
+// const handleExport = () => {
+//   console.log('Export(xls) button clicked');
+// };
 
-const handleBack = () => {
-  console.log('Back button clicked');
-};
-
-const handleExit = () => {
-  console.log('Exit button clicked');
-};
 </script>
 
 <template>
@@ -215,11 +256,11 @@ const handleExit = () => {
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item  prop="transactionType">
+              <el-form-item prop="transactionType">
                 <el-radio-group v-model="reportForm.transactionType">
                   <el-radio value="102">102</el-radio>
                   <el-radio value="103">103</el-radio>
-                  <el-radio value="202">202</el-radio>
+                  <!-- <el-radio value="202">202</el-radio> -->
                   <el-radio value="All">All</el-radio>
                 </el-radio-group>
               </el-form-item>
@@ -238,14 +279,8 @@ const handleExit = () => {
             </el-col>
             <el-col :span="6">
               <el-form-item prop="fromDate">
-                <el-date-picker
-                  v-model="reportForm.fromDate"
-                  type="date"
-                  format="DD/MM/YYYY"
-                  value-format="YYYY-MM-DD"
-                  placeholder="Pick a date"
-                  :disabled-date="disabledDate"
-                  style="width: 100%;" />
+                <el-date-picker v-model="reportForm.fromDate" type="date" format="DD/MM/YYYY" value-format="YYYY-MM-DD"
+                  placeholder="Pick a date" :disabled-date="disabledDate" style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="4"></el-col>
@@ -259,14 +294,8 @@ const handleExit = () => {
             </el-col>
             <el-col :span="6">
               <el-form-item prop="toDate">
-                <el-date-picker
-                  v-model="reportForm.toDate"
-                  type="date"
-                  format="DD/MM/YYYY"
-                  value-format="YYYY-MM-DD"
-                  placeholder="Pick a date"
-                  :disabled-date="disabledDate"
-                  style="width: 100%;" />
+                <el-date-picker v-model="reportForm.toDate" type="date" format="DD/MM/YYYY" value-format="YYYY-MM-DD"
+                  placeholder="Pick a date" :disabled-date="disabledDate" style="width: 100%;" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -279,7 +308,7 @@ const handleExit = () => {
               </el-form-item>
             </el-col>
             <el-col :span="5">
-              <el-form-item>
+              <el-form-item prop="customerNo">
                 <el-input v-model="reportForm.customerNo" @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
               </el-form-item>
             </el-col>
@@ -289,7 +318,7 @@ const handleExit = () => {
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item>
+              <el-form-item prop="accountNo">
                 <el-select v-model="reportForm.accountNo" placeholder="Select A/C">
                   <el-option v-for="item in accountNoList" :key="item" :label="item" :value="item" />
                 </el-select>
@@ -319,11 +348,12 @@ const handleExit = () => {
         <fieldset>
           <el-row>
             <el-col :span="4">
-              <el-button @click="handleSubmit(formRef)" class="generic-button" type="primary">OK</el-button>
+              <el-button @click="downloadReport(formRef, 'pdf')" class="generic-button" type="primary">OK</el-button>
             </el-col>
             <el-col :span="1"></el-col>
             <el-col :span="4">
-              <el-button class="generic-button" type="primary">Export(.xls)</el-button>
+              <el-button @click="downloadReport(formRef, 'excel')" class="generic-button"
+                type="primary">Export(.xls)</el-button>
             </el-col>
             <el-col :span="6"></el-col>
             <el-col :span="4">

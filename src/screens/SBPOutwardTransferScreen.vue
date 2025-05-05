@@ -128,7 +128,6 @@ const rtgsForm = reactive({
   senderToReceiverInformation: '',
   chequeNo: '',
   chequeDate: '',
-  isBeneficiaryTitleFetch: false,
   isSignatureSeen: false,
   postedBy:''
 });
@@ -141,7 +140,8 @@ const transactionLaxForm = reactive({
   beneficiaryAccountName: '',
   beneficiaryIbanOrAccountNo: '',
   beneficiaryAddress: '',
-  beneficiaryBranchCode: ''
+  beneficiaryBranchCode: '',
+  isBeneficiaryTitleFetch: true
 });
 
 const disabilityController = reactive({
@@ -167,7 +167,6 @@ const resetForm = () => {
   rtgsForm.senderToReceiverInformation = '';
   rtgsForm.chequeNo= '';
   rtgsForm.chequeDate= '';
-  rtgsForm.isBeneficiaryTitleFetch=true;
   chargesLaxList.value = [];
 
   transactionLaxForm.transactionAmount = '';
@@ -177,6 +176,7 @@ const resetForm = () => {
   transactionLaxForm.beneficiaryIbanOrAccountNo = '';
   transactionLaxForm.beneficiaryAddress = '';
   transactionLaxForm.beneficiaryBranchCode = '';
+  transactionLaxForm.isBeneficiaryTitleFetch = true;
 }
 
 
@@ -518,10 +518,12 @@ const getBenefBankDetails = async () => {
         console.log("Success response is received from backend", data.data);
         transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
         transactionLaxForm.beneficiaryBranchCode = data.data.beneficiaryBranchCd;
-        rtgsForm.isBeneficiaryTitleFetch = true;
+        transactionLaxForm.isBeneficiaryTitleFetch = true;
       }
       else {
-        rtgsForm.isBeneficiaryTitleFetch = false;
+        transactionLaxForm.isBeneficiaryTitleFetch = false;
+        transactionLaxForm.beneficiaryAccountName = '';
+        transactionLaxForm.beneficiaryBranchCode = '';
         invokeDefaultDialog('error', response.data.message);
         return
       }
@@ -619,7 +621,7 @@ const insertTransactionLax = () => {
         invokeDefaultDialog("Message", "Beneficiary Account already added");
         return
       }
-
+      console.log("Transaction Lax before insertion", transactionLaxForm);
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
       const transactionLaxAmount = parseInt(transactionLaxForm.transactionAmount);
 
@@ -814,9 +816,8 @@ const createOutwardRTGS = async () => {
     chequeNo: rtgsForm.chequeNo,
     chequeDate: chequeDate,
     activityCode: 100,
-    isBeneficiaryTitleFetch: rtgsForm.isBeneficiaryTitleFetch,
   }
-
+  console.log("Creating Outward Rtgs with data", reqObject);
   try {
     const response = await axios.post(`/start`, { transition: 'POSTOUTWARDRTGS', data: { rtgsForm: reqObject } });
 
@@ -1172,7 +1173,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="rtgsForm.isBeneficiaryTitleFetch" maxlength="10" />
+              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="transactionLaxForm.isBeneficiaryTitleFetch" maxlength="10" />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1185,7 +1186,7 @@ const downloadExcelReport = async () => {
               </el-col>
               <el-col :span="12">
                 <el-form-item>
-                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.isBeneficiaryTitleFetch" maxlength="4" />
+                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="transactionLaxForm.isBeneficiaryTitleFetch" maxlength="4" />
                 </el-form-item>
               </el-col>
             </el-row>

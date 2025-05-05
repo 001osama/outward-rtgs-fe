@@ -7,8 +7,6 @@ import 'element-plus/dist/index.css'
 import router from './router/index.js'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import vmoney from 'v-money3'
-import { Money3Directive } from 'v-money3'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -17,7 +15,7 @@ pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 app.use(ElementPlus)
 app.use(router)
-app.use(vmoney)
+// app.use(vmoney)
 app.directive('amount', amountMaskingDirective)
 app.directive('date', dateMaskingDirective)
 // app.directive('amount', Money3Directive)
