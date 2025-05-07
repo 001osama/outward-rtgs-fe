@@ -568,7 +568,7 @@ const handleSubmitClick = async (formRef) => {
     return;
   }
   else if (mode?.value === 'cancel') {
-    changeStep(3)
+    await cancelOutwardRTGS()
     return;
   }
   else {
@@ -612,15 +612,22 @@ const insertTransactionLax = () => {
         return;
       }
 
-      const accountAlreadyAdded = rtgsForm.transactionLaxList.some(
-        (item) => item.beneficiaryIbanOrAccountNo === transactionLaxForm.beneficiaryIbanOrAccountNo
-      );
+      // const accountAlreadyAdded = rtgsForm.transactionLaxList.some(
+      //   (item) => item.beneficiaryIbanOrAccountNo === transactionLaxForm.beneficiaryIbanOrAccountNo
+      // );
 
-      if(accountAlreadyAdded)
+      // if(accountAlreadyAdded)
+      // {
+      //   invokeDefaultDialog("Message", "Beneficiary Account already added");
+      //   return
+      // }
+
+      if(rtgsForm.transactionLaxList.length >= 10)
       {
-        invokeDefaultDialog("Message", "Beneficiary Account already added");
-        return
+        invokeDefaultDialog("Message", "Maximum 10 Beneficiary can be added");
+        return;
       }
+
       console.log("Transaction Lax before insertion", transactionLaxForm);
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
       const transactionLaxAmount = parseInt(transactionLaxForm.transactionAmount);
@@ -709,10 +716,10 @@ const onAuthSuccess = async (loginId) => {
     await authorizeOutwardRTGS(loginId);
     return;
   }
-  else if (mode?.value == 'cancel') {
-    await cancelOutwardRTGS(loginId);
-    return;
-  }
+  // else if (mode?.value == 'cancel') {
+  //   await cancelOutwardRTGS(loginId);
+  //   return;
+  // }
 }
 
 const onAuthCancel = () => {
@@ -721,8 +728,14 @@ const onAuthCancel = () => {
   else changeStep(2)
 }
 
-const cancelOutwardRTGS = async (loginId) => {
-  console.log(loginId);
+const cancelOutwardRTGS = async () => {
+  const token = getToken();
+
+  if (!token) {
+      localStorage.removeItem('token');
+      router.push('/');
+  }
+
   try {
     const voucherNo = $route.query.voucherNo;
     const voucherYear = $route.query.voucherYear;
@@ -730,8 +743,9 @@ const cancelOutwardRTGS = async (loginId) => {
     const response = await axios.post(`/start`, {
       transition: 'CANCELOUTWARDRTGS',
       data: {
-        voucherNo: voucherNo,
-        voucherYear: voucherYear
+        loginId: token?.loginId,
+        voucherNo,
+        voucherYear
       }
     });
 
