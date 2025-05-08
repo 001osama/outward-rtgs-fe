@@ -6,7 +6,7 @@ import { invokeDefaultDialog } from '@/utils/dialog';
 import { downloadBase64ReportPdf, downloadBase64ReportExcel, convertToIsoFormat } from '@/utils/helpers';
 import axios from '@/axiosInstance';
 import { getToken } from '@/utils/jwtDecoder';
-import { isNumber } from '@/utils/helpers';
+import { isNumber, removeValidationRule, addValidationRule } from '@/utils/helpers';
 
 const router = useRouter();
 
@@ -41,11 +41,11 @@ const rules = reactive({
     { required: true, message: 'Field is required', trigger: 'blur' },
     { type: 'date', required: true, message: 'Please pick a date', trigger: 'change' },
   ],
-  customerNo: [
-    { required: true, message: 'Field is required', trigger: 'blur' },
-  ],
+  // customerNo: [
+  //    { required: true, message: 'Field is required', trigger: 'blur' },
+  // ],
   accountNo: [
-  { required: true, message: 'Field is required', trigger: 'change' },
+    // { required: true, message: 'Field is required', trigger: 'change' },
   ]
 })
 
@@ -169,11 +169,14 @@ const downloadReport = async (formRef, reportFormat) => {
 
 
 
-let previousCustomerNo = '';
 const getCustAccounts = async () => {
 
-  if (reportForm.customerNo.length < 6 || previousCustomerNo == reportForm.customerNo)
+  if (reportForm.customerNo.length < 6)
+  {
+    accountNoList.value = [];
+    reportForm.accountNo = '';
     return;
+  }
 
 
   try {
@@ -185,9 +188,12 @@ const getCustAccounts = async () => {
         console.log("Success response is received from backend", data.data);
         accountNoList.value = data.data;
         console.log(data);
-        previousCustomerNo = reportForm.customerNo
       }
-      else accountNoList.value = [];
+      else
+      {
+        accountNoList.value = [];
+        reportForm.accountNo = '';
+      }
     }
     else {
       console.log(response.data);
@@ -215,6 +221,16 @@ const disabledDate = (time) => {
 // const handleExport = () => {
 //   console.log('Export(xls) button clicked');
 // };
+
+
+
+
+const modifyAccountNoValidation = () => {
+  if(reportForm.customerNo.length > 0)
+    addValidationRule(rules, 'accountNo', { required: true, message: 'Field is required', trigger: 'change' });
+  else
+    removeValidationRule(rules, 'accountNo', 'required');
+}
 
 </script>
 
@@ -309,7 +325,7 @@ const disabledDate = (time) => {
             </el-col>
             <el-col :span="5">
               <el-form-item prop="customerNo">
-                <el-input v-model="reportForm.customerNo" @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
+                <el-input v-model="reportForm.customerNo" @change="modifyAccountNoValidation" @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
               </el-form-item>
             </el-col>
             <el-col :span="3">

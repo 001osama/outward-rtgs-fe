@@ -190,6 +190,36 @@ const isWithin60Days = (dateStr) => {
   return diffDays <= 60
 }
 
+const removeValidationRule = ( validationRules ,fieldName, ruleProperty) => {
+  if(validationRules[fieldName])
+  {
+    const indexToRemove = validationRules[fieldName].findIndex(rule => rule[ruleProperty] !== undefined)
+    if(indexToRemove > -1)
+    {
+     validationRules[fieldName].splice(indexToRemove, 1);
+     return true;
+    }
+  }
+  return false;
+}
+
+
+
+const addValidationRule = ( validationRules,fieldName, newRule) => {
+  if (validationRules[fieldName]) {
+    const alreadyExists = validationRules[fieldName].some(existingRule => {
+      return Object.entries(newRule).every(([key, value]) => existingRule[key] === value);
+    });
+
+    if (!alreadyExists) {
+      validationRules[fieldName].push(newRule);
+      return true;
+    }
+  }
+  return false;
+}
+
+
 export {
   isNumber,
   dateMasking,
@@ -198,4 +228,6 @@ export {
   convertDateFormat,
   isWithin60Days,
   convertToIsoFormat,
+  removeValidationRule,
+  addValidationRule
 }
