@@ -554,7 +554,7 @@ const handleSubmitClick = async (formRef) => {
     return;
   }
 
-  if(!rtgsForm.isSignatureSeen)
+  if(!rtgsForm.isSignatureSeen && mode?.value !== 'cancel')
   {
     invokeDefaultDialog("Message", "Please view customer signature");
     return;
@@ -587,7 +587,7 @@ const handleSubmitClick = async (formRef) => {
 }
 
 const submitRTGSForm = async () => {
-  if (rtgsForm.beneficiaryAmount < 1000000) {
+  if (rtgsForm.transferTypeCode === '103' && rtgsForm.beneficiaryAmount < 1000000) {
     invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
     return;
   }
@@ -627,6 +627,7 @@ const insertTransactionLax = () => {
         invokeDefaultDialog("Message", "Maximum 10 Beneficiary can be added");
         return;
       }
+
 
       console.log("Transaction Lax before insertion", transactionLaxForm);
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
