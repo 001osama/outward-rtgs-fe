@@ -419,6 +419,7 @@ const getCustAccounts = async () => {
     previousCustomerNo = '';
     rtgsForm.chequeDate = '';
     rtgsForm.chequeNo = '';
+    rtgsForm.transactionLaxList = [];
   }
 
   if (rtgsForm.customerNo.length < 6 || previousCustomerNo == rtgsForm.customerNo)
@@ -587,13 +588,11 @@ const handleSubmitClick = async (formRef) => {
 }
 
 const submitRTGSForm = async () => {
-  if (rtgsForm.transferTypeCode === '103' && rtgsForm.beneficiaryAmount < 1000000) {
-    invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
-    return;
-  }
+
 
   currentActivityCode.value = 100;
-  changeStep(2)
+  changeStep(2);
+
 }
 
 const insertTransactionLax = () => {
@@ -612,15 +611,25 @@ const insertTransactionLax = () => {
         return;
       }
 
-      // const accountAlreadyAdded = rtgsForm.transactionLaxList.some(
-      //   (item) => item.beneficiaryIbanOrAccountNo === transactionLaxForm.beneficiaryIbanOrAccountNo
-      // );
+      if ( rtgsForm.transferTypeCode === '102' && parseInt(transactionLaxForm.transactionAmount) < 100000)
+      {
+        invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
+        return;
+      }
 
-      // if(accountAlreadyAdded)
-      // {
-      //   invokeDefaultDialog("Message", "Beneficiary Account already added");
-      //   return
-      // }
+      if ( rtgsForm.transferTypeCode === '102' && (parseInt(transactionLaxForm.transactionAmount) + parseInt(rtgsForm.beneficiaryAmount)) > 999999)
+      {
+        invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
+        return;
+      }
+
+
+
+      if( rtgsForm.transferTypeCode === '103' && parseInt(transactionLaxForm.transactionAmount) < 1000000 )
+      {
+        invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
+        return;
+      }
 
       if(rtgsForm.transactionLaxList.length >= 10)
       {
@@ -1235,12 +1244,12 @@ const downloadExcelReport = async () => {
         <el-row style="margin-bottom: 8px;">
           <el-col :span="17"></el-col>
           <el-col :span="3" style="margin-right: 8px;">
-            <el-button class="generic-button" :disabled="isFormDisabled || rtgsForm.transactionLaxList == 0" @click="removeTransactionLax"
+            <el-button class="generic-button" :disabled="isFormDisabled || rtgsForm.transactionLaxList == 0 || selectedTransactionLax == ''" @click="removeTransactionLax"
               type="primary">Remove</el-button>
           </el-col>
           <el-col :span="3">
             <el-button class="generic-button"
-              :disabled="isFormDisabled || (rtgsForm.transferTypeCode === '103' && rtgsForm.transactionLaxList.length > 0)"
+              :disabled="isFormDisabled || rtgsForm.accountNo == '' ||(rtgsForm.transferTypeCode === '103' && rtgsForm.transactionLaxList.length > 0)"
               @click="insertTransactionLax" type="primary">Add</el-button>
           </el-col>
         </el-row>
