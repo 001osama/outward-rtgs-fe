@@ -3,16 +3,17 @@
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import { ElMessageBox } from 'element-plus'
-import axios from '@/axiosInstance.js';
+// import axios from '@/axiosInstance.js';
 import { getToken } from '@/utils/jwtDecoder';
+import { signOff } from '@/utils/commons';
 
 const router = useRouter();
 let isMessageShown = localStorage.getItem('messageShown');
+
 onMounted(() => {
   const userInfo = getToken();
   if(!isMessageShown && userInfo?.lastLoggedInDate)
   {
-
     ElMessageBox.alert(
       `Sign-on is Successful<br>
       Last Sign-on date is ${userInfo?.lastLoggedInDate}`,
@@ -33,32 +34,33 @@ onMounted(() => {
 })
 
 
-const signOff = async ()=>{
-  try {
-    const response = await axios.post(`/start`, { transition:'SIGNOFF' });
-    if(response.status == 200)
-    {
-      const { data } = response;
-      if(data.success)
-      {
-        localStorage.removeItem("token");
-        localStorage.removeItem("messageShown");
-        router.push('/');
-      }
-      else
-      {
-        console.error(data.message);
-      }
-    }
-    else
-    {
-      console.error(response.message);
-    }
-  }
-  catch (error) {
-    console.error(error);
-  }
-}
+// const signOff = async ()=>{
+//   try {
+//     const response = await axios.post(`/start`, { transition:'SIGNOFF' });
+//     if(response.status == 200)
+//     {
+//       const { data } = response;
+//       if(data.success)
+//       {
+//         localStorage.removeItem("token");
+//         localStorage.removeItem("messageShown");
+//         router.push('/');
+//       }
+//       else
+//       {
+//         console.error(data.message);
+//       }
+//     }
+//     else
+//     {
+//       console.error(response.message);
+//     }
+//   }
+//   catch (error) {
+//     console.error(error);
+//   }
+// }
+
 const remittance = () =>{
  router.push('remittance');
 }

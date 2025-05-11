@@ -170,13 +170,8 @@ const downloadReport = async (formRef, reportFormat) => {
 
 
 const getCustAccounts = async () => {
-
-  if (reportForm.customerNo.length < 6)
-  {
-    accountNoList.value = [];
-    reportForm.accountNo = '';
-    return;
-  }
+  if(reportForm?.customerNo?.length < 6)
+    reportForm.customerNo = reportForm.customerNo.padStart(6, '0');
 
 
   try {

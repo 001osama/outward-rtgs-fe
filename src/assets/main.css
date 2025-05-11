@@ -53,6 +53,14 @@
 .el-select__placeholder {
   color: var(--text-primary);
 }
+/*
+.el-select-dropdown__item.is-selected {
+  color: var(--bg-secondary) !important;
+} */
+
+.el-select-dropdown__item.is-hovering {
+  background-color: var(--bg-secondary) !important;
+}
 
 .el-button {
   --el-button-font-weight: var(--el-font-weight-primary);
@@ -159,10 +167,10 @@
 }
 
 .el-message-box__title {
-  color: var(--el-messagebox-title-color);
-  font-size: var(--el-messagebox-font-size);
+  color: var(--text-primary);
+  font-size: var(--normal-font-size);
   line-height: var(--el-messagebox-font-line-height);
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   padding: 1%;
 }
 
@@ -196,6 +204,21 @@
 
 .el-message-box__btns > button {
   border-radius: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+  background-image: linear-gradient(180deg, #fff 8%, #f0f0f0 48%) !important;
+  color: #000 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  width: 20%;
+}
+
+.el-message-box__btns > button:focus {
+  background-color: #009b83 !important;
+  border: 2px solid !important;
+  color: #000 !important;
+  padding: 0 !important;
 }
 
 .el-form-item {
@@ -355,14 +378,40 @@ h4 {
   color: var(--text-primary) !important;
 }
 
+.el-table__inner-wrapper {
+  border-width: 2px;
+  border-style: groove;
+  border-color: threedface;
+}
+
+.el-table th.el-table__cell {
+  background-color: var(--bg-ternary) !important;
+}
+
+.el-table th.el-table__cell:not(:last-child) {
+  border-right: 1px solid #ccc;
+  border-style: groove;
+  border-color: threedface;
+  border-bottom: 1px solid #ccc;
+  border-top: 0px;
+  border-left: 0px;
+}
+
+.el-table__body tr.current-row > td.el-table__cell {
+  background-color: var(--bg-secondary) !important;
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--bg-ternary) !important;
+}
+
 @media screen and (min-width: 1367px) and (max-width: 1600px) {
   fieldset {
     padding: 5px !important;
   }
 }
 
-.menu-wrapper
-{
+.menu-wrapper {
   position: relative;
 }
 .menu-opened {
@@ -386,7 +435,7 @@ h4 {
 .menu-item {
   position: relative;
   min-width: 200px;
-  background: #00bc94;
+  background: var(--bg-secondary-light);
 }
 
 .menu-item > button {

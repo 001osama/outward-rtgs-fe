@@ -1,4 +1,5 @@
 import axios from 'axios'
+import router from '@/router/index'
 
 const axiosInstance = axios.create({
   baseURL: `${import.meta.env.VITE_FSM_URL}`,
@@ -43,11 +44,19 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
+    console.log('getting repsonse')
     enableAllButtons()
+
     return response
   },
   (error) => {
+    console.log('getting error', error)
     enableAllButtons()
+    if (error.status == 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('messageShown')
+      router.push('/')
+    }
     return Promise.reject(error)
   },
 )

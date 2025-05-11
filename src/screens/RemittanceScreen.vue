@@ -1,38 +1,38 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import showMenu from '@/utils/menuButton';
-import axios from '@/axiosInstance.js';
 import { getToken } from '@/utils/jwtDecoder.js'
+import { signOff } from '@/utils/commons';
 
 const router = useRouter();
 const token = getToken();
 
-const signOff = async ()=>{
-  try {
-    const response = await axios.post(`/start`, { transition:'SIGNOFF' });
-    if(response.status == 200)
-    {
-      const { data } = response;
-      if(data.success)
-      {
-        localStorage.removeItem("token");
-        localStorage.removeItem("messageShown");
-        router.push('/');
-      }
-      else
-      {
-        console.error(data.message);
-      }
-    }
-    else
-    {
-      console.error(response.message);
-    }
-  }
-  catch (error) {
-    console.error(error);
-  }
-}
+// const signOff = async ()=>{
+//   try {
+//     const response = await axios.post(`/start`, { transition:'SIGNOFF' });
+//     if(response.status == 200)
+//     {
+//       const { data } = response;
+//       if(data.success)
+//       {
+//         localStorage.removeItem("token");
+//         localStorage.removeItem("messageShown");
+//         router.push('/');
+//       }
+//       else
+//       {
+//         console.error(data.message);
+//       }
+//     }
+//     else
+//     {
+//       console.error(response.message);
+//     }
+//   }
+//   catch (error) {
+//     console.error(error);
+//   }
+// }
 
 
 

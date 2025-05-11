@@ -60,4 +60,44 @@ const dateMaskingDirective = {
   },
 }
 
-export { amountMaskingDirective, dateMaskingDirective }
+const customAmount = {
+  mounted(el, binding, vnode) {
+    const formatValue = (value) => {
+      const number = parseFloat(value.toString().replace(/,/g, ''))
+      if (isNaN(number)) return ''
+      return number.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    }
+
+    const getRawValue = (val) => {
+      const num = parseFloat(val.replace(/,/g, ''))
+      return isNaN(num) ? '' : num.toFixed(2)
+    }
+
+    const updateModel = (raw) => {
+      const ctx = binding.instance
+      const prop = binding.expression
+      if (ctx && prop) {
+        ctx[prop] = raw
+      }
+    }
+
+    const onInput = (e) => {
+      const raw = getRawValue(e.target.value)
+      const formatted = formatValue(raw)
+      e.target.value = formatted
+      updateModel(raw)
+    }
+
+    el.addEventListener('input', onInput)
+
+    // Initial format from value
+    const initialRaw = getRawValue(binding.value ?? '')
+    el.value = formatValue(initialRaw)
+    updateModel(initialRaw)
+  },
+}
+
+export { amountMaskingDirective, dateMaskingDirective, customAmount }

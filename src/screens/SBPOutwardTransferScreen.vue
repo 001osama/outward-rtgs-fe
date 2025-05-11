@@ -1,16 +1,25 @@
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted, toRef  } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getToken } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
-import { isNumber } from '@/utils/helpers';
 import ExceptionWindow from '@/components/ExceptionWindow.vue';
 import AuthWindow from '@/components/AuthWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
-import { downloadBase64ReportExcel, convertDateFormat, convertToIsoFormat } from '@/utils/helpers';
+import {
+  downloadBase64ReportExcel,
+  convertDateFormat,
+  parseFormattedAmount,
+  formatAmount,
+  isNumber,
+  handleMultiLineTextboxPaste,
+  handleMultiLineTextboxKeyPress,
+  isAlphaNumeric,
+  convertToIsoFormat }
+from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
 const step = ref(1);
@@ -57,7 +66,7 @@ const voucherLaxList = ref([
 ]);
 
 const adviceNoList = ref([]);
-
+const transactionNoList = ref([]);
 
 // dialog visibility
 const isSignatureDialogVisible = ref(false);
@@ -120,7 +129,7 @@ const rtgsForm = reactive({
   iBAN: '',
   accountName: '',
   availableBalance: '',
-  beneficiaryAmount: 0,
+  beneficiaryAmount: '',
   paymentMode: "cheque",
   transactionLaxList: [],
   purposeOfPaymentCode: '',
@@ -159,7 +168,7 @@ const resetForm = () => {
   rtgsForm.iBAN = '';
   rtgsForm.accountName = '';
   rtgsForm.availableBalance = '';
-  rtgsForm.beneficiaryAmount = 0;
+  rtgsForm.beneficiaryAmount = '0.00';
   rtgsForm.paymentMode = 'cheque';
   rtgsForm.transactionLaxList = [];
   rtgsForm.purposeOfPaymentCode = '';
@@ -178,7 +187,6 @@ const resetForm = () => {
   transactionLaxForm.beneficiaryBranchCode = '';
   transactionLaxForm.isBeneficiaryTitleFetch = true;
 }
-
 
 
 
@@ -406,6 +414,8 @@ const handleExitClick = () => {
 }
 
 const getCustAccounts = async () => {
+  if(rtgsForm?.customerNo?.length < 6)
+    rtgsForm.customerNo = rtgsForm.customerNo.padStart(6, '0');
 
   if(!mode.value && previousCustomerNo != rtgsForm.customerNo)
   {
@@ -422,7 +432,7 @@ const getCustAccounts = async () => {
     rtgsForm.transactionLaxList = [];
   }
 
-  if (rtgsForm.customerNo.length < 6 || previousCustomerNo == rtgsForm.customerNo)
+  if (previousCustomerNo == rtgsForm.customerNo)
     return;
 
 
@@ -458,7 +468,7 @@ const getAccountDetails = async () => {
         console.log("Success response is received from backend", data.data);
         rtgsForm.accountType = data.data.accountType;
         rtgsForm.accountName = data.data.accountName;
-        rtgsForm.availableBalance = data.data.availableBalance;
+        rtgsForm.availableBalance = formatAmount(data.data.availableBalance);
         rtgsForm.iBAN = data.data.iban;
       }
     }
@@ -565,12 +575,9 @@ const handleSubmitClick = async (formRef) => {
     // changeStep(3);
     const userInfo = getToken();
     await authorizeOutwardRTGS(userInfo.loginId);
-
-    return;
   }
   else if (mode?.value === 'cancel') {
-    await cancelOutwardRTGS()
-    return;
+    changeStep(2);
   }
   else {
     if (!formRef) return
@@ -605,19 +612,19 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
     {
 
-      if(parseInt(transactionLaxForm.transactionAmount) > parseInt(rtgsForm.availableBalance))
+      if(parseFormattedAmount(transactionLaxForm.transactionAmount) > parseFormattedAmount(rtgsForm.availableBalance))
       {
         invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && parseInt(transactionLaxForm.transactionAmount) < 100000)
+      if ( rtgsForm.transferTypeCode === '102' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 100000)
       {
         invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && (parseInt(transactionLaxForm.transactionAmount) + parseInt(rtgsForm.beneficiaryAmount)) > 999999)
+      if ( rtgsForm.transferTypeCode === '102' && (parseFormattedAmount(transactionLaxForm.transactionAmount) + parseFormattedAmount(rtgsForm.beneficiaryAmount)) > 999999)
       {
         invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
         return;
@@ -625,7 +632,7 @@ const insertTransactionLax = () => {
 
 
 
-      if( rtgsForm.transferTypeCode === '103' && parseInt(transactionLaxForm.transactionAmount) < 1000000 )
+      if( rtgsForm.transferTypeCode === '103' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 1000000 )
       {
         invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
         return;
@@ -640,10 +647,10 @@ const insertTransactionLax = () => {
 
       console.log("Transaction Lax before insertion", transactionLaxForm);
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-      const transactionLaxAmount = parseInt(transactionLaxForm.transactionAmount);
+      const transactionLaxAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
 
       rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + transactionLaxAmount;
-      const currentBalance = parseInt(rtgsForm.availableBalance) - transactionLaxAmount
+      const currentBalance = parseFormattedAmount(rtgsForm.availableBalance) - transactionLaxAmount
       rtgsForm.availableBalance = currentBalance.toString();
 
       transactionLaxForm.transactionAmount = '';
@@ -658,7 +665,6 @@ const insertTransactionLax = () => {
 }
 
 const removeTransactionLax = () => {
-  console.log("debugger")
   if (selectedTransactionLax.value !== '') {
     let selectedRowData = rtgsForm.transactionLaxList.find((item) => item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value );
 
@@ -726,10 +732,10 @@ const onAuthSuccess = async (loginId) => {
     await authorizeOutwardRTGS(loginId);
     return;
   }
-  // else if (mode?.value == 'cancel') {
-  //   await cancelOutwardRTGS(loginId);
-  //   return;
-  // }
+  else if (mode?.value == 'cancel') {
+    await cancelOutwardRTGS(loginId);
+    return;
+  }
 }
 
 const onAuthCancel = () => {
@@ -738,7 +744,7 @@ const onAuthCancel = () => {
   else changeStep(2)
 }
 
-const cancelOutwardRTGS = async () => {
+const cancelOutwardRTGS = async (loginId) => {
   const token = getToken();
 
   if (!token) {
@@ -753,7 +759,8 @@ const cancelOutwardRTGS = async () => {
     const response = await axios.post(`/start`, {
       transition: 'CANCELOUTWARDRTGS',
       data: {
-        loginId: token?.loginId,
+        loginId,
+        // loginId: token?.loginId,
         voucherNo,
         voucherYear
       }
@@ -797,7 +804,13 @@ const authorizeOutwardRTGS = async (loginId) => {
       const { data } = response;
       if (data.success) {
         console.log("Success response is received from backend", data.data);
-        invokeDefaultDialog("Message", `Voucher ${voucherNo}/${voucherYear} authorized successfully`, () => { router.push('/') });
+
+        voucherLaxList.value = data.data.voucherLaxList;
+        adviceNoList.value = data.data.adviceNoList;
+        transactionNoList.value = data.data.transactionNoList;
+
+        isVoucherDialogVisible.value = true;
+        // invokeDefaultDialog("Message", `Voucher ${voucherNo}/${voucherYear} authorized successfully`, () => { router.push('/') });
       }
       else
         invokeDefaultDialog("Message", data.message);
@@ -916,6 +929,13 @@ const downloadExcelReport = async () => {
     console.error(error);
     invokeDefaultDialog('Error', 'Network Error');
   }
+}
+
+const removeAmountFormat = () => {
+  transactionLaxForm.transactionAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
+}
+const applyAmountFormat = () => {
+  transactionLaxForm.transactionAmount = formatAmount(transactionLaxForm.transactionAmount);
 }
 
 </script>
@@ -1116,7 +1136,7 @@ const downloadExcelReport = async () => {
           <el-col :span="4">
             <el-form-item prop="chequeNo">
               <el-input v-model="rtgsForm.chequeNo" @blur="validateChequeStatus" @keydown="isNumber" maxlength="6"
-                :disabled="isFormDisabled || rtgsForm.isCustAcc" />
+                :disabled="isFormDisabled || rtgsForm.isCustAcc || rtgsForm.accountNo == ''" />
             </el-form-item>
           </el-col>
 
@@ -1128,7 +1148,7 @@ const downloadExcelReport = async () => {
           <el-col :span="4">
             <el-form-item prop="chequeDate">
               <el-input
-                :disabled="isFormDisabled"
+                :disabled="isFormDisabled || rtgsForm.accountNo == ''"
                 v-model="rtgsForm.chequeDate"
                 v-date
                 placeholder="  /   /  "
@@ -1146,8 +1166,8 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="7">
             <el-form-item>
-              <el-input  :disabled="isFormDisabled" v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
-                maxlength="18" />
+              <el-input  :disabled="isFormDisabled || rtgsForm.accountNo == ''" @click="removeAmountFormat" @blur="applyAmountFormat" v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
+                maxlength="15" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -1164,7 +1184,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="2">
-            <el-button :disabled="isFormDisabled" class="generic-button" @click="dialogTableVisible = true"
+            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == ''" class="generic-button" @click="dialogTableVisible = true"
               type="primary">List</el-button>
           </el-col>
         </el-row>
@@ -1177,15 +1197,16 @@ const downloadExcelReport = async () => {
           <el-col :span="12">
             <el-form-item>
               <el-input
-                :disabled="isFormDisabled"
+                :disabled="isFormDisabled || rtgsForm.accountNo == ''"
                 v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
-                maxLength="20"
+                maxLength="24"
+                @keypress="isAlphaNumeric"
               />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="2">
-            <el-button :disabled="isFormDisabled" class="generic-button" @click="getBenefBankDetails"
+            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == ''" class="generic-button" @click="getBenefBankDetails"
               type="primary">Fetch</el-button>
           </el-col>
         </el-row>
@@ -1197,7 +1218,7 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="transactionLaxForm.isBeneficiaryTitleFetch" maxlength="10" />
+              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="10" />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1210,7 +1231,7 @@ const downloadExcelReport = async () => {
               </el-col>
               <el-col :span="12">
                 <el-form-item>
-                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="transactionLaxForm.isBeneficiaryTitleFetch" maxlength="4" />
+                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="4" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -1224,8 +1245,14 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input :disabled="isFormDisabled" v-model="transactionLaxForm.beneficiaryAddress" :autosize=false
-                type="textarea" :rows="2" />
+              <el-input
+                :disabled="isFormDisabled || rtgsForm.accountNo == ''"
+                v-model="transactionLaxForm.beneficiaryAddress"
+                :autosize=false
+                @keypress="handleMultiLineTextboxKeyPress"
+                @paste="handleMultiLineTextboxPaste"
+                type="textarea"
+                :rows="3" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -1277,8 +1304,14 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="15">
             <el-form-item>
-              <el-input :disabled="isFormDisabled" v-model="rtgsForm.remarks" :autosize=false type="textarea"
-                :rows="2" />
+              <el-input
+                :disabled="isFormDisabled ||  rtgsForm.accountNo == ''"
+                @keypress="handleMultiLineTextboxKeyPress"
+                @paste="handleMultiLineTextboxPaste"
+                v-model="rtgsForm.remarks"
+                :autosize=false
+                type="textarea"
+                :rows="3" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -1290,8 +1323,14 @@ const downloadExcelReport = async () => {
           </el-col>
           <el-col :span="15">
             <el-form-item>
-              <el-input :disabled="isFormDisabled" v-model="rtgsForm.senderToReceiverInformation" :autosize=false
-                type="textarea" :rows="2" />
+              <el-input
+                :disabled="isFormDisabled || rtgsForm.accountNo == ''"
+                v-model="rtgsForm.senderToReceiverInformation"
+                :autosize=false
+                type="textarea"
+                @keypress="handleMultiLineTextboxKeyPress"
+                @paste="handleMultiLineTextboxPaste"
+                :rows="3" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -1357,7 +1396,9 @@ const downloadExcelReport = async () => {
 
   <template v-if="step === 4">
     <MessageWindow
+      :activityCode=currentActivityCode
       :adviceNoList="adviceNoList"
+      :transactionNoList="transactionNoList"
       :voucherNo="voucherLaxList[0].voucherNo" />
   </template>
 

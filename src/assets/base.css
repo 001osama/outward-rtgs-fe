@@ -2,6 +2,7 @@
 :root {
   --bg-primary: rgb(0, 99, 99);
   --bg-secondary: rgb(0, 155, 131);
+  --bg-secondary-light: #00bc94;
   --bg-ternary: #a0c8a8;
   --white: #ffffff;
   --bg-danger: #e40000;

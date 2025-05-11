@@ -101,7 +101,7 @@ const exit = () =>{
     </el-table>
   </div>
 
-  <!-- <fieldset style="margin-top: 1%;">
+  <fieldset v-if="activityCode == 200" style="margin-top: 1%;">
     <el-row>
       <el-col :span="3">
         <el-form-item>
@@ -127,7 +127,7 @@ const exit = () =>{
         </el-form-item>
       </el-col>
     </el-row>
-  </fieldset> -->
+  </fieldset>
   <fieldset style="margin-top: 10px;">
     <el-row>
       <el-col :span="4">

@@ -190,35 +190,120 @@ const isWithin60Days = (dateStr) => {
   return diffDays <= 60
 }
 
-const removeValidationRule = ( validationRules ,fieldName, ruleProperty) => {
-  if(validationRules[fieldName])
-  {
-    const indexToRemove = validationRules[fieldName].findIndex(rule => rule[ruleProperty] !== undefined)
-    if(indexToRemove > -1)
-    {
-     validationRules[fieldName].splice(indexToRemove, 1);
-     return true;
+const removeValidationRule = (validationRules, fieldName, ruleProperty) => {
+  if (validationRules[fieldName]) {
+    const indexToRemove = validationRules[fieldName].findIndex(
+      (rule) => rule[ruleProperty] !== undefined,
+    )
+    if (indexToRemove > -1) {
+      validationRules[fieldName].splice(indexToRemove, 1)
+      return true
     }
   }
-  return false;
+  return false
 }
 
-
-
-const addValidationRule = ( validationRules,fieldName, newRule) => {
+const addValidationRule = (validationRules, fieldName, newRule) => {
   if (validationRules[fieldName]) {
-    const alreadyExists = validationRules[fieldName].some(existingRule => {
-      return Object.entries(newRule).every(([key, value]) => existingRule[key] === value);
-    });
+    const alreadyExists = validationRules[fieldName].some((existingRule) => {
+      return Object.entries(newRule).every(([key, value]) => existingRule[key] === value)
+    })
 
     if (!alreadyExists) {
-      validationRules[fieldName].push(newRule);
-      return true;
+      validationRules[fieldName].push(newRule)
+      return true
     }
   }
-  return false;
+  return false
 }
 
+const handleMultiLineTextboxKeyPress = (event) => {
+  console.log(event)
+  const value = event.target.value
+  const caretPos = event.target.selectionStart
+  const lines = value.split('\n')
+
+  if (event.key === 'Enter' && lines.length >= 3) {
+    event.preventDefault()
+    return
+  }
+
+  const beforeCaret = value.slice(0, caretPos)
+  const currentLineIndex = beforeCaret.split('\n').length - 1
+  const currentLine = lines[currentLineIndex] || ''
+
+  const navigationKeys = [
+    'Backspace',
+    'Enter',
+    'Delete',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowUp',
+    'ArrowDown',
+  ]
+  if (currentLine.length >= 35 && !navigationKeys.includes(event.key)) {
+    event.preventDefault()
+  }
+}
+
+const handleMultiLineTextboxPaste = (event) => {
+  console.log('Pasting function working')
+  const clipboardData = event.clipboardData || window.clipboardData
+  const pastedText = clipboardData.getData('text')
+
+  const value = event.target.value
+  const caretPos = event.target.selectionStart
+  const beforeCaret = value.slice(0, caretPos)
+  const afterCaret = value.slice(caretPos)
+
+  const newValue = beforeCaret + pastedText + afterCaret
+  const newLines = newValue.split('\n')
+
+  if (newLines.length > 3) {
+    event.preventDefault()
+    return
+  }
+
+  const lineTooLong = newLines.some((line) => line.length > 35)
+  if (lineTooLong) {
+    event.preventDefault()
+    return
+  }
+}
+
+const isAlphaNumeric = (event) => {
+  const allowedKeys = [
+    'Backspace',
+    'Tab',
+    'Enter',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowUp',
+    'ArrowDown',
+    'Delete',
+    'Home',
+    'End',
+    'Escape',
+  ]
+  console.log('event working')
+  if (event.ctrlKey || event.metaKey || allowedKeys.includes(event.key)) return
+
+  if (event.key.length === 1 && !/^[a-zA-Z0-9]$/.test(event.key)) {
+    event.preventDefault()
+  }
+}
+
+const formatAmount = (value) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+const parseFormattedAmount = (formattedValue) => {
+  if (!formattedValue) return
+  return parseFloat(formattedValue.replace(/,/g, ''))
+}
 
 export {
   isNumber,
@@ -229,5 +314,10 @@ export {
   isWithin60Days,
   convertToIsoFormat,
   removeValidationRule,
-  addValidationRule
+  addValidationRule,
+  handleMultiLineTextboxPaste,
+  handleMultiLineTextboxKeyPress,
+  isAlphaNumeric,
+  formatAmount,
+  parseFormattedAmount,
 }
