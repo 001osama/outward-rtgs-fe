@@ -168,7 +168,7 @@ const resetForm = () => {
   rtgsForm.iBAN = '';
   rtgsForm.accountName = '';
   rtgsForm.availableBalance = '';
-  rtgsForm.beneficiaryAmount = '0.00';
+  rtgsForm.beneficiaryAmount = 0;
   rtgsForm.paymentMode = 'cheque';
   rtgsForm.transactionLaxList = [];
   rtgsForm.purposeOfPaymentCode = '';
@@ -468,7 +468,7 @@ const getAccountDetails = async () => {
         console.log("Success response is received from backend", data.data);
         rtgsForm.accountType = data.data.accountType;
         rtgsForm.accountName = data.data.accountName;
-        rtgsForm.availableBalance = formatAmount(data.data.availableBalance);
+        rtgsForm.availableBalance = data.data.availableBalance;
         rtgsForm.iBAN = data.data.iban;
       }
     }
@@ -612,19 +612,19 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
     {
 
-      if(parseFormattedAmount(transactionLaxForm.transactionAmount) > parseFormattedAmount(rtgsForm.availableBalance))
+      if(parseInt(transactionLaxForm.transactionAmount) > parseInt(rtgsForm.availableBalance))
       {
         invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 100000)
+      if ( rtgsForm.transferTypeCode === '102' && parseInt(transactionLaxForm.transactionAmount) < 100000)
       {
         invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && (parseFormattedAmount(transactionLaxForm.transactionAmount) + parseFormattedAmount(rtgsForm.beneficiaryAmount)) > 999999)
+      if ( rtgsForm.transferTypeCode === '102' && (parseInt(transactionLaxForm.transactionAmount) + parseInt(rtgsForm.beneficiaryAmount)) > 999999)
       {
         invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
         return;
@@ -632,7 +632,7 @@ const insertTransactionLax = () => {
 
 
 
-      if( rtgsForm.transferTypeCode === '103' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 1000000 )
+      if( rtgsForm.transferTypeCode === '103' && parseInt(transactionLaxForm.transactionAmount) < 1000000 )
       {
         invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
         return;
@@ -647,10 +647,10 @@ const insertTransactionLax = () => {
 
       console.log("Transaction Lax before insertion", transactionLaxForm);
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-      const transactionLaxAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
+      const transactionLaxAmount = parseInt(transactionLaxForm.transactionAmount);
 
       rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + transactionLaxAmount;
-      const currentBalance = parseFormattedAmount(rtgsForm.availableBalance) - transactionLaxAmount
+      const currentBalance = parseInt(rtgsForm.availableBalance) - transactionLaxAmount
       rtgsForm.availableBalance = currentBalance.toString();
 
       transactionLaxForm.transactionAmount = '';
@@ -1166,7 +1166,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="7">
             <el-form-item>
-              <el-input  :disabled="isFormDisabled || rtgsForm.accountNo == ''" @click="removeAmountFormat" @blur="applyAmountFormat" v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
+              <el-input  :disabled="isFormDisabled || rtgsForm.accountNo == ''"  v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
                 maxlength="15" />
             </el-form-item>
           </el-col>
