@@ -100,11 +100,18 @@ const isInvalid = computed(() => {
               <form @submit.prevent="onSubmit" class="login-form-container">
                   <div class="login-form">
                       <div style="display: flex; margin-bottom: 24px; gap: 24px;">
-                          <input v-model="branchCode" @blur="insertPadding" @keydown="checkDigits" class="form-control" style="width: 25%;" type="text">
-                          <input v-model="loginId" class="form-control" maxlength="10" style="width: 75%;" type="password">
+                          <input
+                            v-model="branchCode"
+                            @blur="insertPadding"
+                            @keydown="checkDigits"
+                            class="form-control"
+                            style="width: 25%;"
+                            type="text"
+                          >
+                          <input v-model="loginId"  class="form-control" maxlength="10" style="width: 75%;" type="password">
                       </div>
                       <div>
-                          <input v-model="password" class="form-control" maxlength="10" type="password">
+                          <input v-model="password"  class="form-control" maxlength="10" type="password">
                       </div>
                   </div>
                   <div class="button-container">

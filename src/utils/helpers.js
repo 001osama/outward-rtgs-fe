@@ -271,7 +271,7 @@ const handleMultiLineTextboxPaste = (event) => {
   }
 }
 
-const isAlphaNumeric = (event) => {
+const isAlphaNumeric = (event, maxLength) => {
   const allowedKeys = [
     'Backspace',
     'Tab',
@@ -290,13 +290,23 @@ const isAlphaNumeric = (event) => {
 
   if (event.key.length === 1 && !/^[a-zA-Z0-9]$/.test(event.key)) {
     event.preventDefault()
+    return
+  }
+
+  if (event.target.value.length >= maxLength) {
+    event.preventDefault()
+    return
   }
 }
 
 const formatAmount = (value) => {
-  console.log("Before formatting value", value);
+  console.log('Before formatting value', value)
   if (!value) return value
-  if(typeof(value) != 'number') value = parseInt(value);
+  if (typeof value != 'number') {
+    if (value.includes(',')) return value
+    else value = parseInt(value)
+  }
+
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -304,8 +314,8 @@ const formatAmount = (value) => {
 }
 
 const parseFormattedAmount = (formattedValue) => {
-  console.log("Before parsing value", formattedValue);
-  if (!formattedValue || typeof(formattedValue) != 'string') return formattedValue
+  console.log('Before parsing value', formattedValue)
+  if (!formattedValue || typeof formattedValue != 'string') return formattedValue
   return parseFloat(formattedValue.replace(/,/g, ''))
 }
 

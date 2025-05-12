@@ -60,6 +60,32 @@ const dateMaskingDirective = {
   },
 }
 
+const uppercaseDirective = {
+  beforeMount(el) {
+    let input = el.nodeName === 'INPUT' ? el : el.querySelector('input')
+    if (!input) return
+
+    const handler = (e) => {
+      const upper = input.value.toUpperCase()
+      if (input.value !== upper) {
+        input.value = upper
+        input.dispatchEvent(new Event('input'))
+      }
+    }
+
+    input.__uppercaseHandler__ = handler
+    input.addEventListener('input', handler)
+  },
+
+  unmounted(el) {
+    const input = el.nodeName === 'INPUT' ? el : el.querySelector('input')
+    if (!input || !input.__uppercaseHandler__) return
+
+    input.removeEventListener('input', input.__uppercaseHandler__)
+    delete input.__uppercaseHandler__
+  },
+}
+
 const customAmount = {
   mounted(el, binding, vnode) {
     const formatValue = (value) => {
@@ -100,4 +126,4 @@ const customAmount = {
   },
 }
 
-export { amountMaskingDirective, dateMaskingDirective, customAmount }
+export { amountMaskingDirective, dateMaskingDirective, customAmount, uppercaseDirective }

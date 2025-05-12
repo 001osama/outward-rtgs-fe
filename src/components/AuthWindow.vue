@@ -66,7 +66,7 @@ const activityAuthorized = async () => {
               </el-col>
               <el-col :span="19">
                 <el-form-item>
-                  <el-input type="password" v-model="authForm.loginId" maxlength="10" />
+                  <el-input type="password" v-uppercase v-model="authForm.loginId" maxlength="10" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -78,7 +78,7 @@ const activityAuthorized = async () => {
               </el-col>
               <el-col :span="19">
                 <el-form-item>
-                  <el-input type="password" v-model="authForm.password" maxlength="10" />
+                  <el-input type="password" v-uppercase v-model="authForm.password" maxlength="10" />
                 </el-form-item>
               </el-col>
             </el-row>

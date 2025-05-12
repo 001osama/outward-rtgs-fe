@@ -1,11 +1,12 @@
 <script setup>
-import { ref, reactive, computed, watch, onMounted, toRef  } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getToken } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
 import axios from '@/axiosInstance.js';
 import ExceptionWindow from '@/components/ExceptionWindow.vue';
 import AuthWindow from '@/components/AuthWindow.vue';
+import SelectListWindow from '@/components/SelectListWindow.vue';
 import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
@@ -190,6 +191,7 @@ const resetForm = () => {
 
 
 
+
 // const setCurrent = (row) => {
 //   if (benefBankListTableRef.value && typeof benefBankListTableRef.value.setCurrentRow === 'function') {
 //     benefBankListTableRef.value.setCurrentRow(row);
@@ -202,7 +204,6 @@ const handleCurrentChange = (val) => {
     transactionLaxForm.beneficiaryBankName = val.label;
     transactionLaxForm.beneficiaryBankCode = val.value;
   }
-  else console.error('Handle current change is not giving values')
 };
 
 const handleTransactionLaxSelectedChange = (val) => {
@@ -210,7 +211,6 @@ const handleTransactionLaxSelectedChange = (val) => {
   if (val && val.beneficiaryIbanOrAccountNo) {
     selectedTransactionLax.value = val.beneficiaryIbanOrAccountNo;
   }
-  else console.error('Handle current change is not giving values');
 };
 
 const handleChargesLaxSelectedChange = (val) => {
@@ -619,20 +619,23 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryAccountName !== '' &&
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
     {
+      const transactionAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
+      const availableBalance = parseFormattedAmount(rtgsForm.availableBalance);
+      const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount)
 
-      if(parseInt(transactionLaxForm.transactionAmount) > parseFormattedAmount(rtgsForm.availableBalance))
+      if(transactionAmount > availableBalance)
       {
         invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 100000)
+      if (rtgsForm.transferTypeCode === '102' && transactionAmount < 100000)
       {
         invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && (parseFormattedAmount(transactionLaxForm.transactionAmount) + parseFormattedAmount(rtgsForm.beneficiaryAmount)) > 999999)
+      if ( rtgsForm.transferTypeCode === '102' && (transactionAmount + beneficiaryAmount) > 999999)
       {
         invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
         return;
@@ -640,7 +643,7 @@ const insertTransactionLax = () => {
 
 
 
-      if( rtgsForm.transferTypeCode === '103' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 1000000 )
+      if( rtgsForm.transferTypeCode === '103' && transactionAmount < 1000000 )
       {
         invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
         return;
@@ -655,11 +658,9 @@ const insertTransactionLax = () => {
 
       console.log("Transaction Lax before insertion", transactionLaxForm);
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-      const transactionLaxAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
-      const availableBalance = parseFormattedAmount(rtgsForm.availableBalance)
-      const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount)
-      rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount + transactionLaxAmount);
-      const currentBalance = availableBalance - transactionLaxAmount
+
+      rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount + transactionAmount);
+      const currentBalance = availableBalance - transactionAmount
       rtgsForm.availableBalance = formatAmount(currentBalance);
 
       transactionLaxForm.transactionAmount = '';
@@ -1218,10 +1219,11 @@ const applyAmountFormat = () => {
           <el-col :span="12">
             <el-form-item>
               <el-input
+                v-uppercase
                 :disabled="isFormDisabled || rtgsForm.accountNo == ''"
                 v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
                 maxLength="24"
-                @keypress="isAlphaNumeric"
+                @keydown="(event) => isAlphaNumeric(event,24)"
               />
             </el-form-item>
           </el-col>
@@ -1422,6 +1424,9 @@ const applyAmountFormat = () => {
       :transactionNoList="transactionNoList"
       :voucherNo="voucherLaxList[0].voucherNo" />
   </template>
+  <template v-if="step === 5">
+    <SelectListWindow />
+  </template>
 
   <el-dialog v-model="dialogTableVisible" :show-close="false" title="Select Beneficiary Bank"
     :before-close="(doneFn) => {console.log('before-close'), doneFn() }"
@@ -1451,7 +1456,7 @@ const applyAmountFormat = () => {
     :close-on-click-modal="false">
     <el-table
       :data="voucherLaxList" ref="VoucherTableRef" highlight-current-row style="width: 100%" height="350"
-      max-height="400" @current-change="handleCurrentChange">
+      max-height="400">
       <el-table-column property="voucherNo" label="Vouch No." width="120" />
       <el-table-column property="referenceNo" label="Ref No" width="100" />
       <el-table-column property="accountNo" label="Account No." width="220" />
@@ -1479,7 +1484,7 @@ const applyAmountFormat = () => {
     <el-row>
       <el-col :span="6"></el-col>
       <el-col :span="12">
-        <el-image style="width: 100%; height: 300px" :src="'/cust-sign.jpeg'" :fit="fit" />
+        <el-image style="width: 100%; height: 300px" :src="'/cust-sign.jpeg'" />
       </el-col>
       <el-col :span="6"></el-col>
     </el-row>

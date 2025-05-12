@@ -1,5 +1,9 @@
 import './assets/main.css'
-import { amountMaskingDirective, dateMaskingDirective } from './utils/directives'
+import {
+  amountMaskingDirective,
+  dateMaskingDirective,
+  uppercaseDirective,
+} from './utils/directives'
 import { createApp } from 'vue'
 import App from './App.vue'
 import ElementPlus from 'element-plus'
@@ -17,6 +21,7 @@ app.use(ElementPlus)
 app.use(router)
 // app.use(vmoney)
 app.directive('amount', amountMaskingDirective)
+app.directive('uppercase', uppercaseDirective)
 app.directive('date', dateMaskingDirective)
 // app.directive('amount', Money3Directive)
 app.mount('#app')
