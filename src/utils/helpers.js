@@ -294,6 +294,9 @@ const isAlphaNumeric = (event) => {
 }
 
 const formatAmount = (value) => {
+  console.log("Before formatting value", value);
+  if (!value) return value
+  if(typeof(value) != 'number') value = parseInt(value);
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -301,7 +304,8 @@ const formatAmount = (value) => {
 }
 
 const parseFormattedAmount = (formattedValue) => {
-  if (!formattedValue) return
+  console.log("Before parsing value", formattedValue);
+  if (!formattedValue || typeof(formattedValue) != 'string') return formattedValue
   return parseFloat(formattedValue.replace(/,/g, ''))
 }
 

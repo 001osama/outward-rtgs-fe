@@ -28,6 +28,10 @@ onMounted(()=>{
     formData.adviceNo = props.adviceNoList[0];
     formData.voucherNo = props.voucherNo;
   }
+  if(props.transactionNoList)
+  {
+    formData.transactionNo = props.transactionNoList[0]
+  }
 
 });
 
@@ -57,7 +61,7 @@ const acknowledge = () => {
               </el-col>
               <el-col :span="6">
                 <el-form-item>
-                  <el-select v-model="formData.adviceNo" placeholder="Select Advice">
+                  <el-select v-model="formData.transactionNo" placeholder="Select Transaction">
                     <el-option v-for="item in props.transactionNoList" :key="item" :label="item" :value="item" />
                   </el-select>
                 </el-form-item>

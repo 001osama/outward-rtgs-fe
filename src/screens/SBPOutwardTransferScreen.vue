@@ -168,7 +168,7 @@ const resetForm = () => {
   rtgsForm.iBAN = '';
   rtgsForm.accountName = '';
   rtgsForm.availableBalance = '';
-  rtgsForm.beneficiaryAmount = 0;
+  rtgsForm.beneficiaryAmount = '';
   rtgsForm.paymentMode = 'cheque';
   rtgsForm.transactionLaxList = [];
   rtgsForm.purposeOfPaymentCode = '';
@@ -333,6 +333,14 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
 
       const formattedDate = convertDateFormat(responseData?.chequeDate);
 
+      if (responseData?.transactionLaxList && Array.isArray(responseData.transactionLaxList)) {
+        responseData.transactionLaxList.forEach(item => {
+          if (typeof item.transactionAmount === 'string') {
+            item.transactionAmount = formatAmount(item.transactionAmount);
+          }
+        });
+      }
+
       rtgsForm.branchCode = responseData.branchCode;
       rtgsForm.currencyCode = responseData.currencyCode;
       rtgsForm.sbpTranTypeCode = responseData.sbpTranTypeCode;
@@ -340,7 +348,7 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
       rtgsForm.transferTypeCode = responseData.transferTypeCode;
       rtgsForm.accountNo = responseData.accountNo;
       rtgsForm.paymentMode = responseData.paymentMode;
-      rtgsForm.beneficiaryAmount = responseData.totalAmount;
+      rtgsForm.beneficiaryAmount = formatAmount(responseData.totalAmount);
       rtgsForm.purposeOfPaymentCode = responseData.purposeOfPaymentCode;
       rtgsForm.remarks = responseData.remarks;
       rtgsForm.transactionLaxList = responseData.transactionLaxList;
@@ -414,7 +422,7 @@ const handleExitClick = () => {
 }
 
 const getCustAccounts = async () => {
-  if(rtgsForm?.customerNo?.length < 6)
+  if(rtgsForm?.customerNo?.length > 0 && rtgsForm?.customerNo?.length < 6)
     rtgsForm.customerNo = rtgsForm.customerNo.padStart(6, '0');
 
   if(!mode.value && previousCustomerNo != rtgsForm.customerNo)
@@ -468,7 +476,7 @@ const getAccountDetails = async () => {
         console.log("Success response is received from backend", data.data);
         rtgsForm.accountType = data.data.accountType;
         rtgsForm.accountName = data.data.accountName;
-        rtgsForm.availableBalance = data.data.availableBalance;
+        rtgsForm.availableBalance = formatAmount(data.data.availableBalance);
         rtgsForm.iBAN = data.data.iban;
       }
     }
@@ -612,19 +620,19 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
     {
 
-      if(parseInt(transactionLaxForm.transactionAmount) > parseInt(rtgsForm.availableBalance))
+      if(parseInt(transactionLaxForm.transactionAmount) > parseFormattedAmount(rtgsForm.availableBalance))
       {
         invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && parseInt(transactionLaxForm.transactionAmount) < 100000)
+      if ( rtgsForm.transferTypeCode === '102' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 100000)
       {
         invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
         return;
       }
 
-      if ( rtgsForm.transferTypeCode === '102' && (parseInt(transactionLaxForm.transactionAmount) + parseInt(rtgsForm.beneficiaryAmount)) > 999999)
+      if ( rtgsForm.transferTypeCode === '102' && (parseFormattedAmount(transactionLaxForm.transactionAmount) + parseFormattedAmount(rtgsForm.beneficiaryAmount)) > 999999)
       {
         invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
         return;
@@ -632,7 +640,7 @@ const insertTransactionLax = () => {
 
 
 
-      if( rtgsForm.transferTypeCode === '103' && parseInt(transactionLaxForm.transactionAmount) < 1000000 )
+      if( rtgsForm.transferTypeCode === '103' && parseFormattedAmount(transactionLaxForm.transactionAmount) < 1000000 )
       {
         invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
         return;
@@ -647,11 +655,12 @@ const insertTransactionLax = () => {
 
       console.log("Transaction Lax before insertion", transactionLaxForm);
       rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-      const transactionLaxAmount = parseInt(transactionLaxForm.transactionAmount);
-
-      rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount + transactionLaxAmount;
-      const currentBalance = parseInt(rtgsForm.availableBalance) - transactionLaxAmount
-      rtgsForm.availableBalance = currentBalance.toString();
+      const transactionLaxAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
+      const availableBalance = parseFormattedAmount(rtgsForm.availableBalance)
+      const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount)
+      rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount + transactionLaxAmount);
+      const currentBalance = availableBalance - transactionLaxAmount
+      rtgsForm.availableBalance = formatAmount(currentBalance);
 
       transactionLaxForm.transactionAmount = '';
       transactionLaxForm.beneficiaryBankName = '';
@@ -669,11 +678,13 @@ const removeTransactionLax = () => {
     let selectedRowData = rtgsForm.transactionLaxList.find((item) => item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value );
 
 
-    const transactionLaxAmount = parseInt(selectedRowData.transactionAmount);
-    rtgsForm.beneficiaryAmount = rtgsForm.beneficiaryAmount - transactionLaxAmount;
-    const currentBalance = parseInt(rtgsForm.availableBalance) + transactionLaxAmount
+    const transactionLaxAmount = parseFormattedAmount(selectedRowData.transactionAmount);
+    const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount)
+    rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount - transactionLaxAmount);
 
-    rtgsForm.availableBalance = currentBalance.toString() + '.00';
+
+    const currentBalance = parseFormattedAmount(rtgsForm.availableBalance) + transactionLaxAmount
+    rtgsForm.availableBalance = formatAmount(currentBalance);
 
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.beneficiaryIbanOrAccountNo !== selectedTransactionLax.value)
     selectedTransactionLax.value = '';
@@ -835,6 +846,16 @@ const createOutwardRTGS = async () => {
   }
 
   const chequeDate = convertToIsoFormat(rtgsForm.chequeDate);
+
+  if (rtgsForm && rtgsForm.transactionLaxList && Array.isArray(rtgsForm.transactionLaxList)) {
+    rtgsForm.transactionLaxList.forEach(item => {
+      if (typeof item.transactionAmount === 'string') {
+        item.transactionAmount = parseFormattedAmount(item.transactionAmount);
+      }
+    });
+  }
+
+
   const reqObject = {
     loginId: token.loginId,
     branchCode: rtgsForm.branchCode,
@@ -844,7 +865,7 @@ const createOutwardRTGS = async () => {
     isCustAcc: rtgsForm.isCustAcc,
     customerNo: rtgsForm.customerNo,
     accountNo: rtgsForm.accountNo,
-    totalAmount: rtgsForm.beneficiaryAmount,
+    totalAmount: parseFormattedAmount(rtgsForm.beneficiaryAmount),
     paymentMode: rtgsForm.paymentMode,
     transactionLaxList: rtgsForm.transactionLaxList,
     purposeOfPaymentCode: rtgsForm.purposeOfPaymentCode,
@@ -1166,7 +1187,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="7">
             <el-form-item>
-              <el-input  :disabled="isFormDisabled || rtgsForm.accountNo == ''"  v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
+              <el-input  :disabled="isFormDisabled || rtgsForm.accountNo == ''" @click="removeAmountFormat" @blur="applyAmountFormat"  v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
                 maxlength="15" />
             </el-form-item>
           </el-col>
@@ -1425,7 +1446,7 @@ const applyAmountFormat = () => {
     v-model="isVoucherDialogVisible"
     :show-close="false"
     title="Voucher"
-    width="1000"
+    width="1180"
     top="8vh"
     :close-on-click-modal="false">
     <el-table
@@ -1436,8 +1457,8 @@ const applyAmountFormat = () => {
       <el-table-column property="accountNo" label="Account No." width="220" />
       <el-table-column property="accountNo" label="A/C Title" width="220" />
       <el-table-column property="currencyCode" label="CCY" width="100" />
-      <el-table-column property="debitAmount" label="DR" width="150" />
-      <el-table-column property="creditAmount" label="CR" width="150" />
+      <el-table-column property="debitAmount" label="DR" width="200"/>
+      <el-table-column property="creditAmount" label="CR" width="200"/>
     </el-table>
     <fieldset style="margin-top: 20px;">
       <el-row>
