@@ -1,26 +1,51 @@
 <script setup>
 import { ref, reactive,onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 import { invokeDefaultDialog } from '@/utils/dialog';
 import axios from '@/axiosInstance.js';
 
-const router = useRouter();
-const isDialogVisible = ref(false);
+// const router = useRouter();
+// const isDialogVisible = ref(false);
 const exceptionList = ref([]);
 
 
 const props = defineProps({
   activityCode: String
 });
-const emit = defineEmits(['cancelled', 'acknowledged']);
 
+const emit = defineEmits(['cancelled', 'acknowledged']);
 const reasonCodeList = ref([
   {
-    label: 'REQUESTED BY CUSTOMER',
+    label: 'INCORRECT AMOUNT-0001',
+    value: '0001'
+  },
+  {
+    label: 'POSTED TO WRONG ACCOUNT-0002 ',
+    value: '0002'
+  },
+  {
+    label: 'WRONG INSTRUMENT NUMBER-0003',
+    value: '0003'
+  },
+  {
+    label: 'WRONG INSTRUMENT DATE-0004',
+    value: '0004'
+  },
+  {
+    label: 'REQUESTED BY CUSTOMER-0005',
     value: '0005'
+  },
+  {
+    value: '0000',
+    label: '<OTHERS>'
   }
 ]);
 
+
+const exceptionForm = reactive({
+  reasonCode:'0001',
+  reasonDesc:'REQUESTED BY CUSTOMER'
+});
 
 
 onMounted(async ()=>{
@@ -46,10 +71,7 @@ onMounted(async ()=>{
 })
 
 
-const exceptionForm = reactive({
-  reasonCode:'0005',
-  reasonDesc:'REQUESTED BY CUSTOMER'
-});
+
 
 
 // const exceptionAcknowledged = async () => {
@@ -88,8 +110,15 @@ const exceptionForm = reactive({
 //   }
 // }
 
-const exit = () =>{
-  router.push('/sbpoutwardtransfer')
+// const exit = () =>{
+//   router.push('/sbpoutwardtransfer')
+// }
+
+const reasonCodeChanged = (event) => {
+  console.log(event);
+  let selectedRowData = reasonCodeList.value.find((item) => item.value === event );
+  const label_code = selectedRowData.label.split('-');
+  exceptionForm.reasonDesc = (event === '0000' || !label_code && !label_code[0]) ? '' : label_code[0]
 }
 </script>
 <template>
@@ -101,7 +130,7 @@ const exit = () =>{
     </el-table>
   </div>
 
-  <fieldset v-if="activityCode == 200" style="margin-top: 1%;">
+  <fieldset v-if="activityCode !== 100" style="margin-top: 1%;">
     <el-row>
       <el-col :span="3">
         <el-form-item>
@@ -110,7 +139,7 @@ const exit = () =>{
       </el-col>
       <el-col :span="6">
         <el-form-item>
-          <el-select v-model="exceptionForm.reasonCode" placeholder="">
+          <el-select v-model="exceptionForm.reasonCode" @change="reasonCodeChanged" placeholder="">
             <el-option v-for="item in reasonCodeList" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -123,7 +152,7 @@ const exit = () =>{
       </el-col>
       <el-col :span="6">
         <el-form-item>
-          <el-input v-model="exceptionForm.reasonDesc" :autosize=false type="textarea" :rows="2"/>
+          <el-input v-model="exceptionForm.reasonDesc" :disabled="exceptionForm.reasonCode !== '0000'" :autosize=false type="textarea" :rows="2"/>
         </el-form-item>
       </el-col>
     </el-row>

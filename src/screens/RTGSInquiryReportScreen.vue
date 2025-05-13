@@ -41,12 +41,7 @@ const rules = reactive({
     { required: true, message: 'Field is required', trigger: 'blur' },
     { type: 'date', required: true, message: 'Please pick a date', trigger: 'change' },
   ],
-  // customerNo: [
-  //    { required: true, message: 'Field is required', trigger: 'blur' },
-  // ],
-  accountNo: [
-    // { required: true, message: 'Field is required', trigger: 'change' },
-  ]
+  accountNo: []
 })
 
 

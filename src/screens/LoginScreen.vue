@@ -77,7 +77,7 @@ const insertPadding = () => {
 }
 
 const isInvalid = computed(() => {
-    return !branchCode.value.trim() || !loginId.value.trim() || !password.value.trim();
+    return !branchCode.value.trim() || !loginId.value.trim() || password.value.length < 10;
 });
 
 </script>
@@ -108,10 +108,10 @@ const isInvalid = computed(() => {
                             style="width: 25%;"
                             type="text"
                           >
-                          <input v-model="loginId"  class="form-control" maxlength="10" style="width: 75%;" type="password">
+                          <input v-model="loginId" v-uppercase class="form-control" maxlength="10" style="width: 75%;" type="password">
                       </div>
                       <div>
-                          <input v-model="password"  class="form-control" maxlength="10" type="password">
+                          <input v-model="password" v-uppercase class="form-control" maxlength="10" type="password">
                       </div>
                   </div>
                   <div class="button-container">

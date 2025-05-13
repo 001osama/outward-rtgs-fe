@@ -16,8 +16,7 @@ const authForm = reactive({
 
 const activityAuthorized = async () => {
   if(authForm.loginId.length < 3 ||
-      authForm.loginId.length < 3
-  )
+      authForm.loginId.password < 10)
     return;
 
 
@@ -88,7 +87,7 @@ const activityAuthorized = async () => {
               <el-col :span="7">
                 <el-button
                   @click="activityAuthorized"
-                  :disabled="authForm.loginId.length < 3 || authForm.password.length < 3"
+                  :disabled="authForm.loginId.length < 3 || authForm.password.length < 10"
                   class="generic-button"
                   type="primary">Authorize</el-button>
               </el-col>

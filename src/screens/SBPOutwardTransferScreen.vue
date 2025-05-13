@@ -223,8 +223,6 @@ const handleChargesLaxSelectedChange = (val) => {
 
 
 watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
-
-
   switch (sbpTranTypeCode) {
     case '41':
       disabilityController.isSingleBeneficiaryDisabled = false;
@@ -257,9 +255,9 @@ watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
       rtgsForm.transferTypeCode = '103';
       break;
   }
-  resetForm();
-
 });
+
+
 
 
 
@@ -369,7 +367,7 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
 }
 
 // const isAccNoListEmpty = computed(() => accNoList.value.length === 0);
-const isBankTransferType = computed(() => rtgsForm.transferTypeCode === '202');
+// const isBankTransferType = computed(() => rtgsForm.transferTypeCode === '202');
 
 
 const validateChequeStatus = async () => {
@@ -422,6 +420,7 @@ const handleExitClick = () => {
 }
 
 const getCustAccounts = async () => {
+  debugger;
   if(rtgsForm?.customerNo?.length > 0 && rtgsForm?.customerNo?.length < 6)
     rtgsForm.customerNo = rtgsForm.customerNo.padStart(6, '0');
 
@@ -536,13 +535,13 @@ const getBenefBankDetails = async () => {
       if (data.success) {
         console.log("Success response is received from backend", data.data);
         transactionLaxForm.beneficiaryAccountName = data.data.accountTitle;
-        transactionLaxForm.beneficiaryBranchCode = data.data.beneficiaryBranchCd;
+        // transactionLaxForm.beneficiaryBranchCode = data.data.beneficiaryBranchCd;
         transactionLaxForm.isBeneficiaryTitleFetch = true;
       }
       else {
         transactionLaxForm.isBeneficiaryTitleFetch = false;
         transactionLaxForm.beneficiaryAccountName = '';
-        transactionLaxForm.beneficiaryBranchCode = '';
+        // transactionLaxForm.beneficiaryBranchCode = '';
         invokeDefaultDialog('error', response.data.message);
         return
       }
@@ -615,7 +614,7 @@ const insertTransactionLax = () => {
   if (transactionLaxForm.transactionAmount !== '' &&
     transactionLaxForm.beneficiaryBankName !== '' &&
     transactionLaxForm.beneficiaryBankCode !== '' &&
-    transactionLaxForm.beneficiaryBranchCode !== '' &&
+    // transactionLaxForm.beneficiaryBranchCode !== '' &&
     transactionLaxForm.beneficiaryAccountName !== '' &&
     transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
     {
@@ -1012,7 +1011,7 @@ const applyAmountFormat = () => {
             </el-col>
             <el-col :span="16">
               <el-form-item>
-                <el-select :disabled="isFormDisabled" v-model="rtgsForm.sbpTranTypeCode"
+                <el-select :disabled="isFormDisabled" @change="resetForm" v-model="rtgsForm.sbpTranTypeCode"
                   placeholder="Select SBP Tran Type">
                   <el-option v-for="item in sBPTranTypeList" :key="item.value" :label="item.label"
                     :value="item.value" />
@@ -1241,7 +1240,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input v-model="transactionLaxForm.beneficiaryAccountName" :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="10" />
+              <el-input v-model="transactionLaxForm.beneficiaryAccountName" v-uppercase :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="150" />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1254,7 +1253,7 @@ const applyAmountFormat = () => {
               </el-col>
               <el-col :span="12">
                 <el-form-item>
-                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="4" />
+                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.accountNo == ''" maxlength="4" />
                 </el-form-item>
               </el-col>
             </el-row>
