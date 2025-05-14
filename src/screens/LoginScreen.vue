@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from '@/axiosInstance.js';
+import { isAlphaNumeric } from '@/utils/helpers';
 
 
 const router = useRouter();
@@ -108,10 +109,10 @@ const isInvalid = computed(() => {
                             style="width: 25%;"
                             type="text"
                           >
-                          <input v-model="loginId" v-uppercase class="form-control" maxlength="10" style="width: 75%;" type="password">
+                          <input v-model="loginId" @keydown="(event) => isAlphaNumeric(event,10)" v-uppercase class="form-control" style="width: 75%;" type="password">
                       </div>
                       <div>
-                          <input v-model="password" v-uppercase class="form-control" maxlength="10" type="password">
+                          <input v-model="password" @keydown="(event) => isAlphaNumeric(event,10)" v-uppercase class="form-control" type="password">
                       </div>
                   </div>
                   <div class="button-container">

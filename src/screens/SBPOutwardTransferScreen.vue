@@ -11,7 +11,6 @@ import MessageWindow from '@/components/MessageWindow.vue';
 import { validateDate } from '@/utils/validators';
 import { useHeaderStore } from '@/stores';
 import {
-  downloadBase64ReportExcel,
   convertDateFormat,
   parseFormattedAmount,
   formatAmount,
@@ -19,7 +18,8 @@ import {
   handleMultiLineTextboxPaste,
   handleMultiLineTextboxKeyPress,
   isAlphaNumeric,
-  convertToIsoFormat }
+  convertToIsoFormat,
+  downloadBase64ReportPdf}
 from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
@@ -30,6 +30,7 @@ const $route = useRoute();
 
 const voucherNo = ref('');
 const voucherYear = ref('');
+const cancellationReason = ref('');
 
 const stepHeaders = {
     1: 'SBP Cheque Outward Lodgement',
@@ -729,8 +730,10 @@ const onExceptionCancelled = () => {
   changeStep(1)
 }
 
-const onExceptionAcknowledge = async () => {
+const onExceptionAcknowledged = async (cancelReason) => {
   if (mode?.value == 'cancel') {
+    cancellationReason.value = cancelReason ? cancelReason : '';
+    console.log("Cancellation reason received", cancellationReason.value);
     changeStep(3)
     return;
   }
@@ -744,7 +747,7 @@ const onAuthSuccess = async (loginId) => {
     return;
   }
   else if (mode?.value == 'cancel') {
-    await cancelOutwardRTGS(loginId);
+    await cancelOutwardRTGS();
     return;
   }
 }
@@ -755,7 +758,7 @@ const onAuthCancel = () => {
   else changeStep(2)
 }
 
-const cancelOutwardRTGS = async (loginId) => {
+const cancelOutwardRTGS = async () => {
   const token = getToken();
 
   if (!token) {
@@ -770,10 +773,10 @@ const cancelOutwardRTGS = async (loginId) => {
     const response = await axios.post(`/start`, {
       transition: 'CANCELOUTWARDRTGS',
       data: {
-        loginId,
-        // loginId: token?.loginId,
+        loginId: token?.loginId,
         voucherNo,
-        voucherYear
+        voucherYear,
+        cancellationReason: cancellationReason.value
       }
     });
 
@@ -912,7 +915,7 @@ const voucherSeen = () => {
 }
 
 
-const downloadExcelReport = async () => {
+const downloadVoucherReport = async () => {
   const voucherInfo = voucherLaxList?.value[0]?.voucherNo;
 
   if(!voucherInfo) return;
@@ -921,7 +924,7 @@ const downloadExcelReport = async () => {
   try
   {
     const response = await axios.post(`/start`, {
-        transition:'FETCHVOUCHEREXCEL',
+        transition:'FETCHVOUCHERREPORT',
         data:{
         voucherNo: voucherInfoList[0],
         voucherYear: voucherInfoList[1],
@@ -934,7 +937,7 @@ const downloadExcelReport = async () => {
       if(data.success)
       {
         console.log("User successfully authorized", data.data);
-        downloadBase64ReportExcel(data.data);
+        downloadBase64ReportPdf(data.data, 'OutwardRTGSVoucher');
       }
       else
         invokeDefaultDialog('Error', data.message);
@@ -950,6 +953,11 @@ const downloadExcelReport = async () => {
     console.error(error);
     invokeDefaultDialog('Error', 'Network Error');
   }
+}
+
+const insertPadding = () => {
+    if(transactionLaxForm.beneficiaryBranchCode)
+      transactionLaxForm.beneficiaryBranchCode = transactionLaxForm.beneficiaryBranchCode.padStart(4, '0');
 }
 
 const removeAmountFormat = () => {
@@ -1253,7 +1261,7 @@ const applyAmountFormat = () => {
               </el-col>
               <el-col :span="12">
                 <el-form-item>
-                  <el-input @keydown="isNumber" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.accountNo == ''" maxlength="4" />
+                  <el-input @keydown="isNumber" @blur="insertPadding" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.accountNo == ''" maxlength="4" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -1404,7 +1412,7 @@ const applyAmountFormat = () => {
   <template v-if="step === 2">
     <ExceptionWindow
       :activityCode="currentActivityCode"
-      @acknowledged="onExceptionAcknowledge"
+      @acknowledged="onExceptionAcknowledged"
       @cancelled="onExceptionCancelled" />
   </template>
 
@@ -1427,10 +1435,10 @@ const applyAmountFormat = () => {
     <SelectListWindow />
   </template>
 
-  <el-dialog v-model="dialogTableVisible" :show-close="false" title="Select Beneficiary Bank"
+  <el-dialog v-model="dialogTableVisible"  :show-close="false" title="Select Beneficiary Bank"
     :before-close="(doneFn) => {console.log('before-close'), doneFn() }"
     @open="getBenefBankList" width="1000">
-    <el-table :data="benefBankList" ref="benefBankListTableRef" highlight-current-row style="width: 100%"
+    <el-table :data="benefBankList" :show-header="false" ref="benefBankListTableRef" highlight-current-row style="width: 100%"
       @current-change="handleCurrentChange">
       <el-table-column property="label" />
     </el-table>
@@ -1471,15 +1479,14 @@ const applyAmountFormat = () => {
         </el-col>
         <el-col :span="18"></el-col>
         <el-col :span="3">
-          <el-button @click="downloadExcelReport" class="generic-button" type="primary">Print</el-button>
+          <el-button @click="downloadVoucherReport" class="generic-button" type="primary">Print</el-button>
         </el-col>
       </el-row>
     </fieldset>
   </el-dialog>
 
   <el-dialog v-model="isSignatureDialogVisible" :show-close="false" title="Customer Signature"
-    :before-close="(doneFn) => {console.log('before-close'), doneFn() }"
-    @open="getBenefBankList" width="1000">
+    :before-close="(doneFn) => {console.log('before-close'), doneFn() }" width="1000">
     <el-row>
       <el-col :span="6"></el-col>
       <el-col :span="12">

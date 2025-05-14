@@ -128,11 +128,15 @@ const downloadReport = async (formRef, reportFormat) => {
       return;
 
     try {
+      debugger;
+      const token = getToken();
       const response = await axios.post(`/start`, {
         transition: 'FETCHRTGSREPORT',
         data: {reportForm:
           {
-            reportFormat, ...reportForm
+            loginId: token.loginId,
+            reportFormat,
+            ...reportForm
           }
         }
       });

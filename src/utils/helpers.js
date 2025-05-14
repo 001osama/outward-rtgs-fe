@@ -29,6 +29,8 @@ const isNumber = (event) => {
   }
 }
 
+
+
 const dateMasking = (event) => {
   const allowedKeys = [
     'Backspace',
@@ -85,7 +87,7 @@ const downloadBase64ReportExcel = (base64Data) => {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'report.xlsx'
+    a.download = 'OutwardRtgsReport.xlsx'
     document.body.appendChild(a)
     a.click()
     a.remove()
@@ -95,7 +97,7 @@ const downloadBase64ReportExcel = (base64Data) => {
   }
 }
 
-const downloadBase64ReportPdf = (base64Data) => {
+const downloadBase64ReportPdf = (base64Data, fileName) => {
   const base64Pdf = base64Data
 
   try {
@@ -112,7 +114,7 @@ const downloadBase64ReportPdf = (base64Data) => {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'report.pdf'
+    a.download = `${ fileName ? fileName : 'OutwardRtgsReport' }.pdf`
     document.body.appendChild(a)
     a.click()
     a.remove()

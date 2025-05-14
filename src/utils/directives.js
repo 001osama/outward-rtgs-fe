@@ -119,7 +119,6 @@ const customAmount = {
 
     el.addEventListener('input', onInput)
 
-    // Initial format from value
     const initialRaw = getRawValue(binding.value ?? '')
     el.value = formatValue(initialRaw)
     updateModel(initialRaw)

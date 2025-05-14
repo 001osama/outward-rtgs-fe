@@ -2,7 +2,7 @@
 import { invokeDefaultDialog } from '@/utils/dialog';
 import { reactive, defineEmits } from 'vue';
 import axios from '@/axiosInstance.js';
-
+import { isAlphaNumeric } from '@/utils/helpers';
 
 
 const emit = defineEmits(['cancelled', 'success']);
@@ -65,7 +65,7 @@ const activityAuthorized = async () => {
               </el-col>
               <el-col :span="19">
                 <el-form-item>
-                  <el-input type="password" v-uppercase v-model="authForm.loginId" maxlength="10" />
+                  <el-input type="password" @keydown="(event) => isAlphaNumeric(event,10)" v-uppercase v-model="authForm.loginId" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -77,7 +77,7 @@ const activityAuthorized = async () => {
               </el-col>
               <el-col :span="19">
                 <el-form-item>
-                  <el-input type="password" v-uppercase v-model="authForm.password" maxlength="10" />
+                  <el-input type="password" @keydown="(event) => isAlphaNumeric(event,10)" v-uppercase v-model="authForm.password" />
                 </el-form-item>
               </el-col>
             </el-row>

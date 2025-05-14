@@ -16,35 +16,15 @@ const props = defineProps({
 const emit = defineEmits(['cancelled', 'acknowledged']);
 const reasonCodeList = ref([
   {
-    label: 'INCORRECT AMOUNT-0001',
-    value: '0001'
-  },
-  {
-    label: 'POSTED TO WRONG ACCOUNT-0002 ',
-    value: '0002'
-  },
-  {
-    label: 'WRONG INSTRUMENT NUMBER-0003',
-    value: '0003'
-  },
-  {
-    label: 'WRONG INSTRUMENT DATE-0004',
-    value: '0004'
-  },
-  {
-    label: 'REQUESTED BY CUSTOMER-0005',
-    value: '0005'
-  },
-  {
-    value: '0000',
-    label: '<OTHERS>'
+      label: "<OTHERS>",
+      value: 0
   }
 ]);
 
 
 const exceptionForm = reactive({
-  reasonCode:'0001',
-  reasonDesc:'REQUESTED BY CUSTOMER'
+  reasonCode:0,
+  reasonDesc:''
 });
 
 
@@ -58,6 +38,8 @@ onMounted(async ()=>{
       if(response.data.success)
       {
         exceptionList.value = response.data.data.exceptionList;
+        if(props.activityCode != 100)
+          await getReasonList();
       }
       else
         invokeDefaultDialog('Error', response.data.message);
@@ -71,7 +53,33 @@ onMounted(async ()=>{
 })
 
 
+const getReasonList = async () => {
+  try {
+    const response = await axios.post(`/start`, { transition:'FETCHREASONLIST' });
 
+    if(response.status == 200)
+    {
+      const { data } = response;
+      if(data.success)
+      {
+        console.log("successfully get reason list");
+        reasonCodeList.value.push(...data.data.reasonList)
+        exceptionForm.reasonCode = data.data.reasonList[0].value;
+        reasonCodeChanged(data.data.reasonList[0].value)
+      }
+    }
+    else
+    {
+      console.log('Error getting success response');
+      console.log(response.data);
+      invokeDefaultDialog('Error', response.data.message);
+    }
+  }
+  catch (error) {
+    console.error(error);
+    invokeDefaultDialog('Error', 'Network Error');
+  }
+}
 
 
 // const exceptionAcknowledged = async () => {
@@ -114,12 +122,18 @@ onMounted(async ()=>{
 //   router.push('/sbpoutwardtransfer')
 // }
 
-const reasonCodeChanged = (event) => {
-  console.log(event);
-  let selectedRowData = reasonCodeList.value.find((item) => item.value === event );
+const reasonCodeChanged = (selectedValueId) => {
+  console.log(selectedValueId);
+  let selectedRowData = reasonCodeList.value.find((item) => item.value === selectedValueId );
   const label_code = selectedRowData.label.split('-');
-  exceptionForm.reasonDesc = (event === '0000' || !label_code && !label_code[0]) ? '' : label_code[0]
+  exceptionForm.reasonDesc = (selectedValueId === 0 || !label_code && !label_code[0]) ? '' : label_code[0]
 }
+
+
+const handleAcknowledged = () => {
+  props.reasonCode != 100 ?  emit('acknowledged', exceptionForm.reasonDesc) : emit('acknowledged')
+}
+
 </script>
 <template>
   <div>
@@ -152,7 +166,7 @@ const reasonCodeChanged = (event) => {
       </el-col>
       <el-col :span="6">
         <el-form-item>
-          <el-input v-model="exceptionForm.reasonDesc" :disabled="exceptionForm.reasonCode !== '0000'" :autosize=false type="textarea" :rows="2"/>
+          <el-input v-model="exceptionForm.reasonDesc" :disabled="exceptionForm.reasonCode !== 0" maxlength="40" :autosize=false type="textarea" :rows="2"/>
         </el-form-item>
       </el-col>
     </el-row>
@@ -160,7 +174,7 @@ const reasonCodeChanged = (event) => {
   <fieldset style="margin-top: 10px;">
     <el-row>
       <el-col :span="4">
-        <el-button @click="emit('acknowledged')" class="generic-button" type="primary">Continue</el-button>
+        <el-button @click="handleAcknowledged" class="generic-button" type="primary">Continue</el-button>
       </el-col>
       <el-col :span="15"></el-col>
       <el-col :span="4">
