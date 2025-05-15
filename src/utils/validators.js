@@ -52,7 +52,7 @@ const validateDate = (rule, value, callback) => {
   const parsedDate = dayjs(value, 'DD/MM/YYYY', true)
   const year = parsedDate.year()
 
-  if (!parsedDate.isValid() || year > currentYear) {
+  if (!parsedDate.isValid()) {
     return callback(new Error('Date format is dd/mm/yyyy.'))
   }
 

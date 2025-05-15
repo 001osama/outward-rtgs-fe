@@ -179,6 +179,7 @@ const resetForm = () => {
   rtgsForm.chequeNo= '';
   rtgsForm.chequeDate= '';
   chargesLaxList.value = [];
+  accNoList.value = [];
 
   transactionLaxForm.transactionAmount = '';
   transactionLaxForm.beneficiaryBankName = '';
@@ -295,7 +296,7 @@ onMounted(async () => {
           isFormDisabled.value = true;
 
           if ($route.query.mode === 'auth')
-            currentActivityCode.value = 100;
+            currentActivityCode.value = 300;
           if ($route.query.mode === 'cancel')
             currentActivityCode.value = 200;
 
@@ -1229,7 +1230,6 @@ const applyAmountFormat = () => {
                 v-uppercase
                 :disabled="isFormDisabled || rtgsForm.accountNo == ''"
                 v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
-                maxLength="24"
                 @keydown="(event) => isAlphaNumeric(event,24)"
                 @change="() => {
                   if(transactionLaxForm.isBeneficiaryTitleFetch)
@@ -1471,7 +1471,7 @@ const applyAmountFormat = () => {
       <el-table-column property="voucherNo" label="Vouch No." width="120" />
       <el-table-column property="referenceNo" label="Ref No" width="100" />
       <el-table-column property="accountNo" label="Account No." width="220" />
-      <el-table-column property="accountNo" label="A/C Title" width="220" />
+      <el-table-column property="accountTitle" label="A/C Title" width="220" />
       <el-table-column property="currencyCode" label="CCY" width="100" />
       <el-table-column property="debitAmount" label="DR" width="200"/>
       <el-table-column property="creditAmount" label="CR" width="200"/>

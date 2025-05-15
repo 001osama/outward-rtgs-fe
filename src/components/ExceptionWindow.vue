@@ -45,7 +45,7 @@ onMounted(async ()=>{
       if(response.data.success)
       {
         exceptionList.value = response.data.data.exceptionList;
-        if(props.activityCode != 100)
+        if(props.activityCode == 200)
           await getReasonList();
       }
       else

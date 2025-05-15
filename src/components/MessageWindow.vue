@@ -22,7 +22,7 @@ const props = defineProps({
 
 
 onMounted(()=>{
-
+  console.log('Props of message window is',props);
   if(props.adviceNoList && props.voucherNo)
   {
     formData.adviceNo = props.adviceNoList[0];
@@ -105,10 +105,10 @@ const acknowledge = () => {
           <el-col :span="8"></el-col>
           <el-col :span="8">
             <el-row style="justify-content: center; margin-bottom: 5%;">
-              <strong v-if="props?.activityCode != 100">SBP Cheque Outward</strong>
+              <strong v-if="props?.activityCode == 100">SBP Cheque Outward</strong>
             </el-row>
             <el-row style="justify-content: center; margin-bottom: 4%;">
-              Voucher No. {{ props.voucherNo }} {{ props?.activityCode == 100 ? 'Authorized':'' }}
+              Voucher No. {{ props.voucherNo }} {{ props?.activityCode === 300 ? 'Authorized':'' }}
             </el-row>
             <el-row class="justify-center">
               <el-col :span="8"></el-col>
