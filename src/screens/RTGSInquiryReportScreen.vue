@@ -7,6 +7,7 @@ import { downloadBase64ReportPdf, downloadBase64ReportExcel, convertToIsoFormat 
 import axios from '@/axiosInstance';
 import { getToken } from '@/utils/jwtDecoder';
 import { isNumber, removeValidationRule, addValidationRule } from '@/utils/helpers';
+import dayjs from '@/utils/dayjs';
 
 const router = useRouter();
 
@@ -29,20 +30,48 @@ const reportForm = reactive({
   status: 'All'
 })
 
+
+const validateFromDate = (rule, value, callback) => {
+  // if (!value) {
+  //   return callback(new Error('Field is required'))
+  // }
+
+  const parsedFromDate = dayjs(value, 'YYYY-MM-DD', true);
+  const parsedToDate = dayjs(reportForm.toDate, 'YYYY-MM-DD', true);
+  if (parsedToDate.isBefore(parsedFromDate))
+    return callback(new Error('From Date should be before To Date.'))
+
+  callback()
+}
+
+const validateToDate = (rule, value, callback) => {
+  // if (!value) {
+  //   return callback(new Error('Field is required'))
+  // }
+
+  const parsedToDate = dayjs(value, 'YYYY-MM-DD', true);
+  const parsedFromDate = dayjs(reportForm.fromDate, 'YYYY-MM-DD', true);
+  if (parsedToDate.isBefore(parsedFromDate))
+    return callback(new Error('To Date should be after From Date.'))
+
+  callback()
+}
+
 const rules = reactive({
   transactionType: [
     { required: true, message: 'Field is required', trigger: 'change' },
   ],
   fromDate: [
-    { required: true, message: 'Field is required', trigger: 'blur' },
     { type: 'date', required: true, message: 'Please pick a date', trigger: 'change' },
+    { validator: validateFromDate, trigger: 'blur' }
   ],
   toDate: [
-    { required: true, message: 'Field is required', trigger: 'blur' },
     { type: 'date', required: true, message: 'Please pick a date', trigger: 'change' },
+    { validator: validateToDate, trigger: 'blur' }
   ],
   accountNo: []
 })
+
 
 
 onMounted(async () => {
@@ -128,7 +157,6 @@ const downloadReport = async (formRef, reportFormat) => {
       return;
 
     try {
-      debugger;
       const token = getToken();
       const response = await axios.post(`/start`, {
         transition: 'FETCHRTGSREPORT',

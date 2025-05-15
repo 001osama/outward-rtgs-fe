@@ -1231,6 +1231,10 @@ const applyAmountFormat = () => {
                 v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
                 maxLength="24"
                 @keydown="(event) => isAlphaNumeric(event,24)"
+                @change="() => {
+                  if(transactionLaxForm.isBeneficiaryTitleFetch)
+                    transactionLaxForm.beneficiaryAccountName = ''
+                }"
               />
             </el-form-item>
           </el-col>
@@ -1462,7 +1466,7 @@ const applyAmountFormat = () => {
     top="8vh"
     :close-on-click-modal="false">
     <el-table
-      :data="voucherLaxList" ref="VoucherTableRef" highlight-current-row style="width: 100%" height="350"
+      :data="voucherLaxList" ref="VoucherTableRef" style="width: 100%" height="350"
       max-height="400">
       <el-table-column property="voucherNo" label="Vouch No." width="120" />
       <el-table-column property="referenceNo" label="Ref No" width="100" />

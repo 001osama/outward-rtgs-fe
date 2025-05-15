@@ -73,8 +73,8 @@ const checkDigits = (event) => {
 }
 
 const insertPadding = () => {
-    if(branchCode.value)
-        branchCode.value = branchCode.value.padStart(4, '0');
+  if(branchCode.value)
+    branchCode.value = branchCode.value.padStart(4, '0');
 }
 
 const isInvalid = computed(() => {

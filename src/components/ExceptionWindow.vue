@@ -8,7 +8,7 @@ import axios from '@/axiosInstance.js';
 // const isDialogVisible = ref(false);
 const exceptionList = ref([]);
 
-
+const formRef = ref();
 const props = defineProps({
   activityCode: String
 });
@@ -26,6 +26,13 @@ const exceptionForm = reactive({
   reasonCode:0,
   reasonDesc:''
 });
+
+
+const formRules = reactive({
+  reasonDesc: [
+    { required: true, message: 'Field is required', trigger: 'blur' },
+  ],
+})
 
 
 onMounted(async ()=>{
@@ -122,7 +129,8 @@ const getReasonList = async () => {
 //   router.push('/sbpoutwardtransfer')
 // }
 
-const reasonCodeChanged = (selectedValueId) => {
+const reasonCodeChanged = ( selectedValueId, formRef) => {
+  if (formRef) formRef.resetFields()
   console.log(selectedValueId);
   let selectedRowData = reasonCodeList.value.find((item) => item.value === selectedValueId );
   const label_code = selectedRowData.label.split('-');
@@ -130,8 +138,14 @@ const reasonCodeChanged = (selectedValueId) => {
 }
 
 
-const handleAcknowledged = () => {
-  props.reasonCode != 100 ?  emit('acknowledged', exceptionForm.reasonDesc) : emit('acknowledged')
+const handleAcknowledged = (formRef) => {
+  if (!formRef) return
+  formRef.validate(async (valid) => {
+      if (!valid)
+        return;
+      props.reasonCode != 100 ?  emit('acknowledged', exceptionForm.reasonDesc) : emit('acknowledged')
+    }
+  )
 }
 
 </script>
@@ -143,44 +157,44 @@ const handleAcknowledged = () => {
       <el-table-column property="actionRequired" label="Action" />
     </el-table>
   </div>
-
-  <fieldset v-if="activityCode !== 100" style="margin-top: 1%;">
-    <el-row>
-      <el-col :span="3">
-        <el-form-item>
-          <span>Reason Code</span>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item>
-          <el-select v-model="exceptionForm.reasonCode" @change="reasonCodeChanged" placeholder="">
-            <el-option v-for="item in reasonCodeList" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="5"></el-col>
-      <el-col :span="3">
-        <el-form-item>
-          <span>Reason Description</span>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item>
-          <el-input v-model="exceptionForm.reasonDesc" :disabled="exceptionForm.reasonCode !== 0" maxlength="40" :autosize=false type="textarea" :rows="2"/>
-        </el-form-item>
-      </el-col>
-    </el-row>
-  </fieldset>
-  <fieldset style="margin-top: 10px;">
-    <el-row>
-      <el-col :span="4">
-        <el-button @click="handleAcknowledged" class="generic-button" type="primary">Continue</el-button>
-      </el-col>
-      <el-col :span="15"></el-col>
-      <el-col :span="4">
-        <el-button @click="emit('cancelled')" class="generic-button" type="primary">Back</el-button>
-      </el-col>
-    </el-row>
-  </fieldset>
-
+  <el-form ref="formRef" :rules="formRules" :label-position="formAlign" :model="exceptionForm">
+    <fieldset v-if="activityCode !== 100" style="margin-top: 1%;">
+      <el-row>
+        <el-col :span="3">
+          <el-form-item>
+            <span>Reason Code</span>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item>
+            <el-select v-model="exceptionForm.reasonCode" @change="(event)=>reasonCodeChanged(event, formRef)" placeholder="">
+              <el-option v-for="item in reasonCodeList" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="5"></el-col>
+        <el-col :span="3">
+          <el-form-item>
+            <span>Reason Description</span>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item prop="reasonDesc">
+            <el-input v-model="exceptionForm.reasonDesc" :disabled="exceptionForm.reasonCode !== 0" maxlength="40" :autosize=false type="textarea" :rows="2"/>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </fieldset>
+    <fieldset style="margin-top: 10px;">
+      <el-row>
+        <el-col :span="4">
+          <el-button @click="handleAcknowledged(formRef)" class="generic-button" type="primary">Continue</el-button>
+        </el-col>
+        <el-col :span="15"></el-col>
+        <el-col :span="4">
+          <el-button @click="emit('cancelled')" class="generic-button" type="primary">Back</el-button>
+        </el-col>
+      </el-row>
+    </fieldset>
+  </el-form>
 </template>
