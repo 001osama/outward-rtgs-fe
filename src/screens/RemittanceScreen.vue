@@ -187,7 +187,7 @@ const mainMenuBtnClicked = () => {
     <!-- </el-col> -->
     <el-col :span="1"></el-col>
     <el-col :span="2">
-      <button class="tile-button bottom">Batch</button>
+      <button class="tile-button bottom" disabled>Batch</button>
     </el-col>
     <el-col :span="3"></el-col>
     <el-col :span="3">
