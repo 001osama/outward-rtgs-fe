@@ -105,14 +105,34 @@ const isInvalid = computed(() => {
                             v-model="branchCode"
                             @blur="insertPadding"
                             @keydown="checkDigits"
+                            @click.right.prevent
+                            @copy.prevent
+                            @paste.prevent
                             class="form-control"
                             style="width: 25%;"
                             type="text"
                           >
-                          <input v-model="loginId" @keydown="(event) => isAlphaNumeric(event,10)" v-uppercase class="form-control" style="width: 75%;" type="password">
+                          <input
+                            v-model="loginId"
+                            @click.right.prevent
+                            @copy.prevent
+                            @paste.prevent
+                            @keydown="(event) => isAlphaNumeric(event,10)"
+                            v-uppercase
+                            class="form-control"
+                            style="width: 75%;"
+                            type="password">
                       </div>
                       <div>
-                          <input v-model="password" @keydown="(event) => isAlphaNumeric(event,10)" v-uppercase class="form-control" type="password">
+                          <input
+                            v-model="password"
+                            @keydown="(event) => isAlphaNumeric(event,10)"
+                            v-uppercase
+                            @click.right.prevent
+                            @copy.prevent
+                            @paste.prevent
+                            class="form-control"
+                            type="password">
                       </div>
                   </div>
                   <div class="button-container">

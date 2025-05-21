@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { ElMessageBox } from 'element-plus';
 import { useRouter, useRoute } from 'vue-router';
 import { getToken } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog'
@@ -164,6 +165,7 @@ const disabilityController = reactive({
 
 const resetForm = () => {
   rtgsForm.isCustAcc = false;
+  previousCustomerNo = '';
   rtgsForm.customerNo = '';
   rtgsForm.accountNo = '';
   rtgsForm.accountType = '';
@@ -266,8 +268,8 @@ watch(() => rtgsForm.sbpTranTypeCode, (sbpTranTypeCode) => {
 
 onMounted(async () => {
   try {
+    changeStep(1);
     const token = getToken();
-
 
     if (!token) {
       localStorage.removeItem('token');
@@ -411,6 +413,7 @@ const validateChequeStatus = async () => {
 
 
 const handleExitClick = () => {
+  debugger;
   if (mode.value === 'auth') {
     router.push('sbpoutwardauth');
   }
@@ -418,7 +421,30 @@ const handleExitClick = () => {
     router.push('sbpoutwardcancel');
     return
   }
-  else router.push('remittance');;
+  else
+  {
+    // if(!rtgsForm.accountNo)
+    // {
+    //   router.push('remittance');
+    //   return;
+    // }
+    // const redirectToRemittance = router.push('remittance');
+    ElMessageBox.confirm('Any changes will be lost. Are you sure you want to exit?', 'Warning', {
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    showCancelButton: true,
+    showClose: false,
+    autofocus: false,
+    center: true,
+    draggable: true,
+    closeOnClickModal: false,
+  })
+    .then(() => { router.push('remittance') })
+    .catch(() => {})
+
+    // invokeConfirmationDialog('Are you sure you want to exit?', 'Warning', console.log("Message is working"))
+    // router.push('remittance');
+  }
 }
 
 const getCustAccounts = async () => {
@@ -426,7 +452,7 @@ const getCustAccounts = async () => {
   if(rtgsForm?.customerNo?.length > 0 && rtgsForm?.customerNo?.length < 6)
     rtgsForm.customerNo = rtgsForm.customerNo.padStart(6, '0');
 
-  if(!mode.value && previousCustomerNo != rtgsForm.customerNo)
+  if(!mode.value && (!previousCustomerNo || previousCustomerNo != rtgsForm.customerNo))
   {
 
     accNoList.value = []
@@ -594,7 +620,7 @@ const handleSubmitClick = async (formRef) => {
       if(!valid)
       {
         console.log('error submit!');
-        invokeDefaultDialog("Error", "Please Complete the form")
+        invokeDefaultDialog("Error", "Please complete the form correctly")
         return;
       }
 
@@ -1063,7 +1089,9 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="2">
             <el-form-item>
-              <el-input v-model="rtgsForm.customerNo"
+              <el-input
+                v-model="rtgsForm.customerNo"
+                @click.right.prevent @copy.prevent @paste.prevent
                 :disabled="isFormDisabled || (rtgsForm.transferTypeCode === '202' && !rtgsForm.isCustAcc)"
                 @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
             </el-form-item>
@@ -1165,7 +1193,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="4">
             <el-form-item prop="chequeNo">
-              <el-input v-model="rtgsForm.chequeNo" @blur="validateChequeStatus" @keydown="isNumber" maxlength="6"
+              <el-input @click.right.prevent @copy.prevent @paste.prevent v-model="rtgsForm.chequeNo" @blur="validateChequeStatus" @keydown="isNumber" maxlength="6"
                 :disabled="isFormDisabled || rtgsForm.isCustAcc || rtgsForm.accountNo == ''" />
             </el-form-item>
           </el-col>
@@ -1178,6 +1206,7 @@ const applyAmountFormat = () => {
           <el-col :span="4">
             <el-form-item prop="chequeDate">
               <el-input
+                @click.right.prevent @copy.prevent @paste.prevent
                 :disabled="isFormDisabled || rtgsForm.accountNo == ''"
                 v-model="rtgsForm.chequeDate"
                 v-date
@@ -1196,7 +1225,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="7">
             <el-form-item>
-              <el-input  :disabled="isFormDisabled || rtgsForm.accountNo == ''" @click="removeAmountFormat" @blur="applyAmountFormat"  v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
+              <el-input @click.right.prevent @copy.prevent @paste.prevent :disabled="isFormDisabled || rtgsForm.accountNo == ''" @click="removeAmountFormat" @blur="applyAmountFormat"  v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
                 maxlength="15" />
             </el-form-item>
           </el-col>
@@ -1209,7 +1238,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input v-model="transactionLaxForm.beneficiaryBankName" disabled />
+              <el-input @click.right.prevent @copy.prevent @paste.prevent v-model="transactionLaxForm.beneficiaryBankName" disabled />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1228,6 +1257,7 @@ const applyAmountFormat = () => {
             <el-form-item>
               <el-input
                 v-uppercase
+                @click.right.prevent @copy.prevent @paste.prevent
                 :disabled="isFormDisabled || rtgsForm.accountNo == ''"
                 v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
                 @keydown="(event) => isAlphaNumeric(event,24)"
@@ -1252,7 +1282,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input v-model="transactionLaxForm.beneficiaryAccountName" v-uppercase :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="150" />
+              <el-input @click.right.prevent @copy.prevent @paste.prevent v-model="transactionLaxForm.beneficiaryAccountName" v-uppercase :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="150" />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
@@ -1265,7 +1295,7 @@ const applyAmountFormat = () => {
               </el-col>
               <el-col :span="12">
                 <el-form-item>
-                  <el-input @keydown="isNumber" @blur="insertPadding" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.accountNo == ''" maxlength="4" />
+                  <el-input @click.right.prevent @copy.prevent @paste.prevent @keydown="isNumber" @blur="insertPadding" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.accountNo == ''" maxlength="4" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -1280,6 +1310,7 @@ const applyAmountFormat = () => {
           <el-col :span="12">
             <el-form-item>
               <el-input
+                @click.right.prevent @copy.prevent @paste.prevent
                 :disabled="isFormDisabled || rtgsForm.accountNo == ''"
                 v-model="transactionLaxForm.beneficiaryAddress"
                 :autosize=false
@@ -1342,6 +1373,7 @@ const applyAmountFormat = () => {
                 :disabled="isFormDisabled ||  rtgsForm.accountNo == ''"
                 @keypress="handleMultiLineTextboxKeyPress"
                 @paste="handleMultiLineTextboxPaste"
+                @click.right.prevent @copy.prevent @paste.prevent
                 v-model="rtgsForm.remarks"
                 :autosize=false
                 type="textarea"
@@ -1362,6 +1394,7 @@ const applyAmountFormat = () => {
                 v-model="rtgsForm.senderToReceiverInformation"
                 :autosize=false
                 type="textarea"
+                @click.right.prevent @copy.prevent @paste.prevent
                 @keypress="handleMultiLineTextboxKeyPress"
                 @paste="handleMultiLineTextboxPaste"
                 :rows="3" />

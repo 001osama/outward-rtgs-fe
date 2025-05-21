@@ -347,7 +347,7 @@ const modifyAccountNoValidation = () => {
             </el-col>
             <el-col :span="5">
               <el-form-item prop="customerNo">
-                <el-input v-model="reportForm.customerNo" @change="modifyAccountNoValidation" @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
+                <el-input @click.right.prevent @copy.prevent @paste.prevent v-model="reportForm.customerNo" @change="modifyAccountNoValidation" @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
               </el-form-item>
             </el-col>
             <el-col :span="3">

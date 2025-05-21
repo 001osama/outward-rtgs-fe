@@ -1,4 +1,5 @@
 import { ElMessageBox } from 'element-plus';
+
 const invokeDefaultDialog = (title, message, callback = null)=>{
   ElMessageBox.alert(
     message,
@@ -16,4 +17,19 @@ const invokeDefaultDialog = (title, message, callback = null)=>{
 }
 
 
-export {invokeDefaultDialog}
+const invokeConfirmationDialog = async (message, messageType, successFn) => {
+  ElMessageBox.confirm(message, messageType, {
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    showCancelButton: true,
+    showClose: false,
+    autofocus: false,
+    center: true,
+    draggable: true,
+    closeOnClickModal: false,
+  })
+    .then(() => { successFn() })
+    .catch(() => {})
+}
+
+export {invokeDefaultDialog, invokeConfirmationDialog}

@@ -180,7 +180,17 @@ const handleAcknowledged = (formRef) => {
         </el-col>
         <el-col :span="6">
           <el-form-item prop="reasonDesc">
-            <el-input v-model="exceptionForm.reasonDesc" :disabled="exceptionForm.reasonCode !== 0" maxlength="40" :autosize=false type="textarea" :rows="2"/>
+            <el-input
+              @click.right.prevent
+              @copy.prevent
+              @paste.prevent
+              v-model="exceptionForm.reasonDesc"
+              :disabled="exceptionForm.reasonCode !== 0"
+              maxlength="40"
+              :autosize=false
+              type="textarea"
+              :rows="2"
+            />
           </el-form-item>
         </el-col>
       </el-row>

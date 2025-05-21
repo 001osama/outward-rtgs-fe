@@ -378,6 +378,10 @@ h4 {
   color: var(--text-primary) !important;
 }
 
+.el-table:not(.el-table--border) .el-table__cell {
+  border-right: 1px solid var(--el-border-color) !important;
+}
+
 .el-table__inner-wrapper {
   border-width: 2px;
   border-style: groove;
