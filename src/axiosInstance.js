@@ -31,7 +31,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     disableAllButtons()
     const token = localStorage.getItem('token')
-    if (token) config.headers['Authorization'] = `Bearer ${token}`
+    if (token) config.headers['Authorization'] = token
 
     return config
   },
@@ -52,7 +52,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     console.log('getting error', error)
     enableAllButtons()
-    if (error.status == 401) {
+    if (error.status == 401 || error.status == 403) {
       localStorage.removeItem('token')
       localStorage.removeItem('messageShown')
       router.push('/')
