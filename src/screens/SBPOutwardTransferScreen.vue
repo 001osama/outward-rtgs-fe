@@ -48,6 +48,7 @@ const changeStep = (stepNo) => {
 
 
 const formRef = ref();
+const isBenefAccFetchDisabled = ref(false);
 
 const voucherLaxList = ref([
   {
@@ -639,65 +640,124 @@ const submitRTGSForm = async () => {
 
 const insertTransactionLax = () => {
 
-  if (transactionLaxForm.transactionAmount !== '' &&
-    transactionLaxForm.beneficiaryBankName !== '' &&
-    transactionLaxForm.beneficiaryBankCode !== '' &&
-    // transactionLaxForm.beneficiaryBranchCode !== '' &&
-    transactionLaxForm.beneficiaryAccountName !== '' &&
-    transactionLaxForm.beneficiaryIbanOrAccountNo !== '')
-    {
-      const transactionAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
-      const availableBalance = parseFormattedAmount(rtgsForm.availableBalance);
-      const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount)
-
-      if(transactionAmount > availableBalance)
-      {
-        invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
-        return;
-      }
-
-      if (rtgsForm.transferTypeCode === '102' && transactionAmount < 100000)
-      {
-        invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
-        return;
-      }
-
-      if ( rtgsForm.transferTypeCode === '102' && (transactionAmount + beneficiaryAmount) > 999999)
-      {
-        invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
-        return;
-      }
-
-
-
-      if( rtgsForm.transferTypeCode === '103' && transactionAmount < 1000000 )
-      {
-        invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
-        return;
-      }
-
-      if(rtgsForm.transactionLaxList.length >= 10)
-      {
-        invokeDefaultDialog("Message", "Maximum 10 Beneficiary can be added");
-        return;
-      }
-
-
-      console.log("Transaction Lax before insertion", transactionLaxForm);
-      rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
-
-      rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount + transactionAmount);
-      const currentBalance = availableBalance - transactionAmount
-      rtgsForm.availableBalance = formatAmount(currentBalance);
-
-      transactionLaxForm.transactionAmount = '';
-      transactionLaxForm.beneficiaryBankName = '';
-      transactionLaxForm.beneficiaryBankCode = '';
-      transactionLaxForm.beneficiaryAccountName = '';
-      transactionLaxForm.beneficiaryIbanOrAccountNo = '';
-      transactionLaxForm.beneficiaryAddress = '';
-      transactionLaxForm.beneficiaryBranchCode = '';
+  if(transactionLaxForm.transactionAmount === '')
+  {
+    invokeDefaultDialog('Error','Please Insert Beneficiary Transaction Amount');
+    return;
   }
+
+  const transactionAmount = parseFormattedAmount(transactionLaxForm.transactionAmount);
+  const availableBalance = parseFormattedAmount(rtgsForm.availableBalance);
+  const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount);
+
+  debugger;
+  if(transactionAmount > availableBalance)
+  {
+    invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
+    return;
+  }
+
+  if(rtgsForm.sbpTranTypeCode === "1" &&
+      rtgsForm.transferTypeCode === '102' &&
+      transactionAmount < 100000)
+  {
+    invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
+    return;
+  }
+
+  if(rtgsForm.sbpTranTypeCode === "41" &&
+      rtgsForm.transferTypeCode === '102' &&
+      transactionAmount < 50000)
+  {
+    invokeDefaultDialog('Error', 'Minimum amount is 50 Thousand Rupees');
+    return;
+  }
+
+
+  if( rtgsForm.sbpTranTypeCode === "1" &&
+      rtgsForm.transferTypeCode === '102' &&
+      (transactionAmount + beneficiaryAmount) > 999999)
+  {
+    invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
+    return;
+  }
+
+  if( rtgsForm.sbpTranTypeCode === "41" &&
+      rtgsForm.transferTypeCode === '102' &&
+      rtgsForm.transactionLaxList.length === 0 &&
+      (transactionAmount + beneficiaryAmount) > 999999)
+  {
+    invokeDefaultDialog('Error', 'Transaction Amount should be less than 10 lac');
+    return;
+  }
+
+  if(rtgsForm.transferTypeCode === '103' && transactionAmount < 1000000 )
+  {
+    invokeDefaultDialog('Error', 'Minimum amount is 10 Lac Rupees');
+    return;
+  }
+
+  if(rtgsForm.transactionLaxList.length >= 10)
+  {
+    invokeDefaultDialog("Message", "Maximum 10 Beneficiary can be added");
+    return;
+  }
+
+  // if(transactionLaxForm.beneficiaryBankName === '')
+  // {
+  //     invokeDefaultDialog('Error','Please Select Beneficiary Bank Name');
+  //     return;
+  // }
+
+
+  if(transactionLaxForm.beneficiaryBankCode === '')
+  {
+      invokeDefaultDialog('Error','Please Select Beneficiary Bank');
+      return;
+  }
+
+  // if(transactionLaxForm.beneficiaryBranchCode === '')
+  // {
+  //     invokeDefaultDialog('Error','Please Insert Beneficiary Branch Code');
+  //     return;
+  // }
+
+
+
+  if(transactionLaxForm.beneficiaryIbanOrAccountNo === '')
+  {
+      invokeDefaultDialog('Error','Please Insert Beneficiary IBAN or Account No');
+      return;
+  }
+
+  if(transactionLaxForm.beneficiaryAccountName === '')
+  {
+      invokeDefaultDialog('Error','Please Insert Beneficiary Account Name');
+      return;
+  }
+
+
+  console.log("Transaction Lax before insertion", transactionLaxForm);
+  rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
+
+  rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount + transactionAmount);
+  const currentBalance = availableBalance - transactionAmount
+  rtgsForm.availableBalance = formatAmount(currentBalance);
+
+  if(rtgsForm.transferTypeCode !== '102')
+  {
+    transactionLaxForm.beneficiaryBankName = '';
+    transactionLaxForm.beneficiaryBankCode = '';
+  }
+
+
+  transactionLaxForm.transactionAmount = '';
+  transactionLaxForm.beneficiaryAccountName = '';
+  transactionLaxForm.beneficiaryIbanOrAccountNo = '';
+  transactionLaxForm.beneficiaryAddress = '';
+  transactionLaxForm.beneficiaryBranchCode = '';
+
+
 
 }
 
@@ -716,6 +776,14 @@ const removeTransactionLax = () => {
 
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.beneficiaryIbanOrAccountNo !== selectedTransactionLax.value)
     selectedTransactionLax.value = '';
+    debugger;
+    if(rtgsForm.transferTypeCode === '102' && rtgsForm.transactionLaxList.length == 0)
+    {
+
+      transactionLaxForm.beneficiaryBankName = '';
+      transactionLaxForm.beneficiaryBankCode = '';
+    }
+
   }
 }
 
@@ -1041,7 +1109,7 @@ const applyAmountFormat = () => {
           <el-row>
             <el-col :span="3">
               <el-form-item>
-                <span>SBP tran. Type</span>
+                <span>SBP Tran. Type</span>
               </el-form-item>
             </el-col>
             <el-col :span="16">
@@ -1243,7 +1311,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="2">
-            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == ''" class="generic-button" @click="dialogTableVisible = true"
+            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == '' || rtgsForm.transactionLaxList.length > 0" class="generic-button" @click="dialogTableVisible = true"
               type="primary">List</el-button>
           </el-col>
         </el-row>
@@ -1270,7 +1338,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="2">
-            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == ''" class="generic-button" @click="getBenefBankDetails"
+            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == '' || isBenefAccFetchDisabled" class="generic-button" @click="getBenefBankDetails"
               type="primary">Fetch</el-button>
           </el-col>
         </el-row>
@@ -1538,8 +1606,6 @@ const applyAmountFormat = () => {
       </el-col>
     </el-row>
   </el-dialog>
-
-
 </template>
 
 <style scoped>
