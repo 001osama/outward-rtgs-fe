@@ -756,6 +756,7 @@ const insertTransactionLax = () => {
   transactionLaxForm.beneficiaryIbanOrAccountNo = '';
   transactionLaxForm.beneficiaryAddress = '';
   transactionLaxForm.beneficiaryBranchCode = '';
+  transactionLaxForm.isBeneficiaryTitleFetch = false;
 
 
 
