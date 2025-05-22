@@ -1,9 +1,10 @@
 <script setup>
 import {computed} from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {useHeaderStore} from '@/stores/index.js';
 
 const $route = useRoute();
+const router = useRouter();
 
 
 const headerStore = useHeaderStore();
@@ -20,16 +21,17 @@ const currentComponentTitle = computed(() => {
 })
 
 const handleCloseClick = async () => {
-  console.log("close button clicked");
+  router.push('remittance');
 }
+// console.log("close button clicked");
 
 
 </script>
 <template>
     <div class="header">
         <div class="text-bold-1" style="min-width: 50%;">{{currentComponentTitle}}</div>
-        <div class="text-bold-1">ALHABIB VERSION 2.45.0 (TeReSol)</div>
-        <div><button @click="handleCloseClick" class="close-button">x</button></div>
+        <div class="text-bold-1">ALHABIB VERSION 2.45.1</div>
+        <!-- <div><button @click="handleCloseClick" class="close-button">x</button></div> -->
     </div>
 </template>
 <style scoped>
