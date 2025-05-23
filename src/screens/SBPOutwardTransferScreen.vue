@@ -572,17 +572,19 @@ const getBenefBankDetails = async () => {
         transactionLaxForm.beneficiaryAccountName = '';
         // transactionLaxForm.beneficiaryBranchCode = '';
         invokeDefaultDialog('error', response.data.message);
-        return
       }
     }
     else {
       console.log('Error getting success response');
       console.log(response.data);
     }
+
+
   }
   catch (error) {
     console.error(error);
   }
+  isBenefAccFetchDisabled.value=true;
 }
 
 
@@ -757,6 +759,7 @@ const insertTransactionLax = () => {
   transactionLaxForm.beneficiaryAddress = '';
   transactionLaxForm.beneficiaryBranchCode = '';
   transactionLaxForm.isBeneficiaryTitleFetch = false;
+  isBenefAccFetchDisabled.value=false;
 
 
 
@@ -1332,7 +1335,8 @@ const applyAmountFormat = () => {
                 @keydown="(event) => isAlphaNumeric(event,24)"
                 @change="() => {
                   if(transactionLaxForm.isBeneficiaryTitleFetch)
-                    transactionLaxForm.beneficiaryAccountName = ''
+                    transactionLaxForm.beneficiaryAccountName = '';
+                  isBenefAccFetchDisabled=false;
                 }"
               />
             </el-form-item>
@@ -1351,7 +1355,14 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="12">
             <el-form-item>
-              <el-input @click.right.prevent @copy.prevent @paste.prevent v-model="transactionLaxForm.beneficiaryAccountName" v-uppercase :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''" maxlength="150" />
+              <el-input
+                @click.right.prevent
+                @copy.prevent
+                @paste.prevent
+                v-model="transactionLaxForm.beneficiaryAccountName"
+                v-uppercase
+                :disabled="transactionLaxForm.isBeneficiaryTitleFetch || rtgsForm.accountNo == ''"
+                maxlength="150" />
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
