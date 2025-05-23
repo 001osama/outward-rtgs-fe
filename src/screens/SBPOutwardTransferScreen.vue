@@ -147,6 +147,7 @@ const rtgsForm = reactive({
 
 
 const transactionLaxForm = reactive({
+  id:0,
   transactionAmount: '',
   beneficiaryBankName: '',
   beneficiaryBankCode: '',
@@ -213,8 +214,8 @@ const handleCurrentChange = (val) => {
 
 const handleTransactionLaxSelectedChange = (val) => {
   console.log(`Handle transaction current change is working`, val);
-  if (val && val.beneficiaryIbanOrAccountNo) {
-    selectedTransactionLax.value = val.beneficiaryIbanOrAccountNo;
+  if (val && val.id) {
+    selectedTransactionLax.value = val.id;
   }
 };
 
@@ -652,12 +653,13 @@ const insertTransactionLax = () => {
   const availableBalance = parseFormattedAmount(rtgsForm.availableBalance);
   const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount);
 
-  debugger;
+
   if(transactionAmount > availableBalance)
   {
     invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
     return;
   }
+
 
   if(rtgsForm.sbpTranTypeCode === "1" &&
       rtgsForm.transferTypeCode === '102' &&
@@ -666,6 +668,7 @@ const insertTransactionLax = () => {
     invokeDefaultDialog('Error', 'Minimum amount is 1 Lac Rupees');
     return;
   }
+
 
   if(rtgsForm.sbpTranTypeCode === "41" &&
       rtgsForm.transferTypeCode === '102' &&
@@ -676,22 +679,30 @@ const insertTransactionLax = () => {
   }
 
 
-  if( rtgsForm.sbpTranTypeCode === "1" &&
-      rtgsForm.transferTypeCode === '102' &&
-      (transactionAmount + beneficiaryAmount) > 999999)
+  if(rtgsForm.transferTypeCode === '102' &&
+      transactionAmount > 999999)
   {
-    invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
+    invokeDefaultDialog('Error', 'Transfer amount should be less than 10 lac.');
     return;
   }
 
-  if( rtgsForm.sbpTranTypeCode === "41" &&
-      rtgsForm.transferTypeCode === '102' &&
-      rtgsForm.transactionLaxList.length === 0 &&
-      (transactionAmount + beneficiaryAmount) > 999999)
-  {
-    invokeDefaultDialog('Error', 'Transaction Amount should be less than 10 lac');
-    return;
-  }
+
+  // if( rtgsForm.sbpTranTypeCode === "1" &&
+  //     rtgsForm.transferTypeCode === '102' &&
+  //     (transactionAmount + beneficiaryAmount) > 999999)
+  // {
+  //   invokeDefaultDialog('Error', 'Total Amount should be less than 10 lac');
+  //   return;
+  // }
+
+  // if( rtgsForm.sbpTranTypeCode === "41" &&
+  //     rtgsForm.transferTypeCode === '102' &&
+  //     rtgsForm.transactionLaxList.length === 0 &&
+  //     (transactionAmount + beneficiaryAmount) > 999999)
+  // {
+  //   invokeDefaultDialog('Error', 'Transaction Amount should be less than 10 lac');
+  //   return;
+  // }
 
   if(rtgsForm.transferTypeCode === '103' && transactionAmount < 1000000 )
   {
@@ -743,7 +754,7 @@ const insertTransactionLax = () => {
   rtgsForm.transactionLaxList.push({ ...transactionLaxForm });
 
   rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount + transactionAmount);
-  const currentBalance = availableBalance - transactionAmount
+  const currentBalance = availableBalance - transactionAmount;
   rtgsForm.availableBalance = formatAmount(currentBalance);
 
   if(rtgsForm.transferTypeCode !== '102')
@@ -752,22 +763,20 @@ const insertTransactionLax = () => {
     transactionLaxForm.beneficiaryBankCode = '';
   }
 
-
+  transactionLaxForm.id += 1;
   transactionLaxForm.transactionAmount = '';
   transactionLaxForm.beneficiaryAccountName = '';
   transactionLaxForm.beneficiaryIbanOrAccountNo = '';
   transactionLaxForm.beneficiaryAddress = '';
   transactionLaxForm.beneficiaryBranchCode = '';
   transactionLaxForm.isBeneficiaryTitleFetch = false;
-  isBenefAccFetchDisabled.value=false;
-
-
-
+  isBenefAccFetchDisabled.value = true;
 }
 
 const removeTransactionLax = () => {
+  debugger;
   if (selectedTransactionLax.value !== '') {
-    let selectedRowData = rtgsForm.transactionLaxList.find((item) => item.beneficiaryIbanOrAccountNo === selectedTransactionLax.value );
+    let selectedRowData = rtgsForm.transactionLaxList.find((item) => item.id === selectedTransactionLax.value );
 
 
     const transactionLaxAmount = parseFormattedAmount(selectedRowData.transactionAmount);
@@ -778,16 +787,16 @@ const removeTransactionLax = () => {
     const currentBalance = parseFormattedAmount(rtgsForm.availableBalance) + transactionLaxAmount
     rtgsForm.availableBalance = formatAmount(currentBalance);
 
-    rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.beneficiaryIbanOrAccountNo !== selectedTransactionLax.value)
+    rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.id !== selectedTransactionLax.value)
     selectedTransactionLax.value = '';
-    debugger;
+    transactionLaxForm.id -= 1;
+
     if(rtgsForm.transferTypeCode === '102' && rtgsForm.transactionLaxList.length == 0)
     {
 
       transactionLaxForm.beneficiaryBankName = '';
       transactionLaxForm.beneficiaryBankCode = '';
     }
-
   }
 }
 
@@ -1416,7 +1425,7 @@ const applyAmountFormat = () => {
         <el-row style="margin-bottom: 8px;">
           <el-col :span="17"></el-col>
           <el-col :span="3" style="margin-right: 8px;">
-            <el-button class="generic-button" :disabled="isFormDisabled || rtgsForm.transactionLaxList == 0 || selectedTransactionLax == ''" @click="removeTransactionLax"
+            <el-button class="generic-button" :disabled="isFormDisabled || rtgsForm.transactionLaxList.length == 0 || selectedTransactionLax == ''" @click="removeTransactionLax"
               type="primary">Remove</el-button>
           </el-col>
           <el-col :span="3">
