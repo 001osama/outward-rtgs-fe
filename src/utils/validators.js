@@ -60,7 +60,8 @@ const validateDate = (rule, value, callback) => {
   let today = userInfo?.currentLoggedInDate
     ? dayjs(userInfo.currentLoggedInDate, 'DD/MM/YYYY')
     : dayjs()
-  const sixMonthsAgo = today.subtract(6, 'month')
+  // const sixMonthsAgo = today.subtract(6, 'month')
+  const sixMonthsAgo = today.subtract(180, 'day')
 
   if (parsedDate.isBefore(sixMonthsAgo)) return callback(new Error('Cheque is expired'))
   if (parsedDate.isAfter(today)) return callback(new Error('Date is in the future'))

@@ -50,6 +50,10 @@ const changeStep = (stepNo) => {
 const formRef = ref();
 const isBenefAccFetchDisabled = ref(false);
 
+
+const benefBankSearchBox = ref('');
+const selectedBenefBank = ref({});
+
 const voucherLaxList = ref([
   {
     voucherNo: '386144/2025',
@@ -89,7 +93,7 @@ const purposeOfPaymentList = ref([]);
 const chargesLaxList = ref([]);
 
 const selectedChargesLax = ref();
-const selectedTransactionLax = ref();
+const selectedTransactionLax = ref(null);
 
 
 let previousCustomerNo = '';
@@ -101,7 +105,7 @@ const rules = reactive({
   ],
   chequeNo: [
     { required: true, message:'Field is required', trigger: 'blur'},
-    { min: 6, message: 'Please insert complete cheque value', trigger: 'blur' }
+    { min: 6, message: 'Please insert complete value', trigger: 'blur' }
   ],
   purposeOfPaymentCode: [
     { required: true, message:'Field is required', trigger: 'change'}
@@ -204,17 +208,22 @@ const resetForm = () => {
 //   }
 // };
 
-const handleCurrentChange = (val) => {
+const handleSelectedBenefBankChange = (val) => {
+  debugger;
   console.log(`Handle current change is working`, val);
-  if (val && val.value) {
-    transactionLaxForm.beneficiaryBankName = val.label;
-    transactionLaxForm.beneficiaryBankCode = val.value;
-  }
+  benefBankListTableRef.value?.setCurrentRow(val);
+  if (val && val.value) selectedBenefBank.value = val;
 };
+
+const selectBenefBank = () =>{
+  transactionLaxForm.beneficiaryBankCode = selectedBenefBank.value.val;
+  transactionLaxForm.beneficiaryBankName = selectedBenefBank.value.label;
+  dialogTableVisible.value = false;
+}
 
 const handleTransactionLaxSelectedChange = (val) => {
   console.log(`Handle transaction current change is working`, val);
-  if (val && val.id) {
+  if (val && val.id != null) {
     selectedTransactionLax.value = val.id;
   }
 };
@@ -532,6 +541,10 @@ const getBenefBankList = async () => {
     else {
       console.log(response.data);
     }
+
+    benefBankListTableRef.value?.setCurrentRow(selectedBenefBank.value);
+    debugger;
+    console.log(benefBankListTableRef);
   }
   catch (error) {
     benefBankList.value = [];
@@ -788,7 +801,7 @@ const removeTransactionLax = () => {
     rtgsForm.availableBalance = formatAmount(currentBalance);
 
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.id !== selectedTransactionLax.value)
-    selectedTransactionLax.value = '';
+    selectedTransactionLax.value = null;
     transactionLaxForm.id -= 1;
 
     if(rtgsForm.transferTypeCode === '102' && rtgsForm.transactionLaxList.length == 0)
@@ -1179,7 +1192,7 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="3">
             <el-form-item>
-              <span>A/C No.</span>
+              <span style="margin-left: 8%;">A/C No.</span>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -1197,7 +1210,7 @@ const applyAmountFormat = () => {
               <span>A/C Type</span>
             </el-form-item>
           </el-col>
-          <el-col :span="16">
+          <el-col :span="17">
             <el-form-item>
               <el-input v-model="rtgsForm.accountType" disabled />
             </el-form-item>
@@ -1209,7 +1222,7 @@ const applyAmountFormat = () => {
               <span>IBAN</span>
             </el-form-item>
           </el-col>
-          <el-col :span="16">
+          <el-col :span="17">
             <el-form-item>
               <el-input v-model="rtgsForm.iBAN" disabled />
             </el-form-item>
@@ -1221,7 +1234,7 @@ const applyAmountFormat = () => {
               <span>A/C Name</span>
             </el-form-item>
           </el-col>
-          <el-col :span="16">
+          <el-col :span="17">
             <el-form-item>
               <el-input v-model="rtgsForm.accountName" disabled />
             </el-form-item>
@@ -1233,17 +1246,17 @@ const applyAmountFormat = () => {
               <span>Available Balance</span>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="7">
             <el-form-item>
               <el-input  v-model="rtgsForm.availableBalance" disabled />
             </el-form-item>
           </el-col>
-          <el-col :span="2">
+          <el-col :span="3">
             <el-form-item>
-              <span>Benef Amount</span>
+              <span style="margin-left: 8%;">Benef Amount</span>
             </el-form-item>
           </el-col>
-          <el-col :span="9">
+          <el-col :span="7">
             <el-form-item>
               <el-input disabled  v-model="rtgsForm.beneficiaryAmount" />
             </el-form-item>
@@ -1281,7 +1294,7 @@ const applyAmountFormat = () => {
 
           <el-col :span="3">
             <el-form-item>
-              <span>Cheque Date</span>
+              <span style="margin-left: 8%;">Cheque Date</span>
             </el-form-item>
           </el-col>
           <el-col :span="4">
@@ -1339,7 +1352,8 @@ const applyAmountFormat = () => {
               <el-input
                 v-uppercase
                 @click.right.prevent @copy.prevent @paste.prevent
-                :disabled="isFormDisabled || rtgsForm.accountNo == ''"
+                :disabled="isFormDisabled ||
+                  rtgsForm.accountNo == ''"
                 v-model="transactionLaxForm.beneficiaryIbanOrAccountNo"
                 @keydown="(event) => isAlphaNumeric(event,24)"
                 @change="() => {
@@ -1352,7 +1366,11 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="2">
-            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == '' || isBenefAccFetchDisabled" class="generic-button" @click="getBenefBankDetails"
+            <el-button :disabled="isFormDisabled ||
+              rtgsForm.accountNo == '' ||
+              isBenefAccFetchDisabled || transactionLaxForm.beneficiaryIbanOrAccountNo == ''"
+              class="generic-button"
+              @click="getBenefBankDetails"
               type="primary">Fetch</el-button>
           </el-col>
         </el-row>
@@ -1425,7 +1443,12 @@ const applyAmountFormat = () => {
         <el-row style="margin-bottom: 8px;">
           <el-col :span="17"></el-col>
           <el-col :span="3" style="margin-right: 8px;">
-            <el-button class="generic-button" :disabled="isFormDisabled || rtgsForm.transactionLaxList.length == 0 || selectedTransactionLax == ''" @click="removeTransactionLax"
+            <el-button
+              class="generic-button"
+              :disabled="isFormDisabled ||
+                rtgsForm.transactionLaxList.length == 0 ||
+                selectedTransactionLax === null"
+              @click="removeTransactionLax"
               type="primary">Remove</el-button>
           </el-col>
           <el-col :span="3">
@@ -1511,7 +1534,9 @@ const applyAmountFormat = () => {
               <el-button :disabled="isFormDisabled" class="generic-button" @click="changeCharges" type="primary">Change Charges</el-button>
             </el-col>
             <el-col>
-              <el-button class="generic-button" :disabled="isFormDisabled || chargesLaxList.length == 0"
+              <el-button
+                class="generic-button"
+                :disabled="isFormDisabled || chargesLaxList.length == 0"
                 @click="removeCharges" type="primary">Remove Charges</el-button>
             </el-col>
           </el-row>
@@ -1561,11 +1586,68 @@ const applyAmountFormat = () => {
     <SelectListWindow />
   </template>
 
-  <el-dialog v-model="dialogTableVisible"  :show-close="false" title="Select Beneficiary Bank"
-    :before-close="(doneFn) => {console.log('before-close'), doneFn() }"
+  <el-dialog
+    v-model="dialogTableVisible"
+    :show-close="false"
+    title="Select Beneficiary Bank"
+    fullscreen
     @open="getBenefBankList" width="1000">
-    <el-table :data="benefBankList" :show-header="false" ref="benefBankListTableRef" highlight-current-row style="width: 100%"
-      @current-change="handleCurrentChange">
+    <el-row style="margin-bottom: 1%;">
+      <el-col :span="21">
+        <el-form-item>
+          <el-input
+            v-model="benefBankSearchBox"
+            @keydown="(event) => isAlphaNumeric(event,150,true)"
+            v-uppercase
+            @click.right.prevent @copy.prevent @paste.prevent
+          />
+        </el-form-item>
+      </el-col>
+      <el-col :span="1"></el-col>
+      <el-col :span="2">
+        <el-button
+          class="generic-button"
+          @click="getBenefBankList"
+          type="primary">
+          Search
+        </el-button>
+      </el-col>
+    </el-row>
+    <el-table
+      :data="benefBankList"
+      :show-header="false"
+      ref="benefBankListTableRef"
+      highlight-current-row
+      style="width: 100%"
+      @current-change="handleSelectedBenefBankChange">
+      <el-table-column property="label" />
+    </el-table>
+    <el-row style="margin-top: 20px;">
+      <el-col :span="19"></el-col>
+      <el-col :span="2">
+        <el-button @click="selectBenefBank" class="generic-button" type="primary">Select</el-button>
+      </el-col>
+      <el-col :span="1"></el-col>
+      <el-col :span="2">
+        <el-button @click="dialogTableVisible = false" class="generic-button" type="primary">Cancel</el-button>
+      </el-col>
+    </el-row>
+  </el-dialog>
+
+
+  <!-- <el-dialog
+    v-model="dialogTableVisible"
+    :show-close="false"
+    title="Select Beneficiary Bank"
+    @open="getBenefBankList" width="1000">
+    <el-table
+      :data="benefBankList"
+      :show-header="false"
+      ref="benefBankListTableRef"
+      highlight-current-row
+      style="width: 100%"
+      :fit="true"
+      @current-change="handleSelectedBenefBankChange">
       <el-table-column property="label" />
     </el-table>
     <el-row style="margin-top: 20px;">
@@ -1578,7 +1660,9 @@ const applyAmountFormat = () => {
         <el-button @click="dialogTableVisible = false" class="generic-button" type="primary">Cancel</el-button>
       </el-col>
     </el-row>
-  </el-dialog>
+  </el-dialog> -->
+
+
 
   <el-dialog
     v-model="isVoucherDialogVisible"
@@ -1588,7 +1672,10 @@ const applyAmountFormat = () => {
     top="8vh"
     :close-on-click-modal="false">
     <el-table
-      :data="voucherLaxList" ref="VoucherTableRef" style="width: 100%" height="350"
+      :data="voucherLaxList"
+      ref="VoucherTableRef"
+      style="width: 100%"
+      height="350"
       max-height="400">
       <el-table-column property="voucherNo" label="Vouch No." width="120" />
       <el-table-column property="referenceNo" label="Ref No" width="100" />

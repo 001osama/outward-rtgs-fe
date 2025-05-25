@@ -29,8 +29,6 @@ const isNumber = (event) => {
   }
 }
 
-
-
 const dateMasking = (event) => {
   const allowedKeys = [
     'Backspace',
@@ -114,7 +112,7 @@ const downloadBase64ReportPdf = (base64Data, fileName) => {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${ fileName ? fileName : 'OutwardRtgsReport' }.pdf`
+    a.download = `${fileName ? fileName : 'OutwardRtgsReport'}.pdf`
     document.body.appendChild(a)
     a.click()
     a.remove()
@@ -273,7 +271,7 @@ const handleMultiLineTextboxPaste = (event) => {
   }
 }
 
-const isAlphaNumeric = (event, maxLength) => {
+const isAlphaNumeric = (event, maxLength, isSpaceAllowed = false) => {
   const allowedKeys = [
     'Backspace',
     'Tab',
@@ -287,10 +285,13 @@ const isAlphaNumeric = (event, maxLength) => {
     'End',
     'Escape',
   ]
+
   console.log('event working')
+
   if (event.ctrlKey || event.metaKey || allowedKeys.includes(event.key)) return
 
-  if (event.key.length === 1 && !/^[a-zA-Z0-9]$/.test(event.key)) {
+  const isValidChar = /^[a-zA-Z0-9]$/.test(event.key) || (isSpaceAllowed && event.key === ' ')
+  if (event.key.length === 1 && !isValidChar) {
     event.preventDefault()
     return
   }

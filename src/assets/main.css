@@ -344,10 +344,11 @@ h4 {
 .el-dialog {
   border-radius: 0px !important;
   padding: 0px !important;
+  background: var(--bg-ternary) !important;
 }
 
 .el-dialog__body {
-  background: var(--bg-ternary);
+  background: transparent !important;
   padding: 15px;
 }
 
