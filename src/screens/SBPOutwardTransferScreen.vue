@@ -541,7 +541,6 @@ const getBenefBankList = async () => {
     else {
       console.log(response.data);
     }
-
     debugger;
     benefBankListTableRef.value?.setCurrentRow(selectedBenefBank.value);
     console.log(benefBankListTableRef);
@@ -1514,7 +1513,7 @@ const applyAmountFormat = () => {
           </el-col>
         </el-row>
       </fieldset>
-      <h4>Charges:</h4>
+      <h4 style="padding: 0.8% 0.2%;">Charges:</h4>
       <el-row>
         <el-col :span="20">
           <el-table :data="chargesLaxList" highlight-current-row @current-change="handleChargesLaxSelectedChange"
