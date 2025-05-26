@@ -216,7 +216,7 @@ const handleSelectedBenefBankChange = (val) => {
 };
 
 const selectBenefBank = () =>{
-  transactionLaxForm.beneficiaryBankCode = selectedBenefBank.value.val;
+  transactionLaxForm.beneficiaryBankCode = selectedBenefBank.value.value;
   transactionLaxForm.beneficiaryBankName = selectedBenefBank.value.label;
   dialogTableVisible.value = false;
 }
@@ -529,7 +529,7 @@ const getAccountDetails = async () => {
 
 const getBenefBankList = async () => {
   try {
-    const response = await axios.post(`/start`, { transition: 'FETCHBENEFBANKLIST', });
+    const response = await axios.post(`/start`, { transition: 'FETCHBENEFBANKLIST', data:{ searchTerm: benefBankSearchBox.value }});
 
     if (response.status == 200) {
       const { data } = response;
@@ -542,8 +542,8 @@ const getBenefBankList = async () => {
       console.log(response.data);
     }
 
-    benefBankListTableRef.value?.setCurrentRow(selectedBenefBank.value);
     debugger;
+    benefBankListTableRef.value?.setCurrentRow(selectedBenefBank.value);
     console.log(benefBankListTableRef);
   }
   catch (error) {
@@ -553,7 +553,7 @@ const getBenefBankList = async () => {
 }
 
 const getBenefBankDetails = async () => {
-  if (!transactionLaxForm.beneficiaryBankCode.length > 0) {
+  if (!transactionLaxForm?.beneficiaryBankCode?.length > 0) {
     invokeDefaultDialog('Error', 'Please Select Beneficiary Bank first');
     return
   }
@@ -782,7 +782,7 @@ const insertTransactionLax = () => {
   transactionLaxForm.beneficiaryIbanOrAccountNo = '';
   transactionLaxForm.beneficiaryAddress = '';
   transactionLaxForm.beneficiaryBranchCode = '';
-  transactionLaxForm.isBeneficiaryTitleFetch = false;
+  transactionLaxForm.isBeneficiaryTitleFetch = true;
   isBenefAccFetchDisabled.value = true;
 }
 
@@ -1588,44 +1588,49 @@ const applyAmountFormat = () => {
 
   <el-dialog
     v-model="dialogTableVisible"
+    :before-close="(doneFn) => { benefBankSearchBox.value = '', doneFn() }"
     :show-close="false"
     title="Select Beneficiary Bank"
     fullscreen
+    @closed="()=>{ benefBankSearchBox = ''}"
     @open="getBenefBankList" width="1000">
-    <el-row style="margin-bottom: 1%;">
-      <el-col :span="21">
-        <el-form-item>
-          <el-input
-            v-model="benefBankSearchBox"
-            @keydown="(event) => isAlphaNumeric(event,150,true)"
-            v-uppercase
-            @click.right.prevent @copy.prevent @paste.prevent
-          />
-        </el-form-item>
-      </el-col>
-      <el-col :span="1"></el-col>
-      <el-col :span="2">
-        <el-button
-          class="generic-button"
-          @click="getBenefBankList"
-          type="primary">
-          Search
-        </el-button>
-      </el-col>
-    </el-row>
+    <el-form @submit.prevent="getBenefBankList">
+      <el-row style="margin-bottom: 1%;">
+        <el-col :span="21">
+          <el-form-item>
+            <el-input
+              v-model="benefBankSearchBox"
+              @keydown="(event) => isAlphaNumeric(event,150,true)"
+              v-uppercase
+              @click.right.prevent @copy.prevent @paste.prevent
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="1"></el-col>
+        <el-col :span="2">
+          <el-button
+            class="generic-button"
+            @click="getBenefBankList"
+            type="primary">
+            Search
+          </el-button>
+        </el-col>
+      </el-row>
+    </el-form>
     <el-table
       :data="benefBankList"
       :show-header="false"
       ref="benefBankListTableRef"
       highlight-current-row
       style="width: 100%"
+      height="500"
       @current-change="handleSelectedBenefBankChange">
-      <el-table-column property="label" />
+      <el-table-column property="label"/>
     </el-table>
     <el-row style="margin-top: 20px;">
       <el-col :span="19"></el-col>
       <el-col :span="2">
-        <el-button @click="selectBenefBank" class="generic-button" type="primary">Select</el-button>
+        <el-button @click="selectBenefBank" :disabled="!selectedBenefBank" class="generic-button" type="primary">Select</el-button>
       </el-col>
       <el-col :span="1"></el-col>
       <el-col :span="2">
