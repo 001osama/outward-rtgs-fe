@@ -174,7 +174,8 @@ const downloadReport = async (formRef, reportFormat) => {
         if (data.success) {
           console.log("Report is being fetch successfully", data.data);
 
-          reportFormat === 'pdf' ? downloadBase64ReportPdf(data.data) : downloadBase64ReportExcel(data.data) ;
+          reportFormat === 'pdf' ? downloadBase64ReportPdf(data.data) : downloadBase64ReportExcel(data.data);
+          invokeDefaultDialog('Message', 'File is downloaded successfully. </br> Please check path <b>Downloads.</b>');
         }
         else
           invokeDefaultDialog('Error', data.message);
@@ -352,7 +353,7 @@ const modifyAccountNoValidation = () => {
             </el-col>
             <el-col :span="3">
               <el-form-item>
-                <span>A/C No.</span>
+                <span style="margin-left: 8%;">A/C No.</span>
               </el-form-item>
             </el-col>
             <el-col :span="12">

@@ -30,7 +30,7 @@ const handleCloseClick = async () => {
 <template>
     <div class="header">
         <div class="text-bold-1" style="min-width: 50%;">{{currentComponentTitle}}</div>
-        <div class="text-bold-1">ALHABIB VERSION 2.45.1</div>
+        <div class="text-bold-1">ALHABIB VERSION 2.49.3</div>
         <!-- <div><button @click="handleCloseClick" class="close-button">x</button></div> -->
     </div>
 </template>

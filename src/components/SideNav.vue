@@ -30,10 +30,19 @@ const isActive = computed(()=>{
   </el-aside>
 </template>
 <style scoped>
+
 .side-nav
 {
-    width: 18%;
+  width: 18%;
 }
+
+@media only screen and (max-width:1110px) {
+  .side-nav
+  {
+    width: 20%;
+  }
+}
+
 
 .menu-item-container
 {

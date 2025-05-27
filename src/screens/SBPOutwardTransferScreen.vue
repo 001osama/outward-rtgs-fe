@@ -24,7 +24,7 @@ import {
 from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
-const step = ref(1);
+const step = ref(5);
 const currentActivityCode = ref(100);
 const router = useRouter();
 const $route = useRoute();
@@ -38,6 +38,7 @@ const stepHeaders = {
     2: 'Exceptions',
     3: 'Authorization',
     4: 'Message',
+    5: 'List of Banks'
   };
 
 const changeStep = (stepNo) => {
@@ -1100,12 +1101,12 @@ const applyAmountFormat = () => {
       <fieldset>
         <fieldset>
           <el-row>
-            <el-col :span="3">
+            <el-col :lg="3" :md="5">
               <el-form-item>
                 <span>Branch</span>
               </el-form-item>
             </el-col>
-            <el-col :span="16">
+            <el-col :lg="16" :md="17">
               <el-form-item>
                 <el-select disabled v-model="rtgsForm.branchCode" placeholder="Select Branch">
                   <el-option v-for="item in branchList" :key="item.value" :label="item.label" :value="item.value" />
@@ -1116,12 +1117,12 @@ const applyAmountFormat = () => {
         </fieldset>
         <fieldset>
           <el-row>
-            <el-col :span="3">
+            <el-col :lg="3" :md="5">
               <el-form-item>
                 <span>Currency</span>
               </el-form-item>
             </el-col>
-            <el-col :span="16">
+            <el-col :lg="16" :md="17">
               <el-form-item>
                 <el-select disabled v-model="rtgsForm.currencyCode" placeholder="Select Currency">
                   <el-option v-for="item in currencyList" :key="item.value" :label="item.label" :value="item.value" />
@@ -1132,12 +1133,12 @@ const applyAmountFormat = () => {
         </fieldset>
         <fieldset>
           <el-row>
-            <el-col :span="3">
+            <el-col :lg="3" :md="5">
               <el-form-item>
                 <span>SBP Tran. Type</span>
               </el-form-item>
             </el-col>
-            <el-col :span="16">
+            <el-col :lg="16" :md="17">
               <el-form-item>
                 <el-select :disabled="isFormDisabled" @change="resetForm" v-model="rtgsForm.sbpTranTypeCode"
                   placeholder="Select SBP Tran Type">
@@ -1581,6 +1582,7 @@ const applyAmountFormat = () => {
       :transactionNoList="transactionNoList"
       :voucherNo="voucherLaxList[0].voucherNo" />
   </template>
+
   <template v-if="step === 5">
     <SelectListWindow />
   </template>
