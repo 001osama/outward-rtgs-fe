@@ -396,7 +396,7 @@ const modifyAccountNoValidation = () => {
             </el-col>
             <el-col :span="6"></el-col>
             <el-col :span="4">
-              <el-button disabled class="generic-button" type="primary">Back</el-button>
+              <!-- <el-button disabled class="generic-button" type="primary">Back</el-button> -->
             </el-col>
             <el-col :span="1"></el-col>
             <el-col :span="4">

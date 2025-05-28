@@ -24,7 +24,7 @@ import {
 from '@/utils/helpers';
 
 const headerStore = useHeaderStore();
-const step = ref(5);
+const step = ref(1);
 const currentActivityCode = ref(100);
 const router = useRouter();
 const $route = useRoute();
@@ -1088,6 +1088,13 @@ const applyAmountFormat = () => {
   transactionLaxForm.transactionAmount = formatAmount(transactionLaxForm.transactionAmount);
 }
 
+
+const setSelectedBenefBankValue = (selectedBank) => {
+  console.log("we are getting the value", selectedBank);
+  changeStep(1);
+  transactionLaxForm.beneficiaryBankName = selectedBank.label;
+  transactionLaxForm.beneficiaryBankCode = selectedBank.value;
+}
 </script>
 
 <template>
@@ -1337,7 +1344,12 @@ const applyAmountFormat = () => {
           </el-col>
           <el-col :span="1"></el-col>
           <el-col :span="2">
-            <el-button :disabled="isFormDisabled || rtgsForm.accountNo == '' || rtgsForm.transactionLaxList.length > 0" class="generic-button" @click="dialogTableVisible = true"
+            <el-button
+              :disabled="isFormDisabled ||
+              rtgsForm.accountNo == '' ||
+              rtgsForm.transactionLaxList.length > 0"
+              class="generic-button"
+              @click="changeStep(5)"
               type="primary">List</el-button>
           </el-col>
         </el-row>
@@ -1584,7 +1596,11 @@ const applyAmountFormat = () => {
   </template>
 
   <template v-if="step === 5">
-    <SelectListWindow />
+    <SelectListWindow
+      :selectedValue=transactionLaxForm.beneficiaryBankCode
+      @valueSelected="setSelectedBenefBankValue"
+      @cancelled="changeStep(1)"
+      />
   </template>
 
   <el-dialog
