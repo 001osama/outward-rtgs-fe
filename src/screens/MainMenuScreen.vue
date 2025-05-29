@@ -125,12 +125,12 @@ const remittance = () =>{
     <el-col :span="3">
       <button class="tile-button bottom" disabled>Change Password</button>
     </el-col>
-    <el-col :span="13"></el-col>
+    <el-col :md="12" :lg="13"></el-col>
     <el-col :span="2">
       <button class="tile-button bottom" disabled>Help</button>
     </el-col>
     <el-col :span="1"></el-col>
-    <el-col :span="2">
+    <el-col :md="3" :lg="2">
       <button @click="signOff" class="tile-button bottom">Sign Off</button>
     </el-col>
   </el-row>

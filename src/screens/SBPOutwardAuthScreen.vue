@@ -98,9 +98,9 @@ const OpenVoucher = () => {
 
     <el-row style="margin-top: 20px;">
       <el-col :span="2"></el-col>
-      <el-col :span="2"><el-button class="generic-button" type="primary" @click="OpenVoucher">OK</el-button></el-col>
+      <el-col :md="3" :lg="2"><el-button class="generic-button" type="primary" @click="OpenVoucher">OK</el-button></el-col>
       <el-col :span="12"></el-col>
-      <el-col :span="2"><el-button class="generic-button" type="primary" @click="ExitBtnClicked">Exit</el-button></el-col>
+      <el-col :md="3" :lg="2"><el-button class="generic-button" type="primary" @click="ExitBtnClicked">Exit</el-button></el-col>
     </el-row>
 
     <!-- <div style="margin-top: 20px">

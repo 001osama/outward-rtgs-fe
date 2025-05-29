@@ -1092,8 +1092,13 @@ const applyAmountFormat = () => {
 const setSelectedBenefBankValue = (selectedBank) => {
   console.log("we are getting the value", selectedBank);
   changeStep(1);
-  transactionLaxForm.beneficiaryBankName = selectedBank.label;
-  transactionLaxForm.beneficiaryBankCode = selectedBank.value;
+  if(transactionLaxForm.beneficiaryBankCode != selectedBank.value)
+  {
+    transactionLaxForm.beneficiaryBankName = selectedBank.label;
+    transactionLaxForm.beneficiaryBankCode = selectedBank.value;
+    // transactionLaxForm.beneficiaryIbanOrAccountNo = '';
+    isBenefAccFetchDisabled.value=false;
+  }
 }
 </script>
 
@@ -1108,7 +1113,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
       <fieldset>
         <fieldset>
           <el-row>
-            <el-col :lg="3" :md="5">
+            <el-col :lg="3" :md="4">
               <el-form-item>
                 <span>Branch</span>
               </el-form-item>
@@ -1124,7 +1129,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
         </fieldset>
         <fieldset>
           <el-row>
-            <el-col :lg="3" :md="5">
+            <el-col :lg="3" :md="4">
               <el-form-item>
                 <span>Currency</span>
               </el-form-item>
@@ -1140,7 +1145,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
         </fieldset>
         <fieldset>
           <el-row>
-            <el-col :lg="3" :md="5">
+            <el-col :lg="3" :md="4">
               <el-form-item>
                 <span>SBP Tran. Type</span>
               </el-form-item>
@@ -1156,12 +1161,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="5">
+            <el-col :lg="3" :md="4">
               <el-form-item>
                 <span>Transfer Type</span>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+            <el-col :md="16" :lg="12">
               <el-form-item>
                 <el-radio-group :disabled="isFormDisabled" @change="resetForm()" v-model="rtgsForm.transferTypeCode">
                   <el-radio :disabled="disabilityController.isMultipleBeneficiaryDisabled" value="102">102(Multiple
@@ -1183,12 +1188,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
       </fieldset>
       <fieldset>
         <el-row>
-          <el-col :span="4">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span>Customer No.</span>
             </el-form-item>
           </el-col>
-          <el-col :span="2">
+          <el-col :md="3" :lg="2">
             <el-form-item>
               <el-input
                 v-model="rtgsForm.customerNo"
@@ -1197,12 +1202,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
                 @blur="getCustAccounts" @keydown="isNumber" maxlength="6" />
             </el-form-item>
           </el-col>
-          <el-col :span="3">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span style="margin-left: 8%;">A/C No.</span>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :md="13" :lg="12">
             <el-form-item>
               <el-select :disabled="isFormDisabled" v-model="rtgsForm.accountNo" @change="getAccountDetails"
                 placeholder="Select A/C">
@@ -1212,58 +1217,58 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="4">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span>A/C Type</span>
             </el-form-item>
           </el-col>
-          <el-col :span="17">
+          <el-col :md="20" :lg="17">
             <el-form-item>
               <el-input v-model="rtgsForm.accountType" disabled />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="4">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span>IBAN</span>
             </el-form-item>
           </el-col>
-          <el-col :span="17">
+          <el-col :md="20" :lg="17">
             <el-form-item>
               <el-input v-model="rtgsForm.iBAN" disabled />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="4">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span>A/C Name</span>
             </el-form-item>
           </el-col>
-          <el-col :span="17">
+          <el-col :md="20" :lg="17">
             <el-form-item>
               <el-input v-model="rtgsForm.accountName" disabled />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="4">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span>Available Balance</span>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :md="8" :lg="7">
             <el-form-item>
               <el-input  v-model="rtgsForm.availableBalance" disabled />
             </el-form-item>
           </el-col>
-          <el-col :span="3">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span style="margin-left: 8%;">Benef Amount</span>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :md="8" :lg="7">
             <el-form-item>
               <el-input disabled  v-model="rtgsForm.beneficiaryAmount" />
             </el-form-item>
@@ -1272,12 +1277,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
       </fieldset>
       <fieldset>
         <el-row>
-          <el-col :span="3">
+          <el-col :lg="3" :md="4">
             <el-form-item>
               <span>Payment Mode</span>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
+          <el-col :md="2" :lg="4">
             <el-form-item>
               <el-radio-group :disabled="isFormDisabled" v-model="rtgsForm.paymentMode">
                 <el-radio value="cheque">Cheque</el-radio>
@@ -1285,26 +1290,33 @@ const setSelectedBenefBankValue = (selectedBank) => {
             </el-form-item>
           </el-col>
 
-          <el-col :span="1"></el-col>
+          <el-col :lg="1" :md="2"></el-col>
 
-          <el-col :span="2">
+          <el-col :md="3" :lg="3">
             <el-form-item>
               <span>Cheque#</span>
             </el-form-item>
           </el-col>
           <el-col :span="4">
             <el-form-item prop="chequeNo">
-              <el-input @click.right.prevent @copy.prevent @paste.prevent v-model="rtgsForm.chequeNo" @blur="validateChequeStatus" @keydown="isNumber" maxlength="6"
+              <el-input
+                @click.right.prevent
+                @copy.prevent
+                @paste.prevent
+                v-model="rtgsForm.chequeNo"
+                @blur="validateChequeStatus"
+                @keydown="isNumber"
+                maxlength="6"
                 :disabled="isFormDisabled || rtgsForm.isCustAcc || rtgsForm.accountNo == ''" />
             </el-form-item>
           </el-col>
 
-          <el-col :span="3">
+          <el-col :md="4" :lg="3">
             <el-form-item>
               <span style="margin-left: 8%;">Cheque Date</span>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
+          <el-col :md="5" :lg="4">
             <el-form-item prop="chequeDate">
               <el-input
                 @click.right.prevent @copy.prevent @paste.prevent
@@ -1319,12 +1331,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
       </fieldset>
       <fieldset>
         <el-row>
-          <el-col :span="5">
+          <el-col :md="4" :lg="5">
             <el-form-item>
               <span>Tran. Amount</span>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :md="12" :lg="7">
             <el-form-item>
               <el-input @click.right.prevent @copy.prevent @paste.prevent :disabled="isFormDisabled || rtgsForm.accountNo == ''" @click="removeAmountFormat" @blur="applyAmountFormat"  v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
                 maxlength="15" />
@@ -1332,7 +1344,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="5">
+          <el-col :md="4" :lg="5">
             <el-form-item>
               <span>Benef. Bank Name</span>
             </el-form-item>
@@ -1343,7 +1355,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
-          <el-col :span="2">
+          <el-col :md="3" :lg="2">
             <el-button
               :disabled="isFormDisabled ||
               rtgsForm.accountNo == '' ||
@@ -1354,7 +1366,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="5">
+          <el-col :md="4" :lg="5">
             <el-form-item>
               <span>Benef IBAN/AC No.</span>
             </el-form-item>
@@ -1377,7 +1389,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
-          <el-col :span="2">
+          <el-col :md="3" :lg="2">
             <el-button :disabled="isFormDisabled ||
               rtgsForm.accountNo == '' ||
               isBenefAccFetchDisabled || transactionLaxForm.beneficiaryIbanOrAccountNo == ''"
@@ -1387,7 +1399,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="5">
+          <el-col :md="4" :lg="5">
             <el-form-item>
               <span>Benef A/C Name</span>
             </el-form-item>
@@ -1405,14 +1417,14 @@ const setSelectedBenefBankValue = (selectedBank) => {
             </el-form-item>
           </el-col>
           <el-col :span="1"></el-col>
-          <el-col :span="6">
+          <el-col :lg="6" :md="7">
             <el-row>
-              <el-col :span="12">
+              <el-col :md="14" :lg="12">
                 <el-form-item>
                   <span>Benef. Branch Code</span>
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
+              <el-col :md="10" :lg="12">
                 <el-form-item>
                   <el-input @click.right.prevent @copy.prevent @paste.prevent @keydown="isNumber" @blur="insertPadding" v-model="transactionLaxForm.beneficiaryBranchCode" :disabled="rtgsForm.accountNo == ''" maxlength="4" />
                 </el-form-item>
@@ -1421,7 +1433,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="5">
+          <el-col :md="4" :lg="5">
             <el-form-item>
               <span class="optional-field">Beneficiary Address</span>
             </el-form-item>
@@ -1443,7 +1455,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
       </fieldset>
       <div>
         <el-table :data="rtgsForm.transactionLaxList" @current-change="handleTransactionLaxSelectedChange"
-          highlight-current-row style="width: 100%" height="120" max-height="250">
+          highlight-current-row style="width: 100%" max-height="300">
           <el-table-column property="transactionAmount" label="Transaction Amount" width="200" />
           <el-table-column property="beneficiaryIbanOrAccountNo" label="Beneficiary IBAN/AC #" width="180" />
           <el-table-column property="beneficiaryAccountName" label="Account Name" />
@@ -1560,7 +1572,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
             <el-button class="generic-button" @click="handleSubmitClick(formRef)" type="primary">{{ submitButtonText }}</el-button>
           </el-col>
           <el-col :span="1"></el-col>
-          <el-col :span="3">
+          <el-col :md="4" :lg="3">
             <el-button :disabled="!rtgsForm.customerNo" @click="showSignature" class="generic-button" type="primary">View Signature</el-button>
           </el-col>
           <el-col :span="13"></el-col>
@@ -1690,7 +1702,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
     v-model="isVoucherDialogVisible"
     :show-close="false"
     title="Voucher"
-    width="1180"
+    width="90%"
     top="8vh"
     :close-on-click-modal="false">
     <el-table
@@ -1721,7 +1733,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
   </el-dialog>
 
   <el-dialog v-model="isSignatureDialogVisible" :show-close="false" title="Customer Signature"
-    :before-close="(doneFn) => {console.log('before-close'), doneFn() }" width="1000">
+    :before-close="(doneFn) => {console.log('before-close'), doneFn() }" width="90%">
     <el-row>
       <el-col :span="6"></el-col>
       <el-col :span="12">

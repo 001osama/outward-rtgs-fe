@@ -51,7 +51,7 @@ const mainMenuBtnClicked = () => {
   </div>
 </el-row>
 <el-row>
-  <el-col :span="5">
+  <el-col :md="6" :lg="5">
     <h4>BANKERS CHEQUE</h4>
     <div class="thin-button-container">
       <button class="tile-button thin" disabled>Request</button>
@@ -63,8 +63,8 @@ const mainMenuBtnClicked = () => {
       <button class="tile-button thin" disabled>Inquiry</button>
     </div>
   </el-col>
-  <el-col :span="3"></el-col>
-  <el-col :span="5">
+  <el-col :md="2" :lg="3"></el-col>
+  <el-col :md="6" :lg="5">
     <h4>PAY ORDER</h4>
     <div class="thin-button-container">
       <button class="tile-button thin" disabled>Issue</button>
@@ -75,8 +75,8 @@ const mainMenuBtnClicked = () => {
       <button class="tile-button thin" disabled>Revalidate</button>
     </div>
   </el-col>
-  <el-col :span="3"></el-col>
-  <el-col :span="5">
+  <el-col :md="2" :lg="3"></el-col>
+  <el-col :md="6" :lg="5">
     <h4>DEMAND DRAFT</h4>
     <div class="thin-button-container">
       <button class="tile-button thin" disabled>Issue</button>
@@ -87,11 +87,11 @@ const mainMenuBtnClicked = () => {
       <button class="tile-button thin" disabled>Renew</button>
     </div>
   </el-col>
-  <el-col :span="2"></el-col>
+  <el-col :md="2" :lg="3"></el-col>
 </el-row>
 
 <el-row>
-  <el-col :span="3">
+  <el-col :md="4" :lg="3">
     <div style="
     display: flex;
     flex-direction: column;
@@ -121,9 +121,9 @@ const mainMenuBtnClicked = () => {
     </div>
     <button class="tile-button thin" disabled>General Inquiry</button>
     </div>
-    </el-col>
-  <el-col :span="5"></el-col>
-  <el-col :span="5">
+  </el-col>
+  <el-col :md="4" :lg="5"></el-col>
+  <el-col :md="6" :lg="5">
     <h4>CALL DEPOSIT RECEIPT</h4>
     <div class="thin-button-container">
       <button class="tile-button thin" disabled>Issue</button>
@@ -134,8 +134,8 @@ const mainMenuBtnClicked = () => {
       <button class="tile-button thin" disabled>Revalidate</button>
     </div>
   </el-col>
-  <el-col :span="3"></el-col>
-  <el-col :span="5">
+  <el-col :md="2" :lg="3"></el-col>
+  <el-col :md="6" :lg="5">
     <h4>INQUIRY</h4>
     <div class="thin-button-container">
       <button class="tile-button thin" disabled>Inflight</button>
@@ -144,7 +144,7 @@ const mainMenuBtnClicked = () => {
       <button class="tile-button thin" disabled>Paid</button>
     </div>
   </el-col>
-  <el-col :span="2"></el-col>
+  <el-col :md="2" :lg="2"></el-col>
 </el-row>
 <div style="margin-top: 15px;">
   <el-row>
@@ -187,9 +187,9 @@ const mainMenuBtnClicked = () => {
     <!-- </el-col> -->
     <el-col :span="1"></el-col>
     <el-col :span="2">
-      <button class="tile-button bottom" disabled>Batch</button>
+      <!-- <button class="tile-button bottom" disabled>Batch</button> -->
     </el-col>
-    <el-col :span="3"></el-col>
+    <el-col :md="2" :lg="3"></el-col>
     <el-col :span="3">
       <button @click="mainMenuBtnClicked" class="tile-button bottom">Main Menu</button>
     </el-col>
@@ -198,7 +198,7 @@ const mainMenuBtnClicked = () => {
       <button class="tile-button bottom" disabled>Help</button>
     </el-col>
     <el-col :span="1"></el-col>
-    <el-col :span="2">
+    <el-col :md="3" :lg="2">
       <button @click="signOff" class="tile-button bottom">Sign Off</button>
     </el-col>
   </el-row>

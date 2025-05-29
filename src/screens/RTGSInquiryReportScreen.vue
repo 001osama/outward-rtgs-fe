@@ -259,8 +259,8 @@ const modifyAccountNoValidation = () => {
 
 <template>
   <el-row>
-    <el-col :span="4"></el-col>
-    <el-col :span="16">
+    <el-col :md="2" :lg="4"></el-col>
+    <el-col :md="20" :lg="16">
       <el-form ref="formRef" :rules="rules" :label-position="formAlign" :model="reportForm">
         <fieldset>
           <el-row>
@@ -406,7 +406,7 @@ const modifyAccountNoValidation = () => {
         </fieldset>
       </el-form>
     </el-col>
-    <el-col :span="4"></el-col>
+    <el-col :md="2" :lg="4"></el-col>
   </el-row>
 
 
