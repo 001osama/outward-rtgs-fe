@@ -1094,7 +1094,8 @@ const setSelectedBenefBankValue = (selectedBank) => {
   changeStep(1);
   if(transactionLaxForm.beneficiaryBankCode != selectedBank.value)
   {
-    transactionLaxForm.beneficiaryBankName = selectedBank.label;
+    let wordsArray = selectedBank.label.split('-');
+    transactionLaxForm.beneficiaryBankName = `${wordsArray[0]}-${wordsArray[1]}`;
     transactionLaxForm.beneficiaryBankCode = selectedBank.value;
     // transactionLaxForm.beneficiaryIbanOrAccountNo = '';
     isBenefAccFetchDisabled.value=false;
@@ -1260,7 +1261,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
           <el-col :md="8" :lg="7">
             <el-form-item>
-              <el-input  v-model="rtgsForm.availableBalance" disabled />
+              <el-input dir="rtl" v-model="rtgsForm.availableBalance" disabled />
             </el-form-item>
           </el-col>
           <el-col :md="4" :lg="3">
@@ -1270,7 +1271,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
           <el-col :md="8" :lg="7">
             <el-form-item>
-              <el-input disabled  v-model="rtgsForm.beneficiaryAmount" />
+              <el-input disabled dir="rtl" v-model="rtgsForm.beneficiaryAmount" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -1292,12 +1293,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
 
           <el-col :lg="1" :md="2"></el-col>
 
-          <el-col :md="3" :lg="3">
+          <el-col :md="3" :lg="2">
             <el-form-item>
               <span>Cheque#</span>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
+          <el-col :md="4" :lg="3">
             <el-form-item prop="chequeNo">
               <el-input
                 @click.right.prevent
@@ -1331,25 +1332,35 @@ const setSelectedBenefBankValue = (selectedBank) => {
       </fieldset>
       <fieldset>
         <el-row>
-          <el-col :md="4" :lg="5">
+          <el-col :md="4" :lg="4">
             <el-form-item>
               <span>Tran. Amount</span>
             </el-form-item>
           </el-col>
-          <el-col :md="12" :lg="7">
+          <el-col :md="12" :lg="8">
             <el-form-item>
-              <el-input @click.right.prevent @copy.prevent @paste.prevent :disabled="isFormDisabled || rtgsForm.accountNo == ''" @click="removeAmountFormat" @blur="applyAmountFormat"  v-model="transactionLaxForm.transactionAmount" @keydown="isNumber"
+              <el-input
+                dir="rtl"
+                @click.right.prevent
+                @copy.prevent
+                @paste.prevent
+                :disabled="isFormDisabled ||
+                rtgsForm.accountNo == ''"
+                @click="removeAmountFormat"
+                @blur="applyAmountFormat"
+                v-model="transactionLaxForm.transactionAmount"
+                @keydown="isNumber"
                 maxlength="15" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-          <el-col :md="4" :lg="5">
+          <el-col :md="4" :lg="4">
             <el-form-item>
               <span>Benef. Bank Name</span>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :md="12" :lg="13">
             <el-form-item>
               <el-input @click.right.prevent @copy.prevent @paste.prevent v-model="transactionLaxForm.beneficiaryBankName" disabled />
             </el-form-item>
@@ -1366,12 +1377,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :md="4" :lg="5">
+          <el-col :md="4" :lg="4">
             <el-form-item>
               <span>Benef IBAN/AC No.</span>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :md="12" :lg="13">
             <el-form-item>
               <el-input
                 v-uppercase
@@ -1399,12 +1410,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :md="4" :lg="5">
+          <el-col :md="4" :lg="4">
             <el-form-item>
               <span>Benef A/C Name</span>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :md="12" :lg="13">
             <el-form-item>
               <el-input
                 @click.right.prevent
@@ -1433,12 +1444,12 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
         </el-row>
         <el-row>
-          <el-col :md="4" :lg="5">
+          <el-col :md="4" :lg="4">
             <el-form-item>
               <span class="optional-field">Beneficiary Address</span>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :md="12" :lg="13">
             <el-form-item>
               <el-input
                 @click.right.prevent @copy.prevent @paste.prevent
@@ -1702,7 +1713,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
     v-model="isVoucherDialogVisible"
     :show-close="false"
     title="Voucher"
-    width="90%"
+    width="1180"
     top="8vh"
     :close-on-click-modal="false">
     <el-table

@@ -90,7 +90,7 @@ const handleSubmit = async (formEl) => {
         label-width="auto"
         :model="voucherInfo">
         <el-row style="margin-bottom: 1%;">
-          <el-col :span="8">
+          <el-col :md="10" :lg="8">
             <el-row>
               <el-col :span="8">
                 <el-form-item>
@@ -105,7 +105,7 @@ const handleSubmit = async (formEl) => {
             </el-row>
           </el-col>
           <div style="display: flex; justify-content: center; width: 4%;">/</div>
-          <el-col :span="8">
+          <el-col :md="10" :lg="8">
             <el-row>
               <el-col :span="0">
                 <el-form-item>
