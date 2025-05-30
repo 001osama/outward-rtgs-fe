@@ -338,7 +338,15 @@ onMounted(async () => {
 const getOutwardRtgs = async (voucherNo, voucherYear) => {
   console.log(`route mode is ${$route.query.mode}`);
   console.log(`route voucherNo is ${$route.query.voucherNo}`);
-  const response = await axios.post(`/start`, { transition: 'FETCHOUTWARDRTGS', data: { voucherNo: voucherNo, voucherYear: voucherYear } });
+
+  const token = getToken();
+
+  if (!token) {
+    localStorage.removeItem('token');
+    router.push('/');
+  }
+
+  const response = await axios.post(`/start`, { transition: 'FETCHOUTWARDRTGS', data: { voucherNo: voucherNo, voucherYear: voucherYear, branchCode: token.branchCode } });
 
   if (response.status == 200) {
     const { data } = response;
@@ -482,9 +490,23 @@ const getCustAccounts = async () => {
   if (previousCustomerNo == rtgsForm.customerNo)
     return;
 
+  const token = getToken();
+
+  if (!token) {
+    localStorage.removeItem('token');
+    router.push('/');
+  }
 
   try {
-    const response = await axios.post(`/start`, { transition: 'FETCHCUSTACCOUNTS', data: { customerNo: rtgsForm.customerNo } });
+    const response = await axios.post(`/start`,
+      {
+        transition: 'FETCHCUSTACCOUNTS',
+        data: {
+          customerNo: rtgsForm.customerNo,
+          branchCode: token.branchCode
+        }
+      }
+    );
 
     if (response.status == 200) {
       const { data } = response;
@@ -1261,7 +1283,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
           <el-col :md="8" :lg="7">
             <el-form-item>
-              <el-input dir="rtl" v-model="rtgsForm.availableBalance" disabled />
+              <el-input dir="rtl" v-model="rtgsForm.availableBalance" disabled/>
             </el-form-item>
           </el-col>
           <el-col :md="4" :lg="3">
@@ -1466,8 +1488,8 @@ const setSelectedBenefBankValue = (selectedBank) => {
       </fieldset>
       <div>
         <el-table :data="rtgsForm.transactionLaxList" @current-change="handleTransactionLaxSelectedChange"
-          highlight-current-row style="width: 100%" max-height="300">
-          <el-table-column property="transactionAmount" label="Transaction Amount" width="200" />
+          highlight-current-row style="width: 100%" max-height="150">
+          <el-table-column property="transactionAmount" align="center" label="Transaction Amount" width="200" />
           <el-table-column property="beneficiaryIbanOrAccountNo" label="Beneficiary IBAN/AC #" width="180" />
           <el-table-column property="beneficiaryAccountName" label="Account Name" />
           <el-table-column property="beneficiaryBankName" label="Beneficiary Bank Name" />
@@ -1744,7 +1766,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
   </el-dialog>
 
   <el-dialog v-model="isSignatureDialogVisible" :show-close="false" title="Customer Signature"
-    :before-close="(doneFn) => {console.log('before-close'), doneFn() }" width="90%">
+    :before-close="(doneFn) => {console.log('before-close'), doneFn() }" width="1000">
     <el-row>
       <el-col :span="6"></el-col>
       <el-col :span="12">

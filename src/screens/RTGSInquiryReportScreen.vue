@@ -201,9 +201,15 @@ const getCustAccounts = async () => {
   if(reportForm?.customerNo?.length > 0 && reportForm?.customerNo?.length < 6)
     reportForm.customerNo = reportForm.customerNo.padStart(6, '0');
 
+  const token = getToken();
+
+    if (!token) {
+      localStorage.removeItem('token');
+      router.push('/');
+    }
 
   try {
-    const response = await axios.post(`/start`, { transition: 'FETCHCUSTACCOUNTS', data: { customerNo: reportForm.customerNo } });
+    const response = await axios.post(`/start`, { transition: 'FETCHCUSTACCOUNTS', data: { customerNo: reportForm.customerNo, branchCode: token.branchCode } });
 
     if (response.status == 200) {
       const { data } = response;

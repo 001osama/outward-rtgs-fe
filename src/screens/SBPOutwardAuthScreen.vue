@@ -28,7 +28,14 @@ const tableData = ref([])
 
 onMounted(async ()=>{
   try {
-    const response = await axios.post('/start', {transition:'FETCHUNAUTHOUTWARDRTGSLIST'})
+    const token = getToken();
+
+    if (!token) {
+      localStorage.removeItem('token');
+      router.push('/');
+    }
+
+    const response = await axios.post('/start', {transition:'FETCHUNAUTHOUTWARDRTGSLIST', data: { branchCode: token.branchCode }})
     if(response.status == 200)
     {
       console.log(response.data)

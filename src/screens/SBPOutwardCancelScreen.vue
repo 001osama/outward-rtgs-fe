@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue';
 import axios from '@/axiosInstance.js';
 import { useRouter } from 'vue-router';
+import { getToken } from '@/utils/jwtDecoder';
 import { invokeDefaultDialog } from '@/utils/dialog';
 import { isNumber } from '@/utils/helpers';
 import { validateYear } from '@/utils/validators';
@@ -47,13 +48,20 @@ const handleSubmit = async (formEl) => {
   }
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      try {
-    const response = await axios.post('/start', {
-      transition:'ISVOUCHEREXISTFORCANCELLATION',
-      data:{
-        voucherNo: voucherInfo.voucherNo,
-        voucherYear: voucherInfo.voucherYear
+      const token = getToken();
+
+      if (!token) {
+        localStorage.removeItem('token');
+        router.push('/');
       }
+      try {
+        const response = await axios.post('/start', {
+        transition:'ISVOUCHEREXISTFORCANCELLATION',
+        data:{
+          voucherNo: voucherInfo.voucherNo,
+          voucherYear: voucherInfo.voucherYear,
+          branchCode: token.branchCode
+        }
     })
 
     if(response.status == 200)
@@ -99,7 +107,7 @@ const handleSubmit = async (formEl) => {
               </el-col>
               <el-col :span="16">
                 <el-form-item prop="voucherNo">
-                  <el-input dir="rtl" v-model="voucherInfo.voucherNo" @blur="insertPadding" @keydown="isNumber" maxlength="7"/>
+                  <el-input dir="rtl" @click.right.prevent @copy.prevent @paste.prevent v-model="voucherInfo.voucherNo" @blur="insertPadding" @keydown="isNumber" maxlength="7"/>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -114,7 +122,7 @@ const handleSubmit = async (formEl) => {
               </el-col>
               <el-col :span="20">
                 <el-form-item prop="voucherYear">
-                  <el-input @keydown="isNumber" v-model="voucherInfo.voucherYear" maxlength="4"/>
+                  <el-input @keydown="isNumber" @click.right.prevent @copy.prevent @paste.prevent v-model="voucherInfo.voucherYear" maxlength="4"/>
                 </el-form-item>
               </el-col>
             </el-row>

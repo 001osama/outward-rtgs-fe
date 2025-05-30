@@ -3,8 +3,11 @@ import { invokeDefaultDialog } from '@/utils/dialog';
 import { reactive, defineEmits } from 'vue';
 import axios from '@/axiosInstance.js';
 import { isAlphaNumeric } from '@/utils/helpers';
+import { getToken } from '@/utils/jwtDecoder';
+import { useRouter} from 'vue-router';
 
 
+const router = useRouter();
 const emit = defineEmits(['cancelled', 'success']);
 
 const authForm = reactive({
@@ -19,6 +22,12 @@ const activityAuthorized = async () => {
       authForm.loginId.password < 10)
     return;
 
+  const token = getToken();
+
+  if (!token) {
+    localStorage.removeItem('token');
+    router.push('/');
+  }
 
   try {
     const response = await axios.post(`/start`, {
@@ -26,6 +35,7 @@ const activityAuthorized = async () => {
       data: {
         loginId: authForm.loginId,
         password: authForm.password,
+        branchCode: token.branchCode
       }
     });
 
