@@ -1271,7 +1271,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
           </el-col>
           <el-col :md="20" :lg="17">
             <el-form-item>
-              <el-input v-model="rtgsForm.accountName" disabled />
+              <el-input v-model="rtgsForm.accountName" disabled/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -1313,14 +1313,14 @@ const setSelectedBenefBankValue = (selectedBank) => {
             </el-form-item>
           </el-col>
 
-          <el-col :lg="1" :md="2"></el-col>
+          <el-col :lg="0" :md="1"></el-col>
 
           <el-col :md="3" :lg="2">
             <el-form-item>
               <span>Cheque#</span>
             </el-form-item>
           </el-col>
-          <el-col :md="4" :lg="3">
+          <el-col :md="5" :lg="4">
             <el-form-item prop="chequeNo">
               <el-input
                 @click.right.prevent
