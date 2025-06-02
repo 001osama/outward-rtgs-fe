@@ -210,7 +210,7 @@ const resetForm = () => {
 // };
 
 const handleSelectedBenefBankChange = (val) => {
-  debugger;
+
   console.log(`Handle current change is working`, val);
   benefBankListTableRef.value?.setCurrentRow(val);
   if (val && val.value) selectedBenefBank.value = val;
@@ -433,23 +433,14 @@ const validateChequeStatus = async () => {
 
 
 const handleExitClick = () => {
-  debugger;
-  if (mode.value === 'auth') {
-    router.push('sbpoutwardauth');
-  }
-  else if (mode.value === 'cancel') {
-    router.push('sbpoutwardcancel');
-    return
-  }
+  console.log("handle exit click")
+  let errorMessage;
+  if (mode.value === 'auth' || mode.value === 'cancel')
+    errorMessage = 'Are you sure you want to exit';
   else
-  {
-    // if(!rtgsForm.accountNo)
-    // {
-    //   router.push('remittance');
-    //   return;
-    // }
-    // const redirectToRemittance = router.push('remittance');
-    ElMessageBox.confirm('Any changes will be lost. Are you sure you want to exit?', 'Warning', {
+    errorMessage = 'Any changes will be lost. Are you sure you want to exit?';
+
+  ElMessageBox.confirm(errorMessage, 'Warning', {
     confirmButtonText: 'Yes',
     cancelButtonText: 'No',
     showCancelButton: true,
@@ -459,16 +450,15 @@ const handleExitClick = () => {
     draggable: true,
     closeOnClickModal: false,
   })
-    .then(() => { router.push('remittance') })
-    .catch(() => {})
-
-    // invokeConfirmationDialog('Are you sure you want to exit?', 'Warning', console.log("Message is working"))
-    // router.push('remittance');
-  }
+  .then(() => {
+    if(mode.value === 'auth') router.push('sbpoutwardauth')
+    else if (mode.value === 'cancel') router.push('sbpoutwardcancel')
+    else router.push('remittance') })
+  .catch(() => {})
 }
 
 const getCustAccounts = async () => {
-  debugger;
+
   if(rtgsForm?.customerNo?.length > 0 && rtgsForm?.customerNo?.length < 6)
     rtgsForm.customerNo = rtgsForm.customerNo.padStart(6, '0');
 
@@ -564,7 +554,7 @@ const getBenefBankList = async () => {
     else {
       console.log(response.data);
     }
-    debugger;
+
     benefBankListTableRef.value?.setCurrentRow(selectedBenefBank.value);
     console.log(benefBankListTableRef);
   }
@@ -689,11 +679,11 @@ const insertTransactionLax = () => {
   const beneficiaryAmount = parseFormattedAmount(rtgsForm.beneficiaryAmount);
 
 
-  if(transactionAmount > availableBalance)
-  {
-    invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
-    return;
-  }
+  // if(transactionAmount > availableBalance)
+  // {
+  //   invokeDefaultDialog("Message", "Entered balance should be less than available balance.");
+  //   return;
+  // }
 
 
   if(rtgsForm.sbpTranTypeCode === "1" &&
@@ -760,8 +750,8 @@ const insertTransactionLax = () => {
 
   if(transactionLaxForm.beneficiaryBankCode === '')
   {
-      invokeDefaultDialog('Error','Please Select Beneficiary Bank');
-      return;
+    invokeDefaultDialog('Error','Please Select Beneficiary Bank');
+    return;
   }
 
   // if(transactionLaxForm.beneficiaryBranchCode === '')
@@ -774,8 +764,8 @@ const insertTransactionLax = () => {
 
   if(transactionLaxForm.beneficiaryIbanOrAccountNo === '')
   {
-      invokeDefaultDialog('Error','Please Insert Beneficiary IBAN or Account No');
-      return;
+    invokeDefaultDialog('Error','Please Insert Beneficiary IBAN or Account No');
+    return;
   }
 
   if(transactionLaxForm.beneficiaryAccountName === '')
@@ -790,7 +780,7 @@ const insertTransactionLax = () => {
 
   rtgsForm.beneficiaryAmount = formatAmount(beneficiaryAmount + transactionAmount);
   const currentBalance = availableBalance - transactionAmount;
-  rtgsForm.availableBalance = formatAmount(currentBalance);
+  // rtgsForm.availableBalance = formatAmount(currentBalance);
 
   if(rtgsForm.transferTypeCode !== '102')
   {
@@ -809,7 +799,7 @@ const insertTransactionLax = () => {
 }
 
 const removeTransactionLax = () => {
-  debugger;
+
   if (selectedTransactionLax.value !== '') {
     let selectedRowData = rtgsForm.transactionLaxList.find((item) => item.id === selectedTransactionLax.value );
 
@@ -820,7 +810,7 @@ const removeTransactionLax = () => {
 
 
     const currentBalance = parseFormattedAmount(rtgsForm.availableBalance) + transactionLaxAmount
-    rtgsForm.availableBalance = formatAmount(currentBalance);
+    // rtgsForm.availableBalance = formatAmount(currentBalance);
 
     rtgsForm.transactionLaxList = rtgsForm.transactionLaxList.filter((item) => item.id !== selectedTransactionLax.value)
     selectedTransactionLax.value = null;
@@ -1141,7 +1131,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
                 <span>Branch</span>
               </el-form-item>
             </el-col>
-            <el-col :lg="16" :md="17">
+            <el-col :lg="14" :md="17">
               <el-form-item>
                 <el-select disabled v-model="rtgsForm.branchCode" placeholder="Select Branch">
                   <el-option v-for="item in branchList" :key="item.value" :label="item.label" :value="item.value" />
@@ -1157,7 +1147,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
                 <span>Currency</span>
               </el-form-item>
             </el-col>
-            <el-col :lg="16" :md="17">
+            <el-col :lg="14" :md="17">
               <el-form-item>
                 <el-select disabled v-model="rtgsForm.currencyCode" placeholder="Select Currency">
                   <el-option v-for="item in currencyList" :key="item.value" :label="item.label" :value="item.value" />
@@ -1173,7 +1163,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
                 <span>SBP Tran. Type</span>
               </el-form-item>
             </el-col>
-            <el-col :lg="16" :md="17">
+            <el-col :lg="14" :md="17">
               <el-form-item>
                 <el-select :disabled="isFormDisabled" @change="resetForm" v-model="rtgsForm.sbpTranTypeCode"
                   placeholder="Select SBP Tran Type">
@@ -1573,7 +1563,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
       </fieldset>
       <h4 style="padding: 0.8% 0.2%;">Charges:</h4>
       <el-row>
-        <el-col :span="20">
+        <el-col :lg="20" :md="19">
           <el-table :data="chargesLaxList" highlight-current-row @current-change="handleChargesLaxSelectedChange"
             style="width: 100%" height="110" max-height="250">
             <el-table-column property="trancd" label="Trancd" width="100" />
@@ -1582,7 +1572,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
             <el-table-column property="amount" label="Amount" />
           </el-table>
         </el-col>
-        <el-col :span="4">
+        <el-col :lg="4" :md="5">
           <el-row style="gap: 6px;padding: 0px 6px;">
             <el-col>
               <el-button :disabled="isFormDisabled" class="generic-button" @click="insertCharges" type="primary">Add Charges</el-button>
@@ -1735,7 +1725,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
     v-model="isVoucherDialogVisible"
     :show-close="false"
     title="Voucher"
-    width="1180"
+    width="80%"
     top="8vh"
     :close-on-click-modal="false">
     <el-table
@@ -1749,8 +1739,8 @@ const setSelectedBenefBankValue = (selectedBank) => {
       <el-table-column property="accountNo" label="Account No." width="220" />
       <el-table-column property="accountTitle" label="A/C Title" width="220" />
       <el-table-column property="currencyCode" label="CCY" width="100" />
-      <el-table-column property="debitAmount" label="DR" width="200"/>
-      <el-table-column property="creditAmount" label="CR" width="200"/>
+      <el-table-column property="debitAmount" label="DR" min-width="200"/>
+      <el-table-column property="creditAmount" label="CR" min-width="200"/>
     </el-table>
     <fieldset style="margin-top: 20px;">
       <el-row>
@@ -1765,7 +1755,7 @@ const setSelectedBenefBankValue = (selectedBank) => {
     </fieldset>
   </el-dialog>
 
-  <el-dialog v-model="isSignatureDialogVisible" :show-close="false" title="Customer Signature"
+  <el-dialog v-model="isSignatureDialogVisible" :show-close="false" :close-on-click-modal="false" title="Customer Signature"
     :before-close="(doneFn) => {console.log('before-close'), doneFn() }" width="1000">
     <el-row>
       <el-col :span="6"></el-col>
