@@ -62,8 +62,8 @@ const activityAuthorized = async () => {
 </script>
 <template>
     <el-row>
-      <el-col :span="7"></el-col>
-      <el-col :span="9">
+      <el-col :md="5" :lg="7"></el-col>
+      <el-col :md="14" :lg="9">
         <!-- <form @submit.prevent="onSubmit"> -->
         <el-form ref="formRef" :model="authForm" @keydown.enter="activityAuthorized" @submit.prevent="activityAuthorized">
           <fieldset style="padding: 3% 10% 1% 10% !important; margin-bottom: 3%;">
@@ -110,7 +110,7 @@ const activityAuthorized = async () => {
         </el-form>
         <!-- </form> -->
       </el-col>
-      <el-col :span="7"></el-col>
+      <el-col :md="5" :lg="7"></el-col>
     </el-row>
 </template>
 <style></style>

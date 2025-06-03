@@ -165,14 +165,14 @@ const handleAcknowledged = (formRef) => {
             <span>Reason Code</span>
           </el-form-item>
         </el-col>
-        <el-col :span="6">
+        <el-col :md="10" :lg="6">
           <el-form-item>
             <el-select v-model="exceptionForm.reasonCode" @change="(event)=>reasonCodeChanged(event, formRef)" placeholder="">
               <el-option v-for="item in reasonCodeList" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="5"></el-col>
+        <el-col :md="1" :lg="5"></el-col>
         <el-col :span="3">
           <el-form-item>
             <span>Reason Description</span>

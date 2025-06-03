@@ -378,6 +378,7 @@ const getOutwardRtgs = async (voucherNo, voucherYear) => {
       rtgsForm.senderToReceiverInformation = responseData.senderToReceiverInformation;
       rtgsForm.chequeNo = responseData.chequeNo;
       rtgsForm.postedBy = responseData.postedBy;
+      console.log('Transfer type code', rtgsForm.transferTypeCode);
       await getCustAccounts();
       await getAccountDetails();
       insertCharges();
@@ -831,20 +832,45 @@ const insertCharges = () => {
     return;
   }
 
-  const transactionLaxList = [
-    {
-      trancd: 81213,
-      tranDesc: 'RTGS103 SBP T1',
-      glAccount: 'C870116010009',
-      amount: '0.00'
-    },
-    {
-      trancd: 81212,
-      tranDesc: 'RTGS103 BNK T1',
-      glAccount: '1790801510002',
-      amount: '0.00'
-    },
-  ]
+  if (chargesLaxList.value.length != 0)
+    return;
+
+  console.log('insert charges working')
+  let transactionLaxList;
+  if(rtgsForm.transferTypeCode == '103')
+  {
+    transactionLaxList = [
+      {
+        trancd: 81213,
+        tranDesc: 'RTGS103 SBP T1',
+        glAccount: 'C870116010009',
+        amount: '0.00'
+      },
+      {
+        trancd: 81212,
+        tranDesc: 'RTGS103 BNK T1',
+        glAccount: '1790801510002',
+        amount: '0.00'
+      },
+    ]
+  }
+  else
+  {
+    transactionLaxList = [
+      {
+        trancd: 81213,
+        tranDesc: 'RTGS102 SBP T1',
+        glAccount: 'C870116010009',
+        amount: '0.00'
+      },
+      {
+        trancd: 81212,
+        tranDesc: 'RTGS102 BNK T1',
+        glAccount: '1790801510002',
+        amount: '0.00'
+      },
+    ]
+  }
   chargesLaxList.value = transactionLaxList;
 }
 
